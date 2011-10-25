@@ -1370,9 +1370,9 @@ public class PhoneWindow extends Window implements MenuBuilder.Callback {
                 circularProgressBar.setVisibility(View.GONE);
             }
         } else if (value == PROGRESS_INDETERMINATE_ON) {
-            horizontalProgressBar.setIndeterminate(true);
+            circularProgressBar.setIndeterminate(true);
         } else if (value == PROGRESS_INDETERMINATE_OFF) {
-            horizontalProgressBar.setIndeterminate(false);
+            circularProgressBar.setIndeterminate(false);
         } else if (PROGRESS_START <= value && value <= PROGRESS_END) {
             // We want to set the progress value before testing for visibility
             // so that when the progress bar becomes visible again, it has the
