@@ -1375,4 +1375,8 @@
          The existence of this file will be used to determine in the
          legacy USB manager should be started. -->
     <string name="config_legacyUmsLunFile">/sys/devices/platform/usb_mass_storage/lun0/file</string>
+
+   <!-- set to false if we dont need to consider data
+         service state to display signal strength bars -->
+    <bool name="config_combined_signal">true</bool>
 </resources>
