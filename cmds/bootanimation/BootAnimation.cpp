@@ -553,7 +553,7 @@ bool BootAnimation::movie()
                 const Animation::Frame& frame(part.frames[j]);
                 nsecs_t lastFrame = systemTime();
 
-                if (r > 0) {
+                if (r > 0 && !noTextureCache) {
                     glBindTexture(GL_TEXTURE_2D, frame.tid);
                 } else {
                     if (part.count != 1) {
@@ -598,6 +598,9 @@ bool BootAnimation::movie()
                 }
 
                 checkExit();
+ 
+                if (noTextureCache)
+                    glDeleteTextures(1, &frame.tid);
             }
 
             usleep(part.pause * ns2us(frameDuration));
