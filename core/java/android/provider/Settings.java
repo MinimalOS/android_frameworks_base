@@ -7368,6 +7368,13 @@ public final class Settings {
         public static final String HIDE_BATTERY_ICON = "hide_battery_icon";
 
         /**
+         * Hide Singal Bars
+         *
+         * @hide
+         */
+        public static final String STATUSBAR_HIDE_SIGNAL_BARS = "statusbar_hide_signal_bars";
+
+        /**
         *
         * @hide
         */
