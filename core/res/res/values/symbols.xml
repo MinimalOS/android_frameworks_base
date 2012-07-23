@@ -1624,6 +1624,13 @@
   <java-symbol type="string" name="usb_notification_message" />
   <java-symbol type="string" name="use_physical_keyboard" />
   <java-symbol type="string" name="usb_ptp_notification_title" />
+  <java-symbol type="string" name="usb_warn_device_not_support" />
+  <java-symbol type="string" name="usb_warn_device_not_responding" />
+  <java-symbol type="string" name="usb_warn_device_vbus_invalid_title" />
+  <java-symbol type="string" name="usb_warn_device_vbus_invalid_message" />
+  <java-symbol type="string" name="usb_warn_hub_max_tier" />
+  <java-symbol type="string" name="usb_warn_insufficient_power_title" />
+  <java-symbol type="string" name="usb_warn_insufficient_power_message" />
   <java-symbol type="string" name="vpn_text" />
   <java-symbol type="string" name="vpn_text_long" />
   <java-symbol type="string" name="vpn_title" />

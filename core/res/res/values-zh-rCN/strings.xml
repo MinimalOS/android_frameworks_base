@@ -1269,6 +1269,13 @@
     <string name="extmedia_format_button_format" msgid="4131064560127478695">"格式化"</string>
     <string name="adb_active_notification_title" msgid="6729044778949189918">"已连接 USB 调试"</string>
     <string name="adb_active_notification_message" msgid="1016654627626476142">"触摸可停用 USB 调试。"</string>
+    <string name="usb_warn_device_not_support">警告: 不支持该USB 设备</string>
+    <string name="usb_warn_device_not_responding">警告: USB 设备没有响应</string>
+    <string name="usb_warn_device_vbus_invalid_title">警告: USB 供电不足 </string>
+    <string name="usb_warn_device_vbus_invalid_message">警告:  请确保电池电量并尝试重插USB 线</string>
+    <string name="usb_warn_hub_max_tier">警告: USB 集线器层数过多 </string>
+    <string name="usb_warn_insufficient_power_title">警告: USB 供电能力不足</string>
+    <string name="usb_warn_insufficient_power_message">警告: 请使用USB 自供电集线器供电 </string>
     <string name="select_input_method" msgid="4653387336791222978">"选择输入法"</string>
     <string name="configure_input_methods" msgid="9091652157722495116">"设置输入法"</string>
     <string name="use_physical_keyboard" msgid="6203112478095117625">"物理键盘"</string>
