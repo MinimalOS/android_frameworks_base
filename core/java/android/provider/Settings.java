@@ -2709,6 +2709,15 @@ public final class Settings {
         public static final String GESTURE_ANYWHERE_SHOW_TRIGGER = "gesture_anywhere_show_trigger";
 
         /**
+         * Lockscreen battery status visibility mode
+         * 0 = show if charging
+         * 1 = always show
+         * 2 = never show
+         * @hide
+         */
+        public static final String LOCKSCREEN_BATTERY_VISIBILITY = "lockscreen_always_show_battery";
+
+        /**
          * @deprecated Use {@link android.provider.Settings.Global#LOW_BATTERY_SOUND}
          * instead
          * @hide
@@ -3287,6 +3296,7 @@ public final class Settings {
             QUIET_HOURS_MUTE,
             QUIET_HOURS_STILL,
             QUIET_HOURS_DIM,
+            LOCKSCREEN_BATTERY_VISIBILITY,
         };
 
         // Settings moved to Settings.Secure
