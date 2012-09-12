@@ -48,4 +48,8 @@
     <!-- label for item that screenshots in phone options dialog -->
     <string name="global_action_screenshot">Screenshot</string>
 
+    <!-- Vibration picker dialog title -->
+    <string name="vibration_picker_title">Select vibration</string>
+    <string name="vibration_picker_del_title">Delete vibration</string>
+
 </resources>
