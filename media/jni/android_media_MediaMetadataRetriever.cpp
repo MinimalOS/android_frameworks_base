@@ -262,6 +262,10 @@ static jobject android_media_MediaMetadataRetriever_getFrameAtTime(JNIEnv *env, 
                             width,
                             height,
                             config);
+    if (jBitmap == NULL) {
+        ALOGE("getFrameAtTime: create Bitmap failed!");
+        return NULL;
+    }
 
     SkBitmap *bitmap =
             (SkBitmap *) env->GetIntField(jBitmap, fields.nativeBitmap);
