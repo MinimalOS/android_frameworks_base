@@ -7164,6 +7164,12 @@ public final class Settings {
         public static final String WAKEUP_WHEN_PLUGGED_UNPLUGGED = "wakeup_when_plugged_unplugged";
 
         /**
+         * Vibrate when expanding notifications
+         * @hide
+         */
+        public static final String VIBRATE_NOTIF_EXPAND = "vibrate_notif_expand";
+
+        /**
          * Show battery percentage indicator front of battery icon
          *
          * @hide
