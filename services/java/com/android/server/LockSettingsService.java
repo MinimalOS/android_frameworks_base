@@ -27,6 +27,7 @@ import static android.content.Context.USER_SERVICE;
 import static android.Manifest.permission.READ_PROFILE;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteStatement;
 import android.media.AudioManager;
@@ -410,17 +411,27 @@ public class LockSettingsService extends ILockSettings.Stub {
     }
 
     private String readFromDb(String key, String defaultValue, int userId) {
-        Cursor cursor;
+        Cursor cursor = null;
         String result = defaultValue;
-        SQLiteDatabase db = mOpenHelper.getReadableDatabase();
-        if ((cursor = db.query(TABLE, COLUMNS_FOR_QUERY,
-                COLUMN_USERID + "=? AND " + COLUMN_KEY + "=?",
-                new String[] { Integer.toString(userId), key },
-                null, null, null)) != null) {
-            if (cursor.moveToFirst()) {
-                result = cursor.getString(0);
+        try {
+            SQLiteDatabase db = mOpenHelper.getReadableDatabase();
+            if ((cursor = db.query(TABLE, COLUMNS_FOR_QUERY,
+                    COLUMN_USERID + "=? AND " + COLUMN_KEY + "=?",
+                    new String[] { Integer.toString(userId), key },
+                    null, null, null)) != null) {
+                if (cursor.moveToFirst()) {
+                    result = cursor.getString(0);
+                }
             }
-            cursor.close();
+        } catch (SQLiteException e) {
+            // Catching SQLiteException to avoid sensitive information being passed on.
+            // Database may recover on next readFromDb call but returns defaultValue
+            // due to caught SQLiteException.
+            Slog.e(TAG, "Unable to read from db.");
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
         }
         return result;
     }
