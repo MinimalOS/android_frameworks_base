@@ -7156,6 +7156,13 @@ public final class Settings {
          */
         public static final String SWIPE_TO_SWITCH = "swipe_to_switch";
 
+        /**
+         * wake up when plugged or unplugged
+         *
+         * @hide
+         */
+        public static final String WAKEUP_WHEN_PLUGGED_UNPLUGGED = "wakeup_when_plugged_unplugged";
+
     }
 
     /**
