@@ -4529,4 +4529,8 @@
     <!-- Hardware Rotation lock string -->
     <string name="toast_rotation_unlocked">Display rotation unlocked</string>
     <string name="toast_rotation_locked">Display rotation locked</string>
+
+    <!-- Longer version of toast bar message when hiding the transient navigation bar (if room) -->
+    <string name="transient_navigation_confirmation_long">Swipe from edge of screen to reveal system bar</string>
+    <add-resource type="bool" name="config_hotswapCapable"></add-resource>
 </resources>
