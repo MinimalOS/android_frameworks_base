@@ -2621,6 +2621,12 @@ public final class Settings {
          */
         public static final String SHOW_TOUCHES = "show_touches";
 
+       /**
+         * HALO enabled, should default to 0 (HALO is disabled)
+         * @hide
+         */
+        public static final String HALO_ENABLED = "halo_enabled";
+
         /**
          * Log raw orientation data from {@link WindowOrientationListener} for use with the
          * orientationplot.py tool.
