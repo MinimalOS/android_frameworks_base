@@ -332,6 +332,16 @@ public class AudioService extends IAudioService.Stub {
 
     // Forced device usage for communications
     private int mForcedUseForComm;
+    private final Object mForcedUseForCommLock = new Object();
+
+    // Forced device usage for record
+    private int mForcedUseForRecord;
+
+    // Is Speakerphone usage forced
+    private boolean mSpeakerPhoneOn = false;
+
+    // Is BT SCO usage forced
+    private boolean mBTScoOn = false;
 
     // True if we have master volume support
     private final boolean mUseMasterVolume;
@@ -486,6 +496,7 @@ public class AudioService extends IAudioService.Stub {
 
         mVolumePanel = new VolumePanel(context, this);
         mForcedUseForComm = AudioSystem.FORCE_NONE;
+        mForcedUseForRecord = AudioSystem.FORCE_NONE;
 
         createAudioSystemThread();
 
@@ -1946,24 +1957,32 @@ public class AudioService extends IAudioService.Stub {
         }
     }
 
+    //It is MANDATORY to call this function with mForcedUseForCommLock held
+    private void reconsiderUsageForComm() {
+        int reconsideredUsageForComm;
+        if (mSpeakerPhoneOn) {
+            reconsideredUsageForComm = AudioSystem.FORCE_SPEAKER;
+        } else if (mBTScoOn) {
+            reconsideredUsageForComm = AudioSystem.FORCE_BT_SCO;
+        } else {
+            reconsideredUsageForComm = AudioSystem.FORCE_NONE;
+        }
+        if (reconsideredUsageForComm != mForcedUseForComm) {
+            mForcedUseForComm = reconsideredUsageForComm;
+            sendMsg(mAudioHandler, MSG_SET_FORCE_USE, SENDMSG_QUEUE,
+                    AudioSystem.FOR_COMMUNICATION, mForcedUseForComm, null, 0);
+        }
+    }
+
     /** @see AudioManager#setSpeakerphoneOn(boolean) */
     public void setSpeakerphoneOn(boolean on){
         if (!checkAudioSettingsPermission("setSpeakerphoneOn()")) {
             return;
         }
-
-        if (on) {
-            if (mForcedUseForComm == AudioSystem.FORCE_BT_SCO) {
-                    sendMsg(mAudioHandler, MSG_SET_FORCE_USE, SENDMSG_QUEUE,
-                            AudioSystem.FOR_RECORD, AudioSystem.FORCE_NONE, null, 0);
-            }
-            mForcedUseForComm = AudioSystem.FORCE_SPEAKER;
-        } else if (mForcedUseForComm == AudioSystem.FORCE_SPEAKER){
-            mForcedUseForComm = AudioSystem.FORCE_NONE;
+        synchronized (mForcedUseForCommLock) {
+            mSpeakerPhoneOn = on;
+            reconsiderUsageForComm();
         }
-
-        sendMsg(mAudioHandler, MSG_SET_FORCE_USE, SENDMSG_QUEUE,
-                AudioSystem.FOR_COMMUNICATION, mForcedUseForComm, null, 0);
     }
 
     /** @see AudioManager#isSpeakerphoneOn() */
@@ -1976,17 +1995,13 @@ public class AudioService extends IAudioService.Stub {
         if (!checkAudioSettingsPermission("setBluetoothScoOn()")) {
             return;
         }
-
-        if (on) {
-            mForcedUseForComm = AudioSystem.FORCE_BT_SCO;
-        } else if (mForcedUseForComm == AudioSystem.FORCE_BT_SCO) {
-            mForcedUseForComm = AudioSystem.FORCE_NONE;
+        synchronized (mForcedUseForCommLock) {
+            mBTScoOn = on;
+            reconsiderUsageForComm();
         }
-
+        mForcedUseForRecord = on ? AudioSystem.FORCE_BT_SCO : AudioSystem.FORCE_NONE;
         sendMsg(mAudioHandler, MSG_SET_FORCE_USE, SENDMSG_QUEUE,
-                AudioSystem.FOR_COMMUNICATION, mForcedUseForComm, null, 0);
-        sendMsg(mAudioHandler, MSG_SET_FORCE_USE, SENDMSG_QUEUE,
-                AudioSystem.FOR_RECORD, mForcedUseForComm, null, 0);
+                AudioSystem.FOR_RECORD, mForcedUseForRecord, null, 0);
     }
 
     /** @see AudioManager#isBluetoothScoOn() */
@@ -3606,8 +3621,10 @@ public class AudioService extends IAudioService.Stub {
                     AudioSystem.setPhoneState(mMode);
 
                     // Restore forced usage for communcations and record
-                    AudioSystem.setForceUse(AudioSystem.FOR_COMMUNICATION, mForcedUseForComm);
-                    AudioSystem.setForceUse(AudioSystem.FOR_RECORD, mForcedUseForComm);
+                    synchronized (mForcedUseForCommLock) {
+                        reconsiderUsageForComm();
+                    }
+                    AudioSystem.setForceUse(AudioSystem.FOR_RECORD, mForcedUseForRecord);
                     AudioSystem.setForceUse(AudioSystem.FOR_SYSTEM, mCameraSoundForced ?
                                     AudioSystem.FORCE_SYSTEM_ENFORCED : AudioSystem.FORCE_NONE);
 
