@@ -750,10 +750,10 @@ public class UsbDeviceManager {
                     notification.when = 0;
                     notification.flags = Notification.FLAG_ONGOING_EVENT;
                     notification.tickerText = title;
-                    notification.defaults = 0; // please be quiet
+                    notification.defaults = Notification.DEFAULT_SOUND; // make sound when connected or change option
                     notification.sound = null;
                     notification.vibrate = null;
-                    notification.priority = Notification.PRIORITY_MIN;
+                    notification.priority = Notification.PRIORITY_LOW;
 
                     Intent intent = Intent.makeRestartActivityTask(
                             new ComponentName("com.android.settings",
@@ -762,7 +762,7 @@ public class UsbDeviceManager {
                             intent, 0, null, UserHandle.CURRENT);
                     notification.setLatestEventInfo(mContext, title, message, pi);
                     mNotificationManager.notifyAsUser(null, id, notification,
-                            UserHandle.ALL);
+                            UserHandle.CURRENT);
                     mUsbNotificationId = id;
                 }
             }
