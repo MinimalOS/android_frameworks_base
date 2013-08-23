@@ -3232,6 +3232,12 @@ public final class Settings {
         @Deprecated
         public static final String ADB_ENABLED = Global.ADB_ENABLED;
 
+	/**
+         * Configurable LTE or 4G icon - up to per user defined
+         * @hide
+         */
+        public static final String SHOW_LTE_OR_FOURGEE = "show_lte_or_fourgee";
+
         /**
          * @deprecated Use {@link android.provider.Settings.Secure#ANDROID_ID} instead
          */
