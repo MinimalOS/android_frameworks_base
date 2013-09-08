@@ -7307,6 +7307,33 @@ public final class Settings {
             return getArrayListForUser(cr, name,  UserHandle.myUserId());
         }
 
+        /**
+         * Setting for animation controls
+         *
+         * @hide
+         */
+        public static final String[] ACTIVITY_ANIMATION_CONTROLS = new String[] {
+                "activity_open",
+                "activity_close",
+                "task_open",
+                "task_close",
+                "task_to_front",
+                "task_to_back",
+                "wallpaper_open",
+                "wallpaper_close",
+                "wallpaper_intra_open",
+                "wallpaper_intra_close",
+        };
+
+        public static final String ANIMATION_CONTROLS_DURATION = "animation_controls_duration";
+
+        public static final String ANIMATION_CONTROLS_NO_OVERRIDE = "animation_controls_no_override";
+
+        public static final String ANIMATION_CONTROLS_EXIT_ONLY = "animation_controls_exit_only";
+
+        public static final String ANIMATION_CONTROLS_REVERSE_EXIT = "animation_controls_reverse_exit";
+
+
         public static ArrayList<String> getArrayListForUser(ContentResolver cr, String name, int userHandle) {
             String v = getStringForUser(cr, name, userHandle);
             ArrayList<String> list = new ArrayList<String>();
