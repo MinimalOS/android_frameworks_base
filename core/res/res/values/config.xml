@@ -1433,4 +1433,8 @@
         <item>Trying to write MMS</item>
         <item>Trying to start at bootup</item>
     </string-array>
+
+    <!-- bool value to for enabling motion accelerometer -->
+    <bool name="use_motion_accel">false</bool>
+
 </resources>
