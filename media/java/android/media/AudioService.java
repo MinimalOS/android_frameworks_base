@@ -64,6 +64,7 @@ import android.os.ServiceManager;
 import android.os.SystemProperties;
 import android.os.UserHandle;
 import android.os.Vibrator;
+import android.os.SystemClock;
 import android.provider.Settings;
 import android.provider.Settings.System;
 import android.speech.RecognizerIntent;
@@ -4030,6 +4031,13 @@ public class AudioService extends IAudioService.Stub {
                  mConnectedDevices.remove(device);
                  return true;
             } else if (!isConnected && connected) {
+                if ( (device == AudioSystem.DEVICE_OUT_WIRED_HEADSET) || (device == AudioSystem.DEVICE_OUT_WIRED_HEADPHONE) ) {
+                    Log.i(TAG, "Set screen power on for Contextual Awareness when headset insert.");
+                    PowerManager pm = (PowerManager) mContext.getSystemService(Context.POWER_SERVICE);
+                    PowerManager.WakeLock wl= pm.newWakeLock(PowerManager.FULL_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP, "Headset Inserted");
+                    pm.userActivity(SystemClock.uptimeMillis(), false);
+                    wl.acquire(5000);
+                }
                  AudioSystem.setDeviceConnectionState(device,
                                                       AudioSystem.DEVICE_STATE_AVAILABLE,
                                                       params);
