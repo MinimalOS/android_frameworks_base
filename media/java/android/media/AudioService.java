@@ -1516,7 +1516,7 @@ public class AudioService extends IAudioService.Stub {
         int numStreamTypes = AudioSystem.getNumStreamTypes();
         for (int streamType = numStreamTypes - 1; streamType >= 0; streamType--) {
             if (isStreamMutedByRingerMode(streamType)) {
-                if (!isStreamAffectedByRingerMode(streamType) ||
+                if (!isStreamAffectedByRingerMode(mStreamVolumeAlias[streamType]) ||
                     ringerMode == AudioManager.RINGER_MODE_NORMAL) {
                     // ring and notifications volume should never be 0 when not silenced
                     // on voice capable devices
@@ -1537,7 +1537,7 @@ public class AudioService extends IAudioService.Stub {
                     mRingerModeMutedStreams &= ~(1 << streamType);
                 }
             } else {
-                if (isStreamAffectedByRingerMode(streamType) &&
+                if (isStreamAffectedByRingerMode(mStreamVolumeAlias[streamType]) &&
                     ringerMode != AudioManager.RINGER_MODE_NORMAL) {
                    mStreamStates[streamType].mute(null, true);
                    mRingerModeMutedStreams |= (1 << streamType);
