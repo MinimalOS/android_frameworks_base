@@ -1,4 +1,7 @@
 /*
+ * Copyright (c) 2013, The Linux Foundation. All rights reserved.
+ * Not a Contribution.
+ *
  * Copyright (C) 2012 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,6 +21,7 @@ package android.app;
 
 import android.os.Binder;
 import android.os.IBinder;
+import android.os.SystemProperties;
 import android.util.ArrayMap;
 import com.android.internal.app.IAppOpsService;
 import com.android.internal.app.IAppOpsCallback;
@@ -90,9 +94,15 @@ public class AppOpsManager {
      */
     public static final int MODE_ERRORED = 2;
 
+    /** @hide This mode should never be returned to caller
+     * Result from {@link #checkOp} the given caller is
+     * not allowed to perform the given operation.
+     */
+    public static final int MODE_ASK = 3;
+
     // when adding one of these:
     //  - increment _NUM_OP
-    //  - add rows to sOpToSwitch, sOpToString, sOpNames, sOpPerms, sOpDefaultMode
+    //  - add rows to sOpToSwitch, sOpToString, sOpNames, sOpPerms, sOpDefaultMode, sOpDefaultStrictMode
     //  - add descriptive strings to Settings/res/values/arrays.xml
     //  - add the op to the appropriate template in AppOpsState.OpsTemplate (settings app)
 
@@ -629,6 +639,10 @@ public class AppOpsManager {
             throw new IllegalStateException("sOpDefaultMode length " + sOpDefaultMode.length
                     + " should be " + _NUM_OP);
         }
+        if (sOpDefaultStrictMode.length != _NUM_OP) {
+            throw new IllegalStateException("sOpDefaultStrictMode length " + sOpDefaultStrictMode.length
+                    + " should be " + _NUM_OP);
+        }
         if (sOpDisableReset.length != _NUM_OP) {
             throw new IllegalStateException("sOpDisableReset length " + sOpDisableReset.length
                     + " should be " + _NUM_OP);
@@ -681,8 +695,11 @@ public class AppOpsManager {
      * Retrieve the default mode for the operation.
      * @hide
      */
-    public static int opToDefaultMode(int op) {
-        return sOpDefaultMode[op];
+    public static int opToDefaultMode(int op, boolean strict) {
+        if(strict)
+            return sOpDefaultStrictMode[op];
+        else
+            return sOpDefaultMode[op];
     }
 
     /**
@@ -1244,5 +1261,10 @@ public class AppOpsManager {
     /** @hide */
     public void finishOp(int op) {
         finishOp(op, Process.myUid(), mContext.getOpPackageName());
+    }
+
+    /** @hide */
+    public static boolean isStrictEnable() {
+        return SystemProperties.getBoolean("persist.sys.strict_op_enable", false);
     }
 }
