@@ -120,6 +120,9 @@
     <!-- On the go -->
     <uses-permission android:name="android.permission.CAMERA" />
 
+    <!-- DownloadProvider -->
+    <uses-permission android:name="android.permission.ACCESS_ALL_DOWNLOADS" />
+
     <application
         android:persistent="true"
         android:allowClearUserData="false"
