@@ -74,5 +74,6 @@
   <java-symbol type="integer" name="config_panelAutoBrightnessValue" />
 
   <java-symbol type="bool" name="config_smsSamsungCdmaAlternateMessageIDEncoding" />
+  <java-symbol type="bool" name="config_samsung_stk" />
 
 </resources>
