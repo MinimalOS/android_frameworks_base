@@ -20,6 +20,7 @@ package com.android.systemui.statusbar.phone;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.FrameLayout;
@@ -33,7 +34,7 @@ import com.android.systemui.BatteryPercentMeterView;
 
 import com.android.systemui.R;
 
-class QuickSettingsBasicBatteryTile extends QuickSettingsTileView {
+public class QuickSettingsBasicBatteryTile extends QuickSettingsTileView {
     private final TextView mTextView;
     private BatteryMeterView mBattery;
     private BatteryCircleMeterView mCircleBattery;
@@ -60,17 +61,17 @@ class QuickSettingsBasicBatteryTile extends QuickSettingsTileView {
                 new FrameLayout.LayoutParams(
                         FrameLayout.LayoutParams.MATCH_PARENT,
                         FrameLayout.LayoutParams.MATCH_PARENT));
-        mTextView = (TextView) findViewById(R.id.text);
-        mBattery = (BatteryMeterView) findViewById(R.id.image);
+        mTextView = (TextView) findViewById(R.id.qs_text);
+        mBattery = (BatteryMeterView) findViewById(R.id.qs_image);
         mBattery.setVisibility(View.GONE);
-        mCircleBattery = (BatteryCircleMeterView) findViewById(R.id.circle_battery);
-        mPieBattery = (BatteryPieMeterView) findViewById(R.id.pie_battery);
-        mPercentBattery = (BatteryPercentMeterView) findViewById(R.id.percent_battery);
+        mCircleBattery = (BatteryCircleMeterView) findViewById(R.id.qs_circle_battery);
+        mPieBattery = (BatteryPieMeterView) findViewById(R.id.qs_pie_battery);
+        mPercentBattery = (BatteryPercentMeterView) findViewById(R.id.qs_percent_battery);
 
     }
 
     @Override
-    void setContent(int layoutId, LayoutInflater inflater) {
+    public void setContent(int layoutId, LayoutInflater inflater) {
         throw new RuntimeException("why?");
     }
 
@@ -96,6 +97,14 @@ class QuickSettingsBasicBatteryTile extends QuickSettingsTileView {
 
     public void setText(CharSequence text) {
         mTextView.setText(text);
+    }
+
+    public void setTextSizes(int size) {
+        mTextView.setTextSize(TypedValue.COMPLEX_UNIT_PX, size);
+    }
+
+    public void callOnColumnsChange() {
+        mTextView.invalidate();
     }
 
     public void setTextResource(int resId) {

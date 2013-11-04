@@ -409,9 +409,10 @@ public class BatteryPieMeterView extends ImageView {
         if (measure == null) {
             return;
         }
-        final int x = measure.getWidth() / 2;
+        final int x = measure.getWidth()-2;
 
-        mPieSize = measure.getHeight();
+        mPieSize = measure.getHeight()-10;
+        Log.v("BatteryPie","Pie size is " + mPieSize);
     }
 
 }
