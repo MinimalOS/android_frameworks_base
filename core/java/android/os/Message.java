@@ -464,6 +464,7 @@ public final class Message implements Parcelable {
 
             b.append(" target=");
             b.append(target.getClass().getName());
+            b.append(" name=" + target.getMessageName(this));
         } else {
             b.append(" barrier=");
             b.append(arg1);

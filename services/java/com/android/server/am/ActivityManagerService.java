@@ -4045,6 +4045,15 @@ public final class ActivityManagerService extends ActivityManagerNative
                 }
             }
         }
+        // Dump dispatch history of mainLooper in App's ActivityThread
+        if (!IS_USER_BUILD && app.thread != null) {
+            try {
+                // One-way binder call, a.k.a non-blocking
+                app.thread.dumpANRInfo();
+            } catch (RemoteException e) {
+                Slog.e(ActivityManagerService.TAG, "Exception in dumpANRInfo", e);
+            }
+        }
 
         // Log the ANR to the main log.
         StringBuilder info = new StringBuilder();

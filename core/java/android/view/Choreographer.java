@@ -683,6 +683,16 @@ public final class Choreographer {
                     break;
             }
         }
+
+        @Override
+        public String getMessageName(Message message) {
+            switch (message.what) {
+                case MSG_DO_FRAME: return "MSG_DO_FRAME";
+                case MSG_DO_SCHEDULE_VSYNC: return "MSG_DO_SCHEDULE_VSYNC";
+                case MSG_DO_SCHEDULE_CALLBACK: return "MSG_DO_SCHEDULE_CALLBACK";
+            }
+            return super.getMessageName(message);
+        }
     }
 
     private final class FrameDisplayEventReceiver extends DisplayEventReceiver
