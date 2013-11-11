@@ -161,7 +161,7 @@ class GlobalActions implements DialogInterface.OnDismissListener, DialogInterfac
                 Settings.Global.getUriFor(Settings.Global.AIRPLANE_MODE_ON), true,
                 mAirplaneModeObserver);
         mContext.getContentResolver().registerContentObserver(
-                Settings.Global.getUriFor(Settings.AOKP.IMMERSIVE_MODE), true,
+                Settings.Global.getUriFor(Settings.System.IMMERSIVE_MODE), true,
                 mImmersiveModeObserver);
         Vibrator vibrator = (Vibrator) mContext.getSystemService(Context.VIBRATOR_SERVICE);
         mHasVibrator = vibrator != null && vibrator.hasVibrator();
@@ -315,7 +315,7 @@ class GlobalActions implements DialogInterface.OnDismissListener, DialogInterfac
                 com.android.internal.R.string.immersive_mode_off) {
 
             void onToggle(boolean on) {
-                Settings.AOKP.putBoolean(mContext.getContentResolver(), Settings.AOKP.IMMERSIVE_MODE, on);
+                Settings.System.putBoolean(mContext.getContentResolver(), Settings.System.IMMERSIVE_MODE, on);
             }
 
             @Override
@@ -1226,7 +1226,7 @@ class GlobalActions implements DialogInterface.OnDismissListener, DialogInterfac
 
         boolean immersiveModeOn = Settings.AOKP.getBoolean(
                 mContext.getContentResolver(),
-                Settings.AOKP.IMMERSIVE_MODE, false);
+                Settings.System.IMMERSIVE_MODE, false);
         mImmersiveState = immersiveModeOn ? ToggleAction.State.On : ToggleAction.State.Off;
         mImmersiveModeOn.updateState(mImmersiveState);
     }

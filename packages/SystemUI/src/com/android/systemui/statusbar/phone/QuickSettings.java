@@ -98,15 +98,16 @@ class QuickSettings {
         BATTERY,
         AIRPLANE,
         BLUETOOTH,
-        LOCATION
+        LOCATION,
+        IMMERSIVE
     }
 
     public static final String NO_TILES = "NO_TILES";
     public static final String DELIMITER = ";";
     public static final String DEFAULT_TILES = Tile.USER + DELIMITER + Tile.BRIGHTNESS
         + DELIMITER + Tile.SETTINGS + DELIMITER + Tile.WIFI + DELIMITER + Tile.RSSI
-        + DELIMITER + Tile.ROTATION + DELIMITER + Tile.BATTERY + DELIMITER
-        + Tile.BLUETOOTH + DELIMITER + Tile.LOCATION;
+        + DELIMITER + Tile.ROTATION + DELIMITER + Tile.BATTERY + DELIMITER + Tile.BLUETOOTH
+        + DELIMITER + Tile.LOCATION + DELIMITER + Tile.IMMERSIVE;
 
     private Context mContext;
     private PanelBar mBar;
@@ -684,6 +685,29 @@ class QuickSettings {
                             new QuickSettingsModel.BasicRefreshCallback(locationTile));
                     parent.addView(locationTile);
                     if(addMissing) locationTile.setVisibility(View.GONE);
+                } else if(Tile.IMMERSIVE.toString().equals(tile.toString())) { // Immersive mode
+                    final QuickSettingsBasicTile immersiveTile
+                            = new QuickSettingsBasicTile(mContext);
+                    immersiveTile.setTileId(Tile.IMMERSIVE);
+                    immersiveTile.setImageResource(R.drawable.ic_qs_immersive_off);
+                    immersiveTile.setTextResource(R.string.quick_settings_immersive_mode_off_label);
+                    immersiveTile.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            boolean immersiveModeOn = Settings.System.getInt(mContext
+                                    .getContentResolver(), Settings.System.IMMERSIVE_MODE, 0) == 1;
+                            immersiveTile.setImageResource(immersiveModeOn
+                                    ? R.drawable.ic_qs_immersive_off :
+                                            R.drawable.ic_qs_immersive_on);
+                            immersiveTile.setTextResource(immersiveModeOn
+                                    ? R.string.quick_settings_immersive_mode_off_label :
+                                            R.string.quick_settings_immersive_mode_label);
+                            Settings.System.putInt(mContext.getContentResolver(),
+                                    Settings.System.IMMERSIVE_MODE, immersiveModeOn ? 0 : 1);
+                        }
+                    });
+                    parent.addView(immersiveTile);
+                    if(addMissing) immersiveTile.setVisibility(View.GONE);
                 }
             }
         }
@@ -716,28 +740,6 @@ class QuickSettings {
         // Remote Display
         QuickSettingsBasicTile remoteDisplayTile
                 = new QuickSettingsBasicTile(mContext);
-        wifiDisplayTile.setTemporary(true);
-        wifiDisplayTile.setImageResource(R.drawable.ic_qs_remote_display);
-        wifiDisplayTile.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                collapsePanels();
-
-                final Dialog[] dialog = new Dialog[1];
-                dialog[0] = MediaRouteDialogPresenter.createDialog(mContext,
-                        MediaRouter.ROUTE_TYPE_REMOTE_DISPLAY,
-                        new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        dialog[0].dismiss();
-                        startSettingsActivity(
-                                android.provider.Settings.ACTION_WIFI_DISPLAY_SETTINGS);
-                    }
-                });
-                dialog[0].getWindow().setType(WindowManager.LayoutParams.TYPE_VOLUME_OVERLAY);
-                dialog[0].show();
-            }
-        });
         mModel.addRemoteDisplayTile(remoteDisplayTile,
                 new QuickSettingsModel.BasicRefreshCallback(remoteDisplayTile)
                         .setShowWhenEnabled(true));

@@ -5609,7 +5609,7 @@ public class Activity extends ContextThemeWrapper
             super(handler);
         }
         void observe() {
-            getContentResolver().registerContentObserver(Settings.AOKP.getUriFor(Settings.AOKP.IMMERSIVE_MODE), false, this);
+            getContentResolver().registerContentObserver(Settings.System.getUriFor(Settings.System.IMMERSIVE_MODE), false, this);
         }
          @Override
         public void onChange(boolean selfChange) {
@@ -5618,7 +5618,7 @@ public class Activity extends ContextThemeWrapper
     }
 
     void updateImmersiveMode(boolean force) {
-        if (Settings.AOKP.getBoolean(getContentResolver(), Settings.AOKP.IMMERSIVE_MODE, false)) {
+        if (Settings.System.getBoolean(getContentResolver(), Settings.System.IMMERSIVE_MODE, false)) {
             /*
              *  SYSTEM_UI_FLAG_IMMERSIVE_STICKY does not allow the action bar to be shown on the swipe
              *  So use the regular mode and set a postdelayed to re hide it. This will give use access to
@@ -5627,7 +5627,7 @@ public class Activity extends ContextThemeWrapper
             mWindow.getDecorView().setOnSystemUiVisibilityChangeListener(new OnSystemUiVisibilityChangeListener() {
                 @Override
                 public void onSystemUiVisibilityChange(int visibility) {
-                    if (visibility == 0 && Settings.AOKP.getBoolean(getContentResolver(), Settings.AOKP.IMMERSIVE_MODE, false)) {
+                    if (visibility == 0 && Settings.System.getBoolean(getContentResolver(), Settings.System.IMMERSIVE_MODE, false)) {
                         mHandler.postDelayed(mImmerseModeRunnable, 5000);
                     }
                 }

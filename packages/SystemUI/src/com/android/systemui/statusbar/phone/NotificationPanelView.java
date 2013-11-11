@@ -21,6 +21,7 @@ import android.content.ContentResolver;
 import android.content.res.Resources;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
+import android.provider.Settings;
 import android.util.AttributeSet;
 import android.util.EventLog;
 import android.view.MotionEvent;
@@ -89,10 +90,6 @@ public class NotificationPanelView extends PanelView {
             public void onChange(boolean selfChange) {
                 mFastToggleEnabled = Settings.AOKP.getBoolean(resolver,
                         Settings.AOKP.FAST_TOGGLE, false);
-                mToggleStyle = Settings.AOKP.getInt(resolver,
-                        Settings.AOKP.TOGGLES_STYLE, 0);
-                mSwipeToSwitch = mToggleStyle >= 1 ? false : Settings.AOKP.getBoolean(resolver,
-                        Settings.AOKP.SWIPE_TO_SWITCH, false);
             }
         };
 
@@ -109,11 +106,6 @@ public class NotificationPanelView extends PanelView {
                 Settings.AOKP.FAST_TOGGLE, false);
         mFastTogglePos = Settings.AOKP.getInt(resolver,
                 Settings.AOKP.CHOOSE_FASTTOGGLE_SIDE, 1);
-        mToggleStyle = Settings.AOKP.getInt(resolver,
-                Settings.AOKP.TOGGLES_STYLE, 0);
-        mSwipeToSwitch = mToggleStyle >= 1 ? false : Settings.AOKP.getBoolean(resolver,
-                Settings.AOKP.SWIPE_TO_SWITCH, false);
-
         resolver.registerContentObserver(
                 Settings.AOKP.getUriFor(Settings.AOKP.FAST_TOGGLE),
                 true, mEnableObserver);

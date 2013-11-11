@@ -26,12 +26,9 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
-<<<<<<< HEAD
 import android.view.ViewParent;
-=======
 import android.view.View.OnClickListener;
 import android.view.View.OnLongClickListener;
->>>>>>> 1405aca... Quicktoggles
 import android.widget.FrameLayout;
 
 import com.android.systemui.statusbar.phone.QuickSettings.Tile;
@@ -55,6 +52,7 @@ class QuickSettingsTileView extends FrameLayout {
 
     private int mContentLayoutId;
     private int mColSpan;
+    private int mRowSpan;
     private boolean mPrepared;
     private OnPrepareListener mOnPrepareListener;
 
@@ -67,8 +65,6 @@ class QuickSettingsTileView extends FrameLayout {
 
         mContentLayoutId = -1;
         mColSpan = 1;
-<<<<<<< HEAD
-=======
         mRowSpan = 1;
 
         QuickSettingsTouchListener touchListener
@@ -96,7 +92,6 @@ class QuickSettingsTileView extends FrameLayout {
 
     boolean isTemporary() {
         return mTemporary;
->>>>>>> 1405aca... Quicktoggles
     }
 
     void setColumnSpan(int span) {
@@ -222,7 +217,6 @@ class QuickSettingsTileView extends FrameLayout {
         }
         super.setVisibility(vis);
     }
-<<<<<<< HEAD
 
     public void setOnPrepareListener(OnPrepareListener listener) {
         if (mOnPrepareListener != listener) {
@@ -292,6 +286,3 @@ class QuickSettingsTileView extends FrameLayout {
         void onUnprepare();
     }
 }
-=======
-}
->>>>>>> 1405aca... Quicktoggles
