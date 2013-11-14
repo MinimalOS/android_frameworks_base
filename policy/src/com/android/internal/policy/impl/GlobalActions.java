@@ -34,6 +34,7 @@ import android.content.IntentFilter;
 import android.content.pm.UserInfo;
 import android.database.ContentObserver;
 import android.graphics.drawable.Drawable;
+import android.Manifest;
 import android.media.AudioManager;
 import android.net.ConnectivityManager;
 import android.os.Bundle;
@@ -397,8 +398,29 @@ class GlobalActions implements DialogInterface.OnDismissListener, DialogInterfac
                     public boolean showBeforeProvisioning() {
                         return true;
                     }
-             });
-         }
+                });
+        }
+
+        // next: screenrecord
+        // only shown if enabled, disabled by default
+        boolean showScreenrecord = Settings.System.getIntForUser(mContext.getContentResolver(),
+                Settings.System.POWER_MENU_SCREENRECORD_ENABLED, 0, UserHandle.USER_CURRENT) == 1;
+        if (showScreenrecord) {
+            mItems.add(
+                new SinglePressAction(R.drawable.ic_lock_screen_record, R.string.global_action_screen_record) {
+                    public void onPress() {
+                        toggleScreenRecord();
+                    }
+
+                    public boolean showDuringKeyguard() {
+                        return true;
+                    }
+
+                    public boolean showBeforeProvisioning() {
+                        return true;
+                    }
+                });
+        }
 
             // next: airplane mode
          if (mAirplaneOption != 0) {
@@ -623,6 +645,11 @@ class GlobalActions implements DialogInterface.OnDismissListener, DialogInterfac
                 mHandler.postDelayed(mScreenshotTimeout, 10000);
             }
         }
+    }
+
+    private void toggleScreenRecord() {
+        final Intent recordIntent = new Intent("org.chameleonos.action.NOTIFY_RECORD_SERVICE");
+        mContext.sendBroadcast(recordIntent, Manifest.permission.RECORD_SCREEN);
     }
 
     private void prepareDialog() {
