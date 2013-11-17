@@ -2310,6 +2310,18 @@ public final class Settings {
         public static final String STATUSBAR_CLOCK_WEEKDAY = "statusbar_clock_weekday";
 
         /**
+         * show clear all recents button
+         *  @hide
+         */
+        public static final String SHOW_CLEAR_RECENTS_BUTTON = "clear_recents_button";
+
+        /**
+         * location of the clear all rectents button
+         * @hide
+         */
+        public static final String CLEAR_RECENTS_BUTTON_LOCATION = "clear_recents_button_location";
+
+        /**
          * Show pointer location on screen?
          * 0 = no
          * 1 = yes
