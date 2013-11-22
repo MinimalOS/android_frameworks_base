@@ -87,7 +87,7 @@
     <FrameLayout android:id="@+id/context_button_holder"
         android:layout_width="50dp"
         android:layout_height="50dp"
-        android:layout_marginStart="12dp"
+        android:layout_marginStart="4dp"
         >
         <ImageView android:id="@+id/halo_button"
             android:layout_width="50dp"

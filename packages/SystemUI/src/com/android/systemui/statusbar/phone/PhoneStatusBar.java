@@ -381,6 +381,9 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
             mBattery.updateSettings();
             mCircleBattery.updateSettings();
             mPercentBattery.updateSettings();
+            if (mQS != null) {
+                mQS.updateBattery();
+            }
         }
     }
 
