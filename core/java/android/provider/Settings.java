@@ -2782,7 +2782,14 @@ public final class Settings {
         public static final String HALO_PAUSE = "halo_pause";
 
         /**
+         * Setting to show the battery percentage text
+         * @hide
+         */
+        public static final String STATUS_BAR_BATTERY_STYLE = "status_bar_battery_style";
+
+        /**
          * HALO size fraction, default is 1.0f (normal)
+         *
          * @hide
          */
         public static final String HALO_SIZE = "halo_size";

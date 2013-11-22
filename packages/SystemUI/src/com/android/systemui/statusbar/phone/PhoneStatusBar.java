@@ -94,6 +94,8 @@ import android.widget.TabHost.TabSpec;
 import android.widget.TextView;
 
 import com.android.internal.statusbar.StatusBarIcon;
+import com.android.systemui.BatteryMeterView;
+import com.android.systemui.BatteryCircleMeterView;
 import com.android.systemui.DemoMode;
 import com.android.systemui.EventLogTags;
 import com.android.systemui.R;
@@ -211,6 +213,9 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
     IconMerger mNotificationIcons;
     // [+>
     View mMoreIcon;
+
+    private BatteryMeterView mBattery;
+    private BatteryCircleMeterView mCircleBattery;
 
     // expanded notifications
     NotificationPanelView mNotificationPanel; // the sliding/resizing panel within the notification window
@@ -372,6 +377,13 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
         }
     };
 
+    private void updateBatteryIcons() {
+        if (mBattery != null && mCircleBattery != null) {
+            mBattery.updateSettings();
+            mCircleBattery.updateSettings();
+        }
+    }
+
     private int mInteractingWindows;
     private boolean mAutohideSuspended;
     private int mStatusBarMode;
@@ -414,6 +426,8 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
             mSettingsObserver.observe();
             updateSettings();
         }
+        SettingsObserver sb = new SettingsObserver(new Handler());
+        sb.observe();
     }
 
     // ================================================================================
@@ -748,6 +762,8 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
         resetUserSetupObserver();
 
         mNetworkController.setListener(this);
+        mBattery = (BatteryMeterView) mStatusBarView.findViewById(R.id.battery);
+        mCircleBattery = (BatteryCircleMeterView) mStatusBarView.findViewById(R.id.circle_battery);
 
         return mStatusBarView;
     }
@@ -3158,6 +3174,10 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
 
             resolver.registerContentObserver(Settings.System.getUriFor(
                     Settings.System.STATUS_BAR_CUSTOM_HEADER), false, this);
+
+            resolver.registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.STATUS_BAR_BATTERY_STYLE), false, this);
+
             update();
 
         }
@@ -3165,6 +3185,7 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
          @Override
         public void onChange(boolean selfChange, Uri uri) {
             updateSettings();
+            updateBatteryIcons();
             update();
             if(uri != null && uri.equals(Settings.AOKP.getUriFor(Settings.AOKP.TOGGLES_STYLE))) {
                 recreateStatusBar();
@@ -3179,7 +3200,7 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
         }
 
     }
-    protected void updateSettings() {
+    public void updateSettings() {
         ContentResolver cr = mContext.getContentResolver();
 
         mToggleStyle = Settings.System.getInt(cr, Settings.AOKP.TOGGLES_STYLE,ToggleManager.STYLE_TILE);
