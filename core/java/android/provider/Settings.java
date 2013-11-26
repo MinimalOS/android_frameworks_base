@@ -2481,8 +2481,13 @@ public final class Settings {
         public static final String STATUSBAR_CLOCK_DATE_FORMAT = "statusbar_clock_date_format";
 
         /**
+         * What color to use for the battery LED while charging - really full (100%)
+         * @hide
+         */
+        public static final String BATTERY_LIGHT_REALLY_FULL_COLOR = "battery_light_really_full_color";
+
+        /**
          * Clock Actions 0 = single, 1 = long, 2 = double click
-         *
          * @hide
          */
         public static final String[] NOTIFICATION_CLOCK = new String[] {
