@@ -91,6 +91,10 @@
     <!-- USB Tether toggle , 2G/4G toggles -->
     <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
 
+    <!-- Development shortcut -->
+    <uses-permission android:name="android.permission.CLEAR_APP_USER_DATA" />
+    <uses-permission android:name="android.permission.FORCE_STOP_PACKAGES" />
+
     <application
         android:persistent="true"
         android:allowClearUserData="false"
