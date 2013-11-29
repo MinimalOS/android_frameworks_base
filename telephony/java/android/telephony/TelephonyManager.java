@@ -1261,6 +1261,42 @@ public class TelephonyManager {
         }
     }
 
+    /**
+     * Answers the currently ringing call if existing, otherwise does nothing.
+     *
+     * If there's already a current active call, that call will be
+     * automatically put on hold.  If both lines are currently in use, the
+     * current active call will be ended.
+    * <p>
+     * Requires Permission:
+     *   {@link android.Manifest.permission#MANAGE_PHONE_CALLS MANAGE_PHONE_CALLS}
+     */
+    public void answerRingingCall() {
+        try {
+            getITelephony().answerRingingCall();
+        } catch (RemoteException ex) {
+            // the phone process is restarting.
+        } catch (NullPointerException ex) {
+          // the phone process is restarting.
+      }
+    }
+
+    /**
+     * Ends the currently active call if there is one, otherwise does nothing.
+     * <p>
+     * Requires Permission:
+     *   {@link android.Manifest.permission#MANAGE_PHONE_CALLS MANAGE_PHONE_CALLS}
+     */
+    public void endCall() {
+        try {
+            getITelephony().endCall();
+        } catch (RemoteException ex) {
+            // the phone process is restarting.
+        } catch (NullPointerException ex) {
+          // the phone process is restarting.
+      }
+    }
+
     private ITelephony getITelephony() {
         return ITelephony.Stub.asInterface(ServiceManager.getService(Context.TELEPHONY_SERVICE));
     }

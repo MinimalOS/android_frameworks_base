@@ -1590,6 +1590,13 @@
       confirmation.</string>
 
     <!-- Title of an application permission, listed so the user can choose whether they want to allow the application to do this. -->
+    <string name="permlab_managePhoneCalls">directly manage phone calls</string>
+    <!-- Description of an application permission, listed so the user can choose whether they want to allow the application to do this. -->
+    <string name="permdesc_managePhoneCalls">Allows the app to manage phone calls without your intervention.
+      For example, malicious apps may auto answer incoming calls or end calls without your confirmation.
+      </string>
+
+    <!-- Title of an application permission, listed so the user can choose whether they want to allow the application to do this. -->
     <string name="permlab_callPrivileged">directly call any phone numbers</string>
     <!-- Description of an application permission, listed so the user can choose whether they want to allow the application to do this. -->
     <string name="permdesc_callPrivileged">Allows the app to call

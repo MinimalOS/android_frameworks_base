@@ -1105,6 +1105,14 @@
         android:label="@string/permlab_callPhone"
         android:description="@string/permdesc_callPhone" />
 
+        <!-- Allows an application to answer ringing calls and to end calls. -->
+    <permission android:name="android.permission.MANAGE_PHONE_CALLS"
+        android:permissionGroup="android.permission-group.PHONE_CALLS"
+        android:protectionLevel="dangerous"
+        android:permissionFlags="costsMoney"
+        android:label="@string/permlab_managePhoneCalls"
+        android:description="@string/permdesc_managePhoneCalls" />
+
     <!-- Allows an application to use SIP service -->
     <permission android:name="android.permission.USE_SIP"
         android:permissionGroup="android.permission-group.PHONE_CALLS"
