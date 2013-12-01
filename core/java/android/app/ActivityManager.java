@@ -466,10 +466,17 @@ public class ActivityManager {
      * @hide
      */
     static public boolean isHighEndGfx() {
-        if (GFXAccelCheck) {
+        if (GFXAccelCheck || isForcedHighEndGfx()) {
                         return false;
         }
         return true;
+    }
+
+    /**
+     * @hide
+     */
+    public static boolean isForcedHighEndGfx() {
+        return SystemProperties.getBoolean("persist.sys.force_highendgfx", false);
     }
 
     /**
