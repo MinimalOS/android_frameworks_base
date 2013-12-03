@@ -436,22 +436,22 @@ public class AppOpsManager {
      * This specifies the default mode for each operation.
      */
     private static int[] sOpDefaultMode = new int[] {
-            AppOpsManager.MODE_ALLOWED,
-            AppOpsManager.MODE_ALLOWED,
-            AppOpsManager.MODE_ALLOWED,
-            AppOpsManager.MODE_ALLOWED,
-            AppOpsManager.MODE_ALLOWED,
-            AppOpsManager.MODE_ALLOWED,
-            AppOpsManager.MODE_ALLOWED,
-            AppOpsManager.MODE_ALLOWED,
-            AppOpsManager.MODE_ALLOWED,
-            AppOpsManager.MODE_ALLOWED,
-            AppOpsManager.MODE_ALLOWED,
-            AppOpsManager.MODE_ALLOWED,
-            AppOpsManager.MODE_ALLOWED,
-            AppOpsManager.MODE_ALLOWED,
-            AppOpsManager.MODE_ALLOWED,
-            AppOpsManager.MODE_IGNORED, // OP_WRITE_SMS
+            AppOpsManager.MODE_ALLOWED, // OP_COARSE_LOCATION
+            AppOpsManager.MODE_ALLOWED, // OP_FINE_LOCATION
+            AppOpsManager.MODE_ALLOWED, // OP_GPS
+            AppOpsManager.MODE_ALLOWED, // OP_VIBRATE
+            AppOpsManager.MODE_ALLOWED, // OP_READ_CONTACTS
+            AppOpsManager.MODE_ALLOWED, // OP_WRITE_CONTACTS
+            AppOpsManager.MODE_ALLOWED, // OP_READ_CALL_LOG
+            AppOpsManager.MODE_ALLOWED, // OP_WRITE_CALL_LOG
+            AppOpsManager.MODE_ALLOWED, // OP_READ_CALENDAR
+            AppOpsManager.MODE_ALLOWED, // OP_WRITE_CALENDAR
+            AppOpsManager.MODE_ALLOWED, // OP_WIFI_SCAN
+            AppOpsManager.MODE_ALLOWED, // OP_POST_NOTIFICATION
+            AppOpsManager.MODE_ALLOWED, // OP_NEIGHBORING_CELLS
+            AppOpsManager.MODE_ALLOWED, // OP_CALL_PHONE
+            AppOpsManager.MODE_ALLOWED, // OP_READ_SMS
+            AppOpsManager.MODE_ALLOWED, // OP_WRITE_SMS
             AppOpsManager.MODE_ALLOWED, // OP_RECEIVE_SMS
             AppOpsManager.MODE_ALLOWED, // OP_RECEIVE_EMERGECY_SMS
             AppOpsManager.MODE_ALLOWED, // OP_RECEIVE_MMS
