@@ -93,6 +93,7 @@ public class RecentsPanelView extends FrameLayout implements OnItemClickListener
     private boolean mCallUiHiddenBeforeNextReload;
 
     private LinearColorBar mRamUsageBar;
+    private View mRamUsageBarShadow;
 
     private RecentTasksLoader mRecentTasksLoader;
     private ArrayList<TaskDescription> mRecentTaskDescriptions;
@@ -530,7 +531,9 @@ public class RecentsPanelView extends FrameLayout implements OnItemClickListener
         }
 
         mRamUsageBar = (LinearColorBar) findViewById(R.id.ram_usage_bar);
-        });
+        mForegroundProcessText = (TextView) findViewById(R.id.foregroundText);
+        mBackgroundProcessText = (TextView) findViewById(R.id.backgroundText);
+        mRamUsageBarShadow = findViewById(R.id.aokp_rambar_shadow);
     }
 
     public void setMinSwipeAlpha(float minAlpha) {
@@ -673,7 +676,6 @@ public class RecentsPanelView extends FrameLayout implements OnItemClickListener
         mListAdapter.notifyDataSetInvalidated();
         updateUiElements();
         showIfReady();
-        mHandler.post(updateRamBarTask);
     }
 
     public void refreshRecentTasksList() {
@@ -698,6 +700,7 @@ public class RecentsPanelView extends FrameLayout implements OnItemClickListener
         if (((RecentsActivity) mContext).isActivityShowing()) {
             refreshViews();
         }
+        mHandler.post(updateRamBarTask);
     }
 
     private void updateUiElements() {
@@ -801,13 +804,14 @@ public class RecentsPanelView extends FrameLayout implements OnItemClickListener
 
         // Currently, either direction means the same thing, so ignore direction and remove
         // the task.
+        mAm.removeTask(ad.persistentTaskId, ActivityManager.REMOVE_TASK_KILL_PROCESS);
 
-            // Accessibility feedback
-            setContentDescription(
-                    mContext.getString(R.string.accessibility_recents_item_dismissed, ad.getLabel()));
-            sendAccessibilityEvent(AccessibilityEvent.TYPE_VIEW_SELECTED);
-            setContentDescription(null);
-        }
+        // Accessibility feedback
+        setContentDescription(
+                mContext.getString(R.string.accessibility_recents_item_dismissed, ad.getLabel()));
+        sendAccessibilityEvent(AccessibilityEvent.TYPE_VIEW_SELECTED);
+        setContentDescription(null);
+
         mHandler.post(updateRamBarTask);
     }
 
@@ -934,8 +938,8 @@ public class RecentsPanelView extends FrameLayout implements OnItemClickListener
 
         void observe() {
             ContentResolver resolver = mContext.getContentResolver();
-            resolver.registerContentObserver(Settings.System
-                    .getUriFor(Settings.System.RAM_USAGE_BAR),
+            resolver.registerContentObserver(Settings.AOKP
+                    .getUriFor(Settings.AOKP.RAM_USAGE_BAR),
                     false, this);
             updateSettings();
         }
@@ -947,11 +951,14 @@ public class RecentsPanelView extends FrameLayout implements OnItemClickListener
     }
 
     public void updateSettings() {
-        ramBarEnabled = Settings.System.getBoolean(mContext.getContentResolver(),
-                Settings.System.RAM_USAGE_BAR, false);
+        ramBarEnabled = Settings.AOKP.getBoolean(mContext.getContentResolver(),
+                Settings.AOKP.RAM_USAGE_BAR, false);
 
         if (mRamUsageBar != null) {
             mRamUsageBar.setVisibility(ramBarEnabled ? View.VISIBLE : View.GONE);
+        }
+        if (mRamUsageBarShadow != null) {
+            mRamUsageBarShadow.setVisibility(ramBarEnabled ? View.VISIBLE : View.GONE);
         }
     }
 }
