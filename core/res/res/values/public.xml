@@ -2087,4 +2087,13 @@
   <public type="style" name="Theme.DeviceDefault.NoActionBar.TranslucentDecor" id="0x010301e3" />
   <public type="style" name="Theme.DeviceDefault.Light.NoActionBar.TranslucentDecor" id="0x010301e4" />
 
+  <java-symbol type="drawable" name="ic_lock_reboot" />
+  <java-symbol type="string" name="global_action_reboot" />
+  <java-symbol type="string" name="global_actions" />
+
+  <java-symbol type="array" name="shutdown_reboot_actions" />
+  <java-symbol type="array" name="shutdown_reboot_options" />
+  <java-symbol type="string" name="reboot_progress" />
+  <java-symbol type="string" name="reboot_system" />
+
 </resources>
