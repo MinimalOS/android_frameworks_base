@@ -1894,7 +1894,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             loadSetting(
                     stmt,
                     Settings.System.VOLUME_VOICE,
-                    AudioManager.DEFAULT_STREAM_VOLUME[AudioManager.STREAM_VOICE_CALL]);
+                    SystemProperties.getInt("ro.config.vc_call_default_vol",
+                        AudioManager.DEFAULT_STREAM_VOLUME[AudioManager.STREAM_VOICE_CALL]));
             loadSetting(stmt, Settings.System.VOLUME_ALARM,
                     AudioManager.DEFAULT_STREAM_VOLUME[AudioManager.STREAM_ALARM]);
             loadSetting(
