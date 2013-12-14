@@ -110,4 +110,7 @@
   <java-symbol type="anim" name="slide_out_left_ribbon" />
   <java-symbol type="anim" name="slide_in_up_ribbon" />
   <java-symbol type="anim" name="slide_out_down_ribbon" />
+
+  <!-- UI theme mode -->
+  <java-symbol type="integer" name="config_uiThemeMode" />
 </resources>
