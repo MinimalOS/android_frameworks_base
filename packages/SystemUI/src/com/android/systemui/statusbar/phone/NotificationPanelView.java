@@ -63,6 +63,7 @@ public class NotificationPanelView extends PanelView {
     private float mSwipeDirection;
     private boolean mTrackingSwipe;
     private boolean mSwipeTriggered;
+    private static final float mQuickPullDownPercentage = 0.8f;
 
     public NotificationPanelView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -172,10 +173,7 @@ public class NotificationPanelView extends PanelView {
         }
         boolean shouldRecycleEvent = false;
         if (PhoneStatusBar.SETTINGS_DRAG_SHORTCUT && mStatusBar.mHasFlipSettings) {
-            boolean shouldFlip = false;
-            boolean swipeFlipJustFinished = false;
-            boolean swipeFlipJustStarted = false;
-
+            boolean flip = false;
             switch (event.getActionMasked()) {
                 case MotionEvent.ACTION_DOWN:
                     if (mSwipeToSwitch) {
@@ -184,121 +182,32 @@ public class NotificationPanelView extends PanelView {
                       mTrackingSwipe = isFullyExpanded();
                     }
                     mOkToFlip = getExpandedHeight() == 0;
-                    if (mFastTogglePos == 1) {
-                        if ((event.getX(0) > getWidth()
-                                * (1.0f - STATUS_BAR_SETTINGS_FLIP_PERCENTAGE_RIGHT)
-                                && mFastToggleEnabled)
-                            || (mStatusBar.skipToSettingsPanel())
-                                && !mFastToggleEnabled) {
-                            shouldFlip = true;
-                        }
-                    } else if (mFastTogglePos == 2) {
-                        if ((event.getX(0) < getWidth()
-                                * (1.0f - STATUS_BAR_SETTINGS_FLIP_PERCENTAGE_LEFT)
-                                && mFastToggleEnabled)
-                            || (mStatusBar.skipToSettingsPanel())
-                                && !mFastToggleEnabled) {
-                            shouldFlip = true;
-                        }
-                    }
-                    break;
-                case MotionEvent.ACTION_MOVE:
-                    if (mSwipeToSwitch) {
-                        final float deltaX = Math.abs(event.getX(0) - mGestureStartX);
-                        final float deltaY = Math.abs(event.getY(0) - mGestureStartY);
-                        final float maxDeltaY = getHeight() * STATUS_BAR_SWIPE_VERTICAL_MAX_PERCENTAGE;
-                        final float minDeltaX = getWidth() * STATUS_BAR_SWIPE_TRIGGER_PERCENTAGE;
-                        if (mTrackingSwipe && deltaY > maxDeltaY) {
-                             mTrackingSwipe = false;
-                        }
-                        if (mTrackingSwipe && deltaX > deltaY && deltaX > minDeltaX) {
-
-                            // The value below can be used to adjust deltaX to always increase,
-                            // if the user keeps swiping in the same direction as she started the
-                            // gesture. If she, however, moves her finger the other way, deltaX will
-                            // decrease.
-                            //
-                            // This allows for an horizontal swipe, in any direction, to always flip
-                            // the views.
-                            mSwipeDirection = event.getX(0) < mGestureStartX ? -1f : 1f;
-
-                            if (mStatusBar.isShowingSettings()) {
-                                mFlipOffset = 1f;
-                                // in this case, however, we need deltaX to decrease
-                                mSwipeDirection = -mSwipeDirection;
-                            } else {
-                                mFlipOffset = -1f;
-                           }
-                            mGestureStartX = event.getX(0);
-                            mTrackingSwipe = false;
-                            mSwipeTriggered = true;
-                            swipeFlipJustStarted = true;
-                        }
+                    if (event.getX(0) > getWidth() * mQuickPullDownPercentage) {
+                        flip = true;
                     }
                     break;
                 case MotionEvent.ACTION_POINTER_DOWN:
-                    if (mOkToFlip) {
-                        float miny = event.getY(0);
-                        float maxy = miny;
-                        for (int i=1; i<event.getPointerCount(); i++) {
-                            final float y = event.getY(i);
-                            if (y < miny) miny = y;
-                            if (y > maxy) maxy = y;
-                        }
-                        if (maxy - miny < mHandleBarHeight) {
-                            shouldFlip = true;
-                        }
-                    }
-                    break;
-                case MotionEvent.ACTION_UP:
-                    if (mSwipeToSwitch) {
-                        swipeFlipJustFinished = mSwipeTriggered;
-                        mSwipeTriggered = false;
-                        mTrackingSwipe = false;
-                    }
+                    flip = true;
                     break;
             }
-            if(mOkToFlip && shouldFlip) {
-                if (getMeasuredHeight() < mHandleBarHeight) {
-                    mStatusBar.switchToSettings();
-                } else {
-                    mStatusBar.flipToSettings();
+            if (mOkToFlip && flip) {
+                float miny = event.getY(0);
+                float maxy = miny;
+                for (int i=1; i<event.getPointerCount(); i++) {
+                    final float y = event.getY(i);
+                    if (y < miny) miny = y;
+                    if (y > maxy) maxy = y;
                 }
-                mOkToFlip = false;
-            } else if (mSwipeTriggered) {
-                final float deltaX = (event.getX(0) - mGestureStartX) * mSwipeDirection;
-                mStatusBar.partialFlip(mFlipOffset +
-                                       deltaX / (getWidth() * STATUS_BAR_SWIPE_MOVE_PERCENTAGE));
-                if (!swipeFlipJustStarted) {
-                    return true; // Consume the event.
+                if (maxy - miny < mHandleBarHeight) {
+                    if (mJustPeeked || getExpandedHeight() < mHandleBarHeight) {
+                        mStatusBar.switchToSettings();
+                    } else {
+                        mStatusBar.flipToSettings();
+                    }
+                    mOkToFlip = false;
                 }
-            } else if (swipeFlipJustFinished) {
-                mStatusBar.completePartialFlip();
             }
-
-            if (swipeFlipJustStarted || swipeFlipJustFinished) {
-                // Made up event: finger at the middle bottom of the view.
-                MotionEvent original = event;
-                event = MotionEvent.obtain(original.getDownTime(), original.getEventTime(),
-                    original.getAction(), getWidth()/2, getHeight(),
-                    original.getPressure(0), original.getSize(0), original.getMetaState(),
-                    original.getXPrecision(), original.getYPrecision(), original.getDeviceId(),
-                    original.getEdgeFlags());
-
-                // The following two lines looks better than the chunk of code above, but,
-                // nevertheless, doesn't work. The view is not pinned down, and may close,
-                // just after the gesture is finished.
-                //
-                // event = MotionEvent.obtainNoHistory(original);
-                // event.setLocation(getWidth()/2, getHeight());
-                shouldRecycleEvent = true;
-            }
-
         }
-        final boolean result = mHandleView.dispatchTouchEvent(event);
-        if (shouldRecycleEvent) {
-            event.recycle();
-        }
-        return result;
+        return mHandleView.dispatchTouchEvent(event);
     }
 }
