@@ -71,8 +71,6 @@ public class Clock extends TextView implements DemoMode {
 
     protected int mClockStyle = STYLE_CLOCK_RIGHT;
 
-    protected int mClockColor = com.android.internal.R.color.holo_blue_light;
-
     public Clock(Context context) {
         this(context, null);
     }
