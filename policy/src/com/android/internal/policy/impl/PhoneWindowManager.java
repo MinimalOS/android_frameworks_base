@@ -342,6 +342,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
 
     int mLongPressPoweronTime = DEFAULT_LONG_PRESS_POWERON_TIME;
 
+
     // The last window we were told about in focusChanged.
     WindowState mFocusedWindow;
     IApplicationToken mFocusedApp;
@@ -4451,6 +4452,21 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         final boolean down = event.getAction() == KeyEvent.ACTION_DOWN;
         final boolean canceled = event.isCanceled();
         final int keyCode = event.getKeyCode();
+
+        if (SystemProperties.getInt("sys.quickboot.enable", 0) == 1) {
+
+            if (keyCode == KeyEvent.KEYCODE_POWER && !isScreenOn) {
+                if(down){
+                    acquireQuickBootWakeLock();
+                    mHandler.postDelayed(mQuickBootPowerLongPress, mLongPressPoweronTime);
+                } else {
+                    releaseQuickBootWakeLock();
+                    mHandler.removeCallbacks(mQuickBootPowerLongPress);
+                }
+            }
+            // ignore this event
+            return 0;
+        }
 
         if (SystemProperties.getInt("sys.quickboot.enable", 0) == 1) {
 

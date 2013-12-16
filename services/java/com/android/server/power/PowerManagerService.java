@@ -68,10 +68,10 @@ import android.view.WindowManagerPolicy;
 import java.io.FileDescriptor;
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Set;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import libcore.util.Objects;
 
@@ -1438,6 +1438,10 @@ public final class PowerManagerService extends IPowerManager.Stub
             boolean wasPowered, int oldPlugType, boolean dockedOnWirelessCharger) {
         // Don't wake when powered unless configured to do so.
         if (!mWakeUpWhenPluggedOrUnpluggedConfig) {
+            return false;
+        }
+
+       if (SystemProperties.getInt("sys.quickboot.enable", 0) == 1) {
             return false;
         }
 
