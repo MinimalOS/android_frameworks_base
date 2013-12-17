@@ -2,7 +2,7 @@
 <!--
 /* //device/apps/common/assets/res/any/strings.xml
 **
-** Copyright 2006, The Android Open Source Project
+** Copyright 2013 XenonHD
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -51,5 +51,15 @@
     <!-- Vibration picker dialog title -->
     <string name="vibration_picker_title">Select vibration</string>
     <string name="vibration_picker_del_title">Delete vibration</string>
+
+    <!-- XenonHD Actions -->
+    <string name="action_assist">Search (Google Now)</string>
+    <string name="action_clockoptions">Clock options</string>
+    <string name="action_voiceassist">Voice search</string>
+    <string name="action_event">Event</string>
+    <string name="action_today">Today</string>
+    <string name="action_alarm">Alarm</string>
+    <string name="action_app">Custom App/Shortcut</string>
+    <string name="action_null">Blank</string>
 
 </resources>

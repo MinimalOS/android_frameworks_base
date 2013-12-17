@@ -2325,6 +2325,17 @@ public final class Settings {
         public static final String STATUSBAR_CLOCK_DATE_FORMAT = "statusbar_clock_date_format";
 
         /**
+         * Clock Actions 0 = single, 1 = long, 2 = double click
+         *
+         * @hide
+         */
+        public static final String[] NOTIFICATION_CLOCK = new String[] {
+                "notification_clock_0",
+                "notification_clock_1",
+                "notification_clock_2",
+        };
+
+        /**
          * show clear all recents button
          *  @hide
          */

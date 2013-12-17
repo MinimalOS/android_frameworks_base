@@ -535,6 +535,9 @@ public class PackageManagerService extends IPackageManager.Stub {
     // Stores a list of users whose package restrictions file needs to be updated
     private HashSet<Integer> mDirtyUsers = new HashSet<Integer>();
 
+    WindowManager mWindowManager;
+    private final WindowManagerPolicy mPolicy; // to set packageName
+
     final private DefaultContainerConnection mDefContainerConn =
             new DefaultContainerConnection();
     class DefaultContainerConnection implements ServiceConnection {
