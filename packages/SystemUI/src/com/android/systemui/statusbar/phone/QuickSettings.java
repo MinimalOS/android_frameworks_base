@@ -114,7 +114,6 @@ class QuickSettings {
         SETTINGS,
         WIFI,
         RSSI,
-        NFC,
         ROTATION,
         BATTERY,
         AIRPLANE,
@@ -126,7 +125,8 @@ class QuickSettings {
         NETADB,
         TORCH,
         VOLUME,
-        THEME_MODE
+        THEME_MODE,
+        NFC
     }
 
     public static final String NO_TILES = "NO_TILES";
@@ -138,6 +138,7 @@ class QuickSettings {
         + DELIMITER + Tile.RSSI
         + DELIMITER + Tile.ROTATION 
         + DELIMITER + Tile.BATTERY 
+        + DELIMITER + Tile.AIRPLANE
         + DELIMITER + Tile.BLUETOOTH
         + DELIMITER + Tile.LOCATION 
         + DELIMITER + Tile.IMMERSIVE 
@@ -1156,7 +1157,8 @@ class QuickSettings {
                } else if (Tile.NFC.toString().equals(tile.toString())) { // NFC tile
                   // NFC
 //                  if(mContext.getPackageManager().hasSystemFeature(PackageManager.FEATURE_NFC)) {
-                      final QuickSettingsBasicTile nfcTile = new QuickSettingsBasicTile(mContext);
+                      final QuickSettingsBasicTile nfcTile 
+                             = new QuickSettingsBasicTile(mContext);
 
                       nfcTile.setTileId(Tile.NFC);
                       nfcTile.setImageResource(R.drawable.ic_qs_nfc_off);
