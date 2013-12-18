@@ -142,6 +142,16 @@ public class BatteryMeterView extends View implements DemoMode {
                 });
             }
         }
+
+        protected boolean shouldIndicateCharging() {
+             if (status == BatteryManager.BATTERY_STATUS_CHARGING) {
+                return true;
+            }
+            if (plugged) {
+                return status == BatteryManager.BATTERY_STATUS_FULL;
+            }
+            return false;
+        }
     }
 
     BatteryTracker mTracker = new BatteryTracker();
@@ -337,7 +347,7 @@ public class BatteryMeterView extends View implements DemoMode {
         c.drawRect(mFrame, mBatteryPaint);
         c.restore();
 
-        if (tracker.plugged) {
+        if (tracker.shouldIndicateCharging()) {
             // draw the bolt
             final float bl = mFrame.left + mFrame.width() / 4.5f;
             final float bt = mFrame.top + mFrame.height() / 6f;
