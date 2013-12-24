@@ -51,6 +51,7 @@ import android.graphics.PorterDuff;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.inputmethodservice.InputMethodService;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -107,6 +108,7 @@ import com.android.systemui.statusbar.policy.NotificationRowLayout;
 import com.android.systemui.statusbar.policy.OnSizeChangedListener;
 import com.android.systemui.statusbar.policy.RotationLockController;
 import com.android.systemui.aokp.AwesomeAction;
+import com.android.systemui.statusbar.toggles.ToggleManager;
 
 import java.io.FileDescriptor;
 import java.io.PrintWriter;
@@ -207,8 +209,11 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode {
     boolean mNotificationPanelIsFullScreenWidth;
     TextView mNotificationPanelDebugText;
 
+    SettingsObserver mSettingsObserver;
+
     // settings
-    QuickSettings mQS;
+    ToggleManager mToggleManager;
+    int mToggleStyle;
     boolean mHasSettingsPanel, mHasFlipSettings;
     SettingsPanelView mSettingsPanel;
     View mFlipSettingsView;
@@ -383,6 +388,9 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode {
             mContext.getContentResolver().registerContentObserver(
                     Settings.Global.getUriFor(SETTING_HEADS_UP), true,
                     mHeadsUpObserver);
+            mSettingsObserver = new SettingsObserver(new Handler());
+            mSettingsObserver.observe();
+            updateSettings();
         }
     }
 
@@ -645,23 +653,27 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode {
             // wherever you find it, Quick Settings needs a container to survive
             mSettingsContainer = (QuickSettingsContainerView)
                     mStatusBarWindow.findViewById(R.id.quick_settings_container);
+            
+            if(mToggleManager == null) {
+                mToggleManager = new ToggleManager(mContext);
+            }
+            mToggleManager.setControllers(mBluetoothController, mNetworkController,
+                    mBatteryController,
+                    mLocationController, null);
+
+            mToggleManager.setContainer((LinearLayout) mNotificationPanel.findViewById(R.id.quick_toggles),
+                    ToggleManager.STYLE_SCROLLABLE);
+            mToggleManager.setContainer((LinearLayout) mNotificationPanel.findViewById(R.id.quick_toggles),
+                ToggleManager.STYLE_TRADITIONAL);
             if (mSettingsContainer != null) {
-                mQS = new QuickSettings(mContext, mSettingsContainer);
+                mToggleManager.setContainer(mSettingsContainer, ToggleManager.STYLE_TILE);
                 if (!mNotificationPanelIsFullScreenWidth) {
                     mSettingsContainer.setSystemUiVisibility(
                             View.STATUS_BAR_DISABLE_NOTIFICATION_TICKER
                             | View.STATUS_BAR_DISABLE_SYSTEM_INFO);
                 }
-                if (mSettingsPanel != null) {
-                    mSettingsPanel.setQuickSettings(mQS);
-                }
-                mQS.setService(this);
-                mQS.setBar(mStatusBarView);
-                mQS.setup(mNetworkController, mBluetoothController, mBatteryController,
-                        mLocationController, mRotationLockController);
-            } else {
-                mQS = null; // fly away, be free
             }
+            mToggleManager.updateSettings();
         }
 
         PowerManager pm = (PowerManager) mContext.getSystemService(Context.POWER_SERVICE);
@@ -1662,6 +1674,10 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode {
         // Settings are not available in setup
         if (!mUserSetup) return;
 
+        if(mToggleManager != null && !mToggleManager.shouldFlipToSettings()) {
+            return;
+        }
+
         if (mFlipSettingsViewAnim != null) mFlipSettingsViewAnim.cancel();
         if (mScrollViewAnim != null) mScrollViewAnim.cancel();
         if (mSettingsButtonAnim != null) mSettingsButtonAnim.cancel();
@@ -2115,7 +2131,6 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode {
         setNavigationIconHints(
                 altBack ? (mNavigationIconHints | NAVIGATION_HINT_BACK_ALT)
                         : (mNavigationIconHints & ~NAVIGATION_HINT_BACK_ALT));
-        if (mQS != null) mQS.setImeWindowStatus(vis > 0);
     }
 
     @Override
@@ -2746,9 +2761,6 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode {
             loadDimens();
         }
 
-        // Update the QuickSettings container
-        if (mQS != null) mQS.updateResources();
-
     }
 
     protected void loadDimens() {
@@ -2897,7 +2909,7 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode {
             super(handler);
         }
 
-                void observe() {
+            void observe() {
             ContentResolver resolver = mContext.getContentResolver();
             resolver.registerContentObserver(Settings.System.getUriFor(
                     Settings.System.NOTIFICATION_CLOCK[shortClick]), false, this);
@@ -2905,15 +2917,22 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode {
                     Settings.System.NOTIFICATION_CLOCK[longClick]), false, this);
             resolver.registerContentObserver(Settings.System.getUriFor(
                     Settings.System.NOTIFICATION_CLOCK[doubleClick]), false, this);
+            resolver.registerContentObserver(Settings.AOKP.getUriFor(
+                    Settings.AOKP.TOGGLES_STYLE), false, this);
         }
 
          @Override
-        public void onChange(boolean selfChange) {
+        public void onChange(boolean selfChange, Uri uri) {
             updateSettings();
+            if(uri != null && uri.equals(Settings.AOKP.getUriFor(Settings.AOKP.TOGGLES_STYLE))) {
+                recreateStatusBar();
+            }
         }
     }
     protected void updateSettings() {
         ContentResolver cr = mContext.getContentResolver();
+
+        mToggleStyle = Settings.System.getInt(cr, Settings.AOKP.TOGGLES_STYLE,ToggleManager.STYLE_TILE);
 
         mClockActions[shortClick] = Settings.System.getString(cr,
                 Settings.System.NOTIFICATION_CLOCK[shortClick]);
@@ -2948,6 +2967,8 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode {
             mWindowManager.removeViewImmediate(mNavigationBarView);
         }
         mContext.unregisterReceiver(mBroadcastReceiver);
+        mContext.getContentResolver().unregisterContentObserver(mSettingsObserver);
+        mToggleManager.cleanup();
     }
 
     private boolean mDemoModeAllowed;
