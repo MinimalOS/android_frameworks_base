@@ -280,6 +280,8 @@ class GlobalActions implements DialogInterface.OnDismissListener, DialogInterfac
             });
 
         // next: reboot
+         if (Settings.System.getInt(mContext.getContentResolver(),
+                Settings.System.POWER_MENU_REBOOT_ENABLED, 1) == 1) {
         mItems.add(
             new SinglePressAction(R.drawable.ic_lock_reboot, R.string.global_action_reboot) {
                 public void onPress() {
@@ -299,8 +301,12 @@ class GlobalActions implements DialogInterface.OnDismissListener, DialogInterfac
                     return true;
                 }
             });
+        }
 
         // next: screenshot
+        // only shown if enabled, disabled by default
+        if (Settings.System.getInt(mContext.getContentResolver(),
+                Settings.System.POWER_MENU_SCREENSHOT_ENABLED, 1) == 1) {
         mItems.add(
             new SinglePressAction(R.drawable.ic_lock_screenshot, R.string.global_action_screenshot) {
                 public void onPress() {
@@ -315,9 +321,13 @@ class GlobalActions implements DialogInterface.OnDismissListener, DialogInterfac
                     return true;
                 }
             });
+        }
 
         // next: airplane mode
-        mItems.add(mAirplaneModeOn);
+        if (Settings.System.getInt(mContext.getContentResolver(),
+                Settings.System.POWER_MENU_AIRPLANE_ENABLED, 1) == 1) {
+            mItems.add(mAirplaneModeOn);
+        }
 
         // next: bug report, if enabled
         if (Settings.Global.getInt(mContext.getContentResolver(),
@@ -369,7 +379,9 @@ class GlobalActions implements DialogInterface.OnDismissListener, DialogInterfac
         }
 
         // last: silent mode
-        if (mShowSilentToggle) {
+        if ((Settings.System.getInt(mContext.getContentResolver(),
+                Settings.System.POWER_MENU_SILENT_ENABLED, 1) == 1) &&
+                (SHOW_SILENT_TOGGLE)) {
             mItems.add(mSilentModeAction);
         }
 

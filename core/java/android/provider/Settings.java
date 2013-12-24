@@ -1250,6 +1250,32 @@ public final class Settings {
         }
 
         /**
+         * @hide
+         * Convenience function for retrieving a single system settings value
+         * as a boolean.  Note that internally setting values are always
+         * stored as strings; this function converts the string to a boolean
+         * for you. It will only return true if the stored value is "1"
+         *
+         * @param cr The ContentResolver to access.
+         * @param name The name of the setting to retrieve.
+         * @param def Value to return if the setting is not defined.
+         *
+         * @return The setting's current value, or 'def' if it is not defined
+         * or not a valid integer.
+         */
+        public static boolean getBoolean(ContentResolver cr, String name, boolean def) {
+            String v = getString(cr, name);
+            try {
+                if(v != null)
+                    return "1".equals(v);
+                else
+                    return def;
+            } catch (NumberFormatException e) {
+                return def;
+            }
+        }
+
+        /**
          * Convenience function for updating a single settings value as an
          * integer. This will either create a new entry in the table if the
          * given name does not exist, or modify the value of the existing row
@@ -1270,6 +1296,24 @@ public final class Settings {
         public static boolean putIntForUser(ContentResolver cr, String name, int value,
                 int userHandle) {
             return putStringForUser(cr, name, Integer.toString(value), userHandle);
+        }
+
+        /**
+         * @hide
+         * Convenience function for updating a single settings value as a
+         * boolean. This will either create a new entry in the table if the
+         * given name does not exist, or modify the value of the existing row
+         * with that name.  Note that internally setting values are always
+         * stored as strings, so this function converts the given value to a
+         * string (1 or 0) before storing it.
+         *
+         * @param cr The ContentResolver to access.
+         * @param name The name of the setting to modify.
+         * @param value The new value for the setting.
+         * @return true if the value was set, false on database errors
+         */
+        public static boolean putBoolean(ContentResolver cr, String name, boolean value) {
+            return putString(cr, name, value ? "1" : "0");
         }
 
         /**
@@ -2786,6 +2830,30 @@ public final class Settings {
         public static final String STATUSBAR_ENABLE_BRIGHTNESS_SLIDER = "statusbar_enable_brightness_slider";
 
         /**
+         * Whether the power menu reboot menu is enabled
+         * @hide
+         */
+        public static final String POWER_MENU_REBOOT_ENABLED = "power_menu_reboot_enabled";
+
+        /**
+         * Whether power menu screenshot is enabled
+         * @hide
+         */
+        public static final String POWER_MENU_SCREENSHOT_ENABLED = "power_menu_screenshot_enabled";
+
+        /**
+         * Whether power menu airplane toggle is enabled
+         * @hide
+         */
+        public static final String POWER_MENU_AIRPLANE_ENABLED = "power_menu_airplane_enabled";
+
+        /**
+         * Whether power menu silent mode is enabled
+         * @hide
+         */
+        public static final String POWER_MENU_SILENT_ENABLED = "power_menu_silent_enabled";
+
+        /**
          * Settings to backup. This is here so that it's in the same place as the settings
          * keys and easy to update.
          *
@@ -2857,6 +2925,10 @@ public final class Settings {
             QUIET_HOURS_MUTE,
             QUIET_HOURS_STILL,
             QUIET_HOURS_DIM,
+            POWER_MENU_SCREENSHOT_ENABLED,
+            POWER_MENU_REBOOT_ENABLED,
+            POWER_MENU_AIRPLANE_ENABLED,
+            POWER_MENU_SILENT_ENABLED,
 
         };
 
@@ -6609,61 +6681,6 @@ public final class Settings {
         public static boolean putFloat(ContentResolver cr, String name, float value) {
             return putString(cr, name, Float.toString(value));
         }
-
-        /**
-         * @hide
-         * Convenience function for retrieving a single system settings value
-         * as a boolean. Note that internally setting values are always
-         * stored as strings; this function converts the string to a boolean
-         * for you. It will only return true if the stored value is "1"
-         *
-         * @param cr The ContentResolver to access.
-         * @param name The name of the setting to retrieve.
-         * @param def Value to return if the setting is not defined.
-         *
-         * @return The setting's current value, or 'def' if it is not defined
-         * or not a valid integer.
-         */
-        public static boolean getBoolean(ContentResolver cr, String name, boolean def) {
-            return getBooleanForUser(cr, name, def, UserHandle.myUserId());
-        }
-
-        /** @hide */
-        public static boolean getBooleanForUser(ContentResolver cr, String name, boolean def, int userHandle) {
-            String v = getStringForUser(cr, name, userHandle);
-            try {
-                if(v != null)
-                    return "1".equals(v);
-                else
-                    return def;
-            } catch (NumberFormatException e) {
-                return def;
-            }
-        }
-
-        /**
-         * @hide
-         * Convenience function for updating a single settings value as a
-         * boolean. This will either create a new entry in the table if the
-         * given name does not exist, or modify the value of the existing row
-         * with that name. Note that internally setting values are always
-         * stored as strings, so this function converts the given value to a
-         * string (1 or 0) before storing it.
-         *
-         * @param cr The ContentResolver to access.
-         * @param name The name of the setting to modify.
-         * @param value The new value for the setting.
-         * @return true if the value was set, false on database errors
-         */
-        public static boolean putBoolean(ContentResolver cr, String name, boolean value) {
-            return putBooleanForUser(cr, name, value, UserHandle.myUserId());
-        }
-
-        /** @hide */
-        public static boolean putBooleanForUser(ContentResolver cr, String name, boolean value, int userHandle) {
-            return putStringForUser(cr, name, value ? "1" : "0", userHandle);
-        }
-
     }
 
     /**
