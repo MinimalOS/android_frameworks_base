@@ -24,6 +24,7 @@ import android.content.res.Resources;
 import android.provider.Settings;
 import android.text.TextUtils;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
@@ -209,6 +210,7 @@ class QuickSettingsContainerView extends FrameLayout {
                 // Add to provider string
                 if(!enabled && qs.getVisibility() == View.VISIBLE
                         && !qs.isTemporary()) {
+                    Log.v("TILES","The tile id for this is" + qs.getTileId());  
                     tiles.add(qs.getTileId().toString());
                 }
             }

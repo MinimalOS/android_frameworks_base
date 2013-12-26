@@ -94,7 +94,7 @@
 
             <include layout="@layout/glow_pad_view" />
 
-            <ImageView
+            <RoundedImageView
                 android:id="@+id/current_notification_icon"
                 android:layout_width="@dimen/handle_icon_size"
                 android:layout_height="@dimen/handle_icon_size"

@@ -41,6 +41,7 @@ import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.hardware.display.DisplayManager;
+import android.media.AudioManager;
 import android.media.MediaRouter;
 import android.net.ConnectivityManager;
 import android.net.wifi.WifiManager;
@@ -115,7 +116,6 @@ class QuickSettings {
         BLUETOOTH,
         LOCATION,
         IMMERSIVE,
-        LIGHTBULB,
         SLEEP,
         SYNC,
         NETADB,
@@ -135,10 +135,10 @@ class QuickSettings {
         + DELIMITER + Tile.BLUETOOTH
         + DELIMITER + Tile.LOCATION 
         + DELIMITER + Tile.IMMERSIVE 
-        + DELIMITER + Tile.LIGHTBULB
+        + DELIMITER + Tile.SLEEP
         + DELIMITER + Tile.SYNC 
-        + DELIMITER + Tile.TORCH 
         + DELIMITER + Tile.NETADB
+        + DELIMITER + Tile.TORCH 
         + DELIMITER + Tile.VOLUME;
 
 
@@ -689,7 +689,7 @@ class QuickSettings {
                         parent.addView(rotationLockTile);
                         if(addMissing) rotationLockTile.setVisibility(View.GONE);
                     }
-                    } else if (Tile.TORCH.toString().equals(tile.toString())) { // torch tile
+                  } else if (Tile.TORCH.toString().equals(tile.toString())) { // torch tile
                   // Torch
                   final QuickSettingsBasicTile torchTile
                         = new QuickSettingsBasicTile(mContext);
@@ -1004,14 +1004,14 @@ class QuickSettings {
                     if(addMissing) immersiveTile.setVisibility(View.GONE);
                } else if (Tile.VOLUME.toString().equals(tile.toString())) { // Volume tile
                   // Volume mode
-                  final QuickSettingsDualBasicTile VolumeTile
+                  final QuickSettingsDualBasicTile volumeTile
                         = new QuickSettingsDualBasicTile(mContext);
-
-                  VolumeTile.setTileId(Tile.VOLUME);
-                  VolumeTile.setFrontImageResource(R.drawable.ic_qs_volume);
-                  VolumeTile.setFrontText(mContext.getString(R.string.quick_settings_volume));
-                  VolumeTile.setBackText(mContext.getString(R.string.quick_settings_volume_status));
-                  VolumeTile.setFrontOnClickListener(new View.OnClickListener() {
+                  volumeTile.setDefaultContent();
+                  volumeTile.setTileId(Tile.VOLUME);
+                  volumeTile.setFrontImageResource(R.drawable.ic_qs_volume);
+                  volumeTile.setFrontText(mContext.getString(R.string.quick_settings_volume));
+//                  volumeTile.setBackText(mContext.getString(R.string.quick_settings_volume_status));
+                  volumeTile.setFrontOnClickListener(new View.OnClickListener() {
                        @Override
                        public void onClick(View v) {
                            collapsePanels();
@@ -1019,29 +1019,29 @@ class QuickSettings {
                            am.adjustVolume(AudioManager.ADJUST_SAME, AudioManager.FLAG_SHOW_UI);
                       }
                   });
-                  VolumeTile.setFrontOnLongClickListener(new View.OnLongClickListener() {
+                  volumeTile.setFrontOnLongClickListener(new View.OnLongClickListener() {
                       @Override
                       public boolean onLongClick(View v) {
                            startSettingsActivity(android.provider.Settings.ACTION_SOUND_SETTINGS);
                            return true;
                       }
                   });
-                  mModel.addRingerModeTile(VolumeTile.getBack(), new QuickSettingsModel.RefreshCallback() {
+                  mModel.addRingerModeTile(volumeTile.getBack(), new QuickSettingsModel.RefreshCallback() {
                         @Override
                         public void refreshView(QuickSettingsTileView view, State state) {
-                            VolumeTile.setBackImageResource(state.iconId);
-                            VolumeTile.setBackText(state.label);
+                            volumeTile.setBackImageResource(state.iconId);
+                            volumeTile.setBackText(state.label);
                         }
                   });
-                  VolumeTile.setBackOnLongClickListener(new View.OnLongClickListener() {
+                  volumeTile.setBackOnLongClickListener(new View.OnLongClickListener() {
                       @Override
                       public boolean onLongClick(View v) {
                            startSettingsActivity(android.provider.Settings.ACTION_SOUND_SETTINGS);
                            return true;
                       }
                   });
-                  parent.addView(VolumeTile);
-                  if (addMissing) VolumeTile.setVisibility(View.GONE);
+                  parent.addView(volumeTile);
+                  if (addMissing) volumeTile.setVisibility(View.GONE);
                 } else if(Tile.SLEEP.toString().equals(tile.toString())) { // Sleep tile
                     final PowerManager pm = (PowerManager) mContext.getSystemService(Context.POWER_SERVICE);
                     final QuickSettingsDualBasicTile sleepTile
@@ -1133,7 +1133,7 @@ class QuickSettings {
         // Usb Mode
         final QuickSettingsBasicTile usbModeTile
                 = new QuickSettingsBasicTile(mContext);
-//        usbModeTile.setTemporary(true);
+        usbModeTile.setTemporary(true);
         usbModeTile.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
