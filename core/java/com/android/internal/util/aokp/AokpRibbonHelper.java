@@ -1,4 +1,3 @@
-
 package com.android.internal.util.aokp;
 
 import java.util.ArrayList;
