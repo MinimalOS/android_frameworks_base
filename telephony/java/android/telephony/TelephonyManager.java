@@ -714,6 +714,28 @@ public class TelephonyManager {
     }
 
     /**
+     * {@hide}
+     */
+    public void toggleLTE(boolean on) {
+        try {
+            getITelephony().toggleLTE(on);
+        } catch (RemoteException e) {
+            //Silently fail
+        }
+    }
+
+    /**
+     * {@hide}
+     */
+    public void toggleMobileNetwork(int networkState) {
+        try {
+            getITelephony().toggleMobileNetwork(networkState);
+        } catch (RemoteException e) {
+            // Silently fail
+        }
+    }
+
+    /**
      * The contents of the /proc/cmdline file
      */
     private static String getProcCmdLine()
@@ -795,8 +817,7 @@ public class TelephonyManager {
      * @hide
      */
     public static int getLteOnGsmModeStatic() {
-        return SystemProperties.getInt(TelephonyProperties.PROPERTY_LTE_ON_GSM_DEVICE,
-                    0);
+        return SystemProperties.getInt(TelephonyProperties.PROPERTY_LTE_ON_GSM_DEVICE, 0);
     }
 
     //
