@@ -53,6 +53,11 @@
     <java-symbol type="drawable" name="ic_action_empty" />
     <java-symbol type="drawable" name="ic_navbar_blank" />
     <java-symbol type="drawable" name="ic_navbar_blank_activated" />
+    <java-symbol type="drawable" name="ic_navbar_hide_on" />
+    <java-symbol type="drawable" name="ic_navbar_hide_off" />
+    <java-symbol type="string" name="immersive_mode"/>
+    <java-symbol type="string" name="immersive_mode_on"/>
+    <java-symbol type="string" name="immersive_mode_off"/>
 
   <!-- Config IME switcher -->
   <java-symbol type="bool" name="config_show_IMESwitcher" />

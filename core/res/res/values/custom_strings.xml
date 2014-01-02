@@ -52,6 +52,11 @@
     <string name="vibration_picker_title">Select vibration</string>
     <string name="vibration_picker_del_title">Delete vibration</string>
 
+    <!-- Immersive Mode -->
+    <string name="immersive_mode">Immersive mode</string>
+    <string name="immersive_mode_on">Immersive mode is ON</string>
+    <string name="immersive_mode_off">Immersive mode is OFF</string>
+
     <!-- XenonHD Actions -->
     <string name="action_home">Home</string>
     <string name="action_back">Back</string>

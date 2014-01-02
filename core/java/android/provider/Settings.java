@@ -7303,6 +7303,12 @@ public final class Settings {
          */
         public static final String VOLUME_MUSIC_CONTROLS = "volume_music_controls";
 
+        /**
+         * Immersive Mode
+         * @hide
+         */
+        public static final String IMMERSIVE_MODE = "immersive_mode";
+
     }
 
     /**
