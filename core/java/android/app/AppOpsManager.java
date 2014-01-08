@@ -194,8 +194,22 @@ public class AppOpsManager {
     public static final int OP_MONITOR_LOCATION = 41;
     /** @hide Continually monitoring location data with a relatively high power request. */
     public static final int OP_MONITOR_HIGH_POWER_LOCATION = 42;
+   /** @hide */
+    public static final int OP_WIFI_CHANGE = 43;
     /** @hide */
-    public static final int _NUM_OP = 43;
+    public static final int OP_BLUETOOTH_CHANGE = 44;
+    /** @hide */
+    public static final int OP_DATA_CONNECT_CHANGE = 45;
+    /** @hide */
+    public static final int OP_SEND_MMS = 46;
+    /** @hide */
+    public static final int OP_READ_MMS = 47;
+    /** @hide */
+    public static final int OP_WRITE_MMS = 48;
+    /** @hide */
+    public static final int OP_BOOT_COMPLETED = 49;
+    /** @hide */
+    public static final int _NUM_OP = 50;
 
     /** Access to coarse location information. */
     public static final String OPSTR_COARSE_LOCATION =
