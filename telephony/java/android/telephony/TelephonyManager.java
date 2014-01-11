@@ -716,17 +716,6 @@ public class TelephonyManager {
     /**
      * {@hide}
      */
-    public void toggleLTE(boolean on) {
-        try {
-            getITelephony().toggleLTE(on);
-        } catch (RemoteException e) {
-            //Silently fail
-        }
-    }
-
-    /**
-     * {@hide}
-     */
     public void toggleMobileNetwork(int networkState) {
         try {
             getITelephony().toggleMobileNetwork(networkState);
