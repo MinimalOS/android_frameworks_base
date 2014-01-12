@@ -2408,6 +2408,12 @@ public final class Settings {
          * @hide
          */
         public static final String DISABLE_CAMERA_WIDGET = "disable_camera_widget";
+        /**
+         * Disable FC Notifications
+         *
+         * @hide
+         */
+        public static final String DISABLE_FC_NOTIFICATIONS = "disable_fc_notifications";
 
         /**
          * Setting to enable volume options.
