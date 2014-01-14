@@ -2455,6 +2455,9 @@ public class MediaFocusControl implements OnFinished {
             } catch (ArrayIndexOutOfBoundsException e) {
                 // not expected to happen, indicates improper concurrent modification
                 Log.e(TAG, "Wrong index mRCStack on onNewPlaybackInfoForRcc, lock error? ", e);
+            } catch (NullPointerException npe) {
+               // not expected to happen, mVolumeControl is null
+               Log.e(TAG, "Volume controller is null", npe);
             }
         }
     }
@@ -2601,7 +2604,9 @@ public class MediaFocusControl implements OnFinished {
         }
 
         // fire up the UI
-        mVolumeController.postRemoteVolumeChanged(streamType, flags);
+        if (mVolumeController != null) {
+            mVolumeController.postRemoteVolumeChanged(streamType, flags);
+        }
     }
 
     private void sendVolumeUpdateToRemote(int rccId, int direction) {
@@ -2721,7 +2726,9 @@ public class MediaFocusControl implements OnFinished {
         synchronized (mMainRemote) {
             if (mHasRemotePlayback != hasRemotePlayback) {
                 mHasRemotePlayback = hasRemotePlayback;
-                mVolumeController.postRemoteSliderVisibility(hasRemotePlayback);
+                if (mVolumeController != null) {
+                    mVolumeController.postRemoteSliderVisibility(hasRemotePlayback);
+                }
             }
         }
     }
