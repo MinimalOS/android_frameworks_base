@@ -79,10 +79,10 @@ public class BarTransitions {
     public void transitionTo(int mode, boolean animate) {
         if (mMode == mode) return;
         int oldMode = mMode;
-        mMode = mode;
         if (DEBUG) Log.d(mTag, String.format("%s -> %s animate=%s",
                 modeToString(oldMode), modeToString(mode),  animate));
         if (mSupportsTransitions) {
+            mMode = mode;
             onTransition(oldMode, mMode, animate);
         }
     }
