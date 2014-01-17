@@ -959,7 +959,7 @@ public class RecentsPanelView extends FrameLayout implements OnItemClickListener
 
     public void updateSettings() {
         ramBarEnabled = Settings.AOKP.getBoolean(mContext.getContentResolver(),
-                Settings.AOKP.RAM_USAGE_BAR, false);
+                Settings.AOKP.RAM_USAGE_BAR, true);
     }
 
     private void updateView() {
