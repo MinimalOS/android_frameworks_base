@@ -2954,6 +2954,12 @@ public final class Settings {
         public static final String STATUS_BAR_SEMI_TRANS_COLOR = "status_bar_semi_trans_color";
 
         /**
+         * multiuser pref
+         * @hide
+         */
+        public static final String ALLOW_MULTIUSER = "allow_multiuser";
+
+        /**
          * Whether to enable quiet hours.
          * @hide
          */
