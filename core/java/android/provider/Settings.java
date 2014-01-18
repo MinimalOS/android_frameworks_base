@@ -3333,6 +3333,15 @@ public final class Settings {
         public static final String PIE_STATE = "pie_state";
 
         /**
+         * Settings to reset on user choice. They will fall back to their default value (0).
+         *
+         * @hide
+         */
+        public static final String[] SETTINGS_TO_RESET = {
+            PIE_STATE
+        };
+
+        /**
          * Used by Phone Window Manager to tell PIE which mode to use
          * depending on whether nav/statusbar is hidden
          * 0 = off
