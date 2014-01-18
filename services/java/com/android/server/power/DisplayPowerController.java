@@ -25,8 +25,10 @@ import com.android.server.display.DisplayManagerService;
 
 import android.animation.Animator;
 import android.animation.ObjectAnimator;
+import android.content.ContentResolver;
 import android.content.ComponentName;
 import android.content.Context;
+import android.database.ContentObserver;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.res.Resources;
@@ -35,6 +37,7 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.net.Uri;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
@@ -363,8 +366,6 @@ final class DisplayPowerController {
     // Twilight changed.  We might recalculate auto-brightness values.
     private boolean mTwilightChanged;
 
-    private Context mContext;
-
     private KeyguardServiceWrapper mKeyguardService;
 
     private final ServiceConnection mKeyguardConnection = new ServiceConnection() {
@@ -402,7 +403,6 @@ final class DisplayPowerController {
         mDisplayBlanker = displayBlanker;
         mCallbacks = callbacks;
         mCallbackHandler = callbackHandler;
-        mContext = context;
 
         mLights = lights;
         mTwilight = twilight;
