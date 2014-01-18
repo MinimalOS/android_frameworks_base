@@ -74,7 +74,6 @@ import android.widget.RemoteViews;
 import com.android.internal.widget.multiwaveview.GlowPadView;
 import com.android.internal.widget.multiwaveview.GlowPadView.OnTriggerListener;
 import com.android.internal.widget.multiwaveview.TargetDrawable;
-import com.android.internal.widget.LockPatternUtils;
 
 import com.android.systemui.R;
 import com.android.systemui.statusbar.BaseStatusBar;
@@ -647,11 +646,6 @@ public class ActiveDisplayView extends FrameLayout {
         setVisibility(View.GONE);
         restoreBrightness();
         mBar.disable(0);
-
-        // noone is taking care of reenable the bars in this case
-        if (isLockscreenDisabled()) {
-            mBar.disable(0);
-        }
         cancelTimeoutTimer();
         unregisterSensorListener(mLightSensor);
     }
@@ -1222,12 +1216,5 @@ public class ActiveDisplayView extends FrameLayout {
             return;
         String[] appsToExclude = excludedApps.split("\\|");
         mExcludedApps = new HashSet<String>(Arrays.asList(appsToExclude));
-    }
-
-    // copied from KeyguardViewMediator
-    private boolean isLockscreenDisabled() {
-        LockPatternUtils utils = new LockPatternUtils(mContext);
-        utils.setCurrentUser(UserHandle.USER_OWNER);
-        return utils.isLockScreenDisabled();
     }
 }
