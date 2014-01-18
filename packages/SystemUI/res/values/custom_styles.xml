@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
 /*
-** Copyright 2013, The ChameleonOS Open Source Project
+** Copyright 2013, Team Horizon
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -17,12 +17,6 @@
 */
 -->
 <resources>
-
-    <style name="Theme.DummyActivity" parent="android:style/Theme.Translucent" >
-        <item name="android:windowNoTitle">true</item>
-        <item name="android:windowContentOverlay">@null</item>
-        <item name="android:background">@android:color/transparent</item>
-    </style>
 
      <style name="TextApperance.StatusBar.BatteryText" parent="@*android:style/TextAppearance.StatusBar.Icon">
         <!-- Note: must be dp to fit in status bar -->
