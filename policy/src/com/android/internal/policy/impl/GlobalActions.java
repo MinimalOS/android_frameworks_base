@@ -358,7 +358,13 @@ class GlobalActions implements DialogInterface.OnDismissListener, DialogInterfac
         if (Settings.System.getInt(mContext.getContentResolver(),
                 Settings.System.POWER_MENU_AIRPLANE_ENABLED, 1) == 1) {
             mItems.add(mAirplaneModeOn);
-            mItems.add(mImmersiveModeOn);
+            
+        }
+
+        // next: immersive mode
+        if (Settings.System.getInt(mContext.getContentResolver(),
+                Settings.System.POWER_MENU_IMMERSIVE_MODE_ENABLED, 1) == 1) {
+        mItems.add(mImmersiveModeOn);
         }
 
         // next: bug report, if enabled
