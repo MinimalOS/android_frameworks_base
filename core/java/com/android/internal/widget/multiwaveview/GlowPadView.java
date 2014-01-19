@@ -30,10 +30,12 @@ import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.graphics.RectF;
+import android.graphics.drawable.Drawable;
+import android.graphics.Paint;
 import android.graphics.Paint.Align;
 import android.graphics.Path;
 import android.graphics.RectF;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.UserHandle;
 import android.os.Vibrator;
@@ -288,9 +290,6 @@ public class GlowPadView extends View {
         if (a.getValue(R.styleable.GlowPadView_targetDrawables, outValue)) {
             internalSetTargetResources(outValue.resourceId);
         }
-        if (mTargetDrawables == null || mTargetDrawables.size() == 0) {
-            throw new IllegalStateException("Must specify at least one target drawable");
-        }
 
         // Read array of target descriptions
         if (a.getValue(R.styleable.GlowPadView_targetDescriptions, outValue)) {
@@ -329,7 +328,7 @@ public class GlowPadView extends View {
                                  mHandleDrawable.getPositionY() - mHandleDrawable.getHeight()/2,
                                  mHandleDrawable.getPositionX() + mHandleDrawable.getWidth()/2,
                                  mHandleDrawable.getPositionY() + mHandleDrawable.getHeight()/2);
-    
+
         mPaintText = new Paint();
         mPaintText.setAntiAlias(true);
         mPaintText.setColor(res.getColor(android.R.color.white));
@@ -655,6 +654,10 @@ public class GlowPadView extends View {
 
     private void internalSetTargetResources(int resourceId) {
         final ArrayList<TargetDrawable> targets = loadDrawableArray(resourceId);
+        if (targets.size() == 0) {
+            throw new IllegalStateException("Must specify at least one target drawable");
+        }
+
         mTargetDrawables = targets;
         mTargetResourceId = resourceId;
 
@@ -676,13 +679,31 @@ public class GlowPadView extends View {
         }
     }
 
-    private void internalSetTargetResources(ArrayList<TargetDrawable> drawList) {
-         mTargetResourceId = 0;
-         mTargetDrawables = drawList;
-         updateTargetPositions(mWaveCenterX, mWaveCenterY);
-         updatePointCloudPosition(mWaveCenterX, mWaveCenterY);
-         hideTargets(false, false);
-     }
+    private void internalSetTargetResources(ArrayList<TargetDrawable> targets) {
+        if (targets == null || targets.size() == 0) {
+            throw new IllegalStateException("Must specify at least one target drawable");
+        }
+        mTargetResourceId = 0;
+        mTargetDrawables = targets;
+
+        int maxWidth = mHandleDrawable.getWidth();
+        int maxHeight = mHandleDrawable.getHeight();
+        final int count = targets.size();
+        for (int i = 0; i < count; i++) {
+            TargetDrawable target = targets.get(i);
+            maxWidth = Math.max(maxWidth, target.getWidth());
+            maxHeight = Math.max(maxHeight, target.getHeight());
+        }
+        if (mMaxTargetWidth != maxWidth || mMaxTargetHeight != maxHeight) {
+            mMaxTargetWidth = maxWidth;
+            mMaxTargetHeight = maxHeight;
+            requestLayout(); // required to resize layout and call updateTargetPositions()
+        } else {
+            updateTargetPositions(mWaveCenterX, mWaveCenterY);
+            updatePointCloudPosition(mWaveCenterX, mWaveCenterY);
+            hideTargets(false, false);
+        }
+    }
 
     /**
      * Loads an array of drawables from the given resourceId.
@@ -699,18 +720,17 @@ public class GlowPadView extends View {
     }
 
     public void setTargetResources(ArrayList<TargetDrawable> drawList) {
-         if (mAnimatingTargets) {
-             // postpone this change until we return to the initial state
-             mNewTargetDrawables = drawList;
-         } else {
-             internalSetTargetResources(drawList);
-         }
-     }
+        if (mAnimatingTargets) {
+            // postpone this change until we return to the initial state
+            mNewTargetDrawables = drawList;
+        } else {
+            internalSetTargetResources(drawList);
+        }
+    }
 
     public int getTargetResourceId() {
         return mTargetResourceId;
     }
-
 
     public ArrayList<TargetDrawable> getTargetDrawables() {
         return mTargetDrawables;
@@ -756,6 +776,14 @@ public class GlowPadView extends View {
      */
     public int getDirectionDescriptionsResourceId() {
         return mDirectionDescriptionsResourceId;
+    }
+
+    public boolean getMagneticTargets() {
+        return mMagneticTargets;
+    }
+
+    public void setMagneticTargets(boolean enabled) {
+        mMagneticTargets = enabled;
     }
 
     /**
@@ -1377,6 +1405,9 @@ public class GlowPadView extends View {
     }
 
     private String getTargetDescription(int index) {
+        if (mTargetDescriptionsResourceId == 0) {
+            return null;
+        }
         if (mTargetDescriptions == null || mTargetDescriptions.isEmpty() || index >= mTargetDescriptions.size()) {
             mTargetDescriptions = loadDescriptions(mTargetDescriptionsResourceId);
             if (mTargetDrawables.size() != mTargetDescriptions.size()) {
@@ -1389,6 +1420,9 @@ public class GlowPadView extends View {
     }
 
     private String getDirectionDescription(int index) {
+        if (mDirectionDescriptionsResourceId == 0) {
+            return null;
+        }
         if (mDirectionDescriptions == null || mDirectionDescriptions.isEmpty() || index >= mTargetDescriptions.size()) {
             mDirectionDescriptions = loadDescriptions(mDirectionDescriptionsResourceId);
             if (mTargetDrawables.size() != mDirectionDescriptions.size()) {
@@ -1510,5 +1544,15 @@ public class GlowPadView extends View {
     public void setArc(float angle, int color) {
         mArcAngle = angle;
         mArcPaint.setColor(color);
+    }
+
+    public void setHandleDrawable(Drawable handle) {
+        Resources res = mContext.getResources();
+        if (handle != null) {
+            mHandleDrawable = new TargetDrawable(res, handle);
+        } else {
+            mHandleDrawable = new TargetDrawable(res, 0);
+        }
+        mHandleDrawable.setState(TargetDrawable.STATE_INACTIVE);
     }
 }
