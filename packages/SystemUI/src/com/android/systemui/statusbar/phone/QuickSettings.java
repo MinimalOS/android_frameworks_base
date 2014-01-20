@@ -592,15 +592,18 @@ class QuickSettings {
                         });
                         // Back side (Mobile networks modes)
                         rssiTile.setBackImageResource(R.drawable.ic_qs_unexpected_network);
-                        rssiTile.setBackTextResource(R.string.quick_settings_network_disabled);
+                        rssiTile.setBackTextResource(R.string.quick_settings_network_unknown);
                         rssiTile.setBackOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View v) {
+                                if (mModel.mUsesAospDialer) {
+                                    mModel.toggleMobileNetworkState();
+                                } else {
                                     collapsePanels();
                                     Toast.makeText(mContext,
                                                    R.string.quick_settings_network_toast_disabled,
                                                    Toast.LENGTH_SHORT).show();
-
+                                }
                             }
                         });
                         rssiTile.setBackOnLongClickListener(new View.OnLongClickListener() {
