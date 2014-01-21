@@ -343,6 +343,8 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                 takeScreenshot();
             } else if (action.equals(Intent.ACTION_SCREENRECORD)) {
                 performScreenRecord();
+            } else if (action.equals(Intent.ACTION_POWERMENU)) {
+                showGlobalActionsDialog();
             }
         }
 
@@ -351,8 +353,11 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                 mIsRegistered = true;
 
                 IntentFilter filter = new IntentFilter();
+
                 filter.addAction(Intent.ACTION_SCREENSHOT);
                 filter.addAction(Intent.ACTION_SCREENRECORD);
+                filter.addAction(Intent.ACTION_POWERMENU);
+
                 mContext.registerReceiver(mPowerMenuReceiver, filter);
             }
         }
@@ -590,6 +595,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
             setHdmiPlugged("1".equals(event.get("SWITCH_STATE")));
         }
     };
+
 
     class SettingsObserver extends ContentObserver {
         SettingsObserver(Handler handler) {
@@ -1178,6 +1184,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         } else {
             screenTurnedOff(WindowManagerPolicy.OFF_BECAUSE_OF_USER);
         }
+
         mPowerMenuReceiver = new PowerMenuReceiver(context);
         mPowerMenuReceiver.registerSelf();
     }
@@ -3012,6 +3019,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     public int adjustSystemUiVisibilityLw(int visibility) {
         mStatusBarController.adjustSystemUiVisibilityLw(mLastSystemUiFlags, visibility);
         mNavigationBarController.adjustSystemUiVisibilityLw(mLastSystemUiFlags, visibility);
+        updateSystemUiVisibilityLw(); // Thanks @David96 for this catch.
 
         // Reset any bits in mForceClearingStatusBarVisibility that
         // are now clear.
@@ -5691,14 +5699,6 @@ public class PhoneWindowManager implements WindowManagerPolicy {
             mClearedBecauseOfForceShow = false;
         }
 
-        int visibility = updateSystemBarsLw(win, mLastSystemUiFlags, tmpVisibility);
-        final int diff = visibility ^ mLastSystemUiFlags;
-        final boolean needsMenu = win.getNeedsMenuLw(mTopFullscreenOpaqueWindowState);
-        if (diff == 0 && mLastFocusNeedsMenu == needsMenu
-                && mFocusedApp == win.getAppToken()) {
-            return 0;
-        }
-
         // The window who requested navbar force showing disappeared and next window wants
         // to hide navbar. Instead of hiding we will make it transient. SystemUI will take care
         // about hiding after timeout. This should not happen if next window is keyguard because
@@ -5708,6 +5708,14 @@ public class PhoneWindowManager implements WindowManagerPolicy {
             mNavigationBarController.showTransient();
             tmpVisibility |= View.NAVIGATION_BAR_TRANSIENT;
             mWindowManagerFuncs.addSystemUIVisibilityFlag(View.NAVIGATION_BAR_TRANSIENT);
+        }
+
+        int visibility = updateSystemBarsLw(win, mLastSystemUiFlags, tmpVisibility);
+        final int diff = visibility ^ mLastSystemUiFlags;
+        final boolean needsMenu = win.getNeedsMenuLw(mTopFullscreenOpaqueWindowState);
+        if (diff == 0 && mLastFocusNeedsMenu == needsMenu
+                && mFocusedApp == win.getAppToken()) {
+            return 0;
         }
 
         final int visibility2 = visibility;
