@@ -91,4 +91,9 @@
     <string name="status_bar_recent_lock_item_title">Lock</string>
     <!-- Title shown in recents popup for unlocking an app from being cleared -->
     <string name="status_bar_recent_unlock_item_title">Unlock</string>
+
+    <!-- Active Display -->
+    <string name="active_display_privacy_content">Content message not showing because privacy mode enabled</string>
+
+
 </resources>
