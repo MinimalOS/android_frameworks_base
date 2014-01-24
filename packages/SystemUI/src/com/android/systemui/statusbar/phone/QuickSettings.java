@@ -116,6 +116,7 @@ class QuickSettings {
         LIGHTBULB,
         SLEEP,
         SYNC,
+        NETADB,
         TORCH
     }
 
@@ -125,7 +126,7 @@ class QuickSettings {
         + DELIMITER + Tile.SETTINGS + DELIMITER + Tile.WIFI + DELIMITER + Tile.RSSI
         + DELIMITER + Tile.ROTATION + DELIMITER + Tile.BATTERY + DELIMITER + Tile.BLUETOOTH
         + DELIMITER + Tile.LOCATION + DELIMITER + Tile.IMMERSIVE + DELIMITER + Tile.LIGHTBULB
-        + DELIMITER + Tile.SYNC + DELIMITER + Tile.TORCH;
+        + DELIMITER + Tile.SYNC + DELIMITER + Tile.TORCH + DELIMITER + Tile.NETADB;
 
 
     private Context mContext;
@@ -1015,9 +1016,32 @@ class QuickSettings {
                     });
                     parent.addView(sleepTile);
                     if(addMissing) sleepTile.setVisibility(View.GONE);
-                }
+                
+               } else if (Tile.NETADB.toString().equals(tile.toString())) { // Network ADB Tile
+                 // Network ADB mode
+                 final QuickSettingsBasicTile netAdbTile
+                       = new QuickSettingsBasicTile(mContext);
+                 netAdbTile.setTileId(Tile.NETADB);
+                 netAdbTile.setOnLongClickListener(new View.OnLongClickListener() {
+                       @Override
+                       public boolean onLongClick(View V) {
+                           Intent intent = new Intent(Intent.ACTION_MAIN);
+                           intent.setClassName("com.android.settings",
+                               "com.android.settings.Settings$DevelopmentSettingsActivity");
+                           startSettingsActivity(intent);
+                           return true;
+                       }
+                 });
+                 mModel.addNetAdbTile(netAdbTile, new QuickSettingsModel.RefreshCallback() {
+                       @Override
+                       public void refreshView(QuickSettingsTileView unused, State state) {
+                           netAdbTile.setImageResource(state.iconId);
+                           netAdbTile.setText(state.label);
+                       }
+                 });
+                 parent.addView(netAdbTile);
+                 if (addMissing) netAdbTile.setVisibility(View.GONE);
             }
-        }
         if(!addMissing) addTiles(parent, true);
     }
 

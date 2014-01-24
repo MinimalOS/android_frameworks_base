@@ -105,4 +105,8 @@
     <string name="onthego_notif_camera_changed">Camera mode changed</string>
     <string name="onthego_transparency">Transparency</string>
     <string name="onthego_front_camera">Use front camera</string>
+
+    <string name="quick_settings_network_adb_on">Network ADB on</string>
+    <string name="quick_settings_network_adb_off">Network ADB off</string>
+
 </resources>
