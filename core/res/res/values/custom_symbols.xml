@@ -76,10 +76,6 @@
   <java-symbol type="bool" name="config_smsSamsungCdmaAlternateMessageIDEncoding" />
   <java-symbol type="bool" name="config_samsung_stk" />
 
-  <!-- HW rotation lock -->
-  <java-symbol type="string" name="toast_rotation_unlocked" />
-  <java-symbol type="string" name="toast_rotation_locked" />
-
   <!-- Wifi -->
   <java-symbol type="bool" name="config_wifiApStartInterface" />
   <java-symbol type="bool" name="config_wifiApFirmwareReload" />
