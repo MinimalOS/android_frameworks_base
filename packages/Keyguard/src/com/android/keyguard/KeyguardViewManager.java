@@ -65,6 +65,8 @@ import android.view.ViewManager;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
 
+import java.io.File;
+
 /**
  * Manages creating, showing, hiding and resetting the keyguard.  Calls back
  * via {@link KeyguardViewMediator.ViewMediatorCallback} to poke
@@ -75,6 +77,9 @@ public class KeyguardViewManager {
     private final static boolean DEBUG = KeyguardViewMediator.DEBUG;
     private static String TAG = "KeyguardViewManager";
     public final static String IS_SWITCHING_USER = "is_switching_user";
+
+    private static final String WALLPAPER_IMAGE_PATH =
+            "/data/data/com.aokp.romcontrol/files/lockscreen_wallpaper.png";
 
     // Delay dismissing keyguard to allow animations to complete.
     private static final int HIDE_KEYGUARD_DELAY = 500;
@@ -100,8 +105,20 @@ public class KeyguardViewManager {
     private KeyguardUpdateMonitorCallback mBackgroundChanger = new KeyguardUpdateMonitorCallback() {
         @Override
         public void onSetBackground(Bitmap bmp) {
-            mKeyguardHost.setCustomBackground(bmp != null ?
-                    new BitmapDrawable(mContext.getResources(), bmp) : null);
+            if (bmp != null) {
+                mKeyguardHost.setCustomBackground(
+                        new BitmapDrawable(mContext.getResources(), bmp));
+            }
+            else {
+                File file = new File(WALLPAPER_IMAGE_PATH);
+                if (file.exists()) {
+                    mKeyguardHost.setCustomBackground(
+                            new BitmapDrawable(mContext.getResources(), WALLPAPER_IMAGE_PATH));
+                }
+                else {
+                    mKeyguardHost.setCustomBackground(null);
+                }
+            }
             updateShowWallpaper(bmp == null);
         }
     };
@@ -252,6 +269,9 @@ public class KeyguardViewManager {
                 computeCustomBackgroundBounds(mCustomBackground);
                 setBackground(mBackgroundDrawable);
             } else {
+                if (getWidth() == 0 || getHeight() == 0) {
+                    d = null;
+                }
                 Drawable old = mCustomBackground;
                 if (old == null && d == null) {
                     return;
