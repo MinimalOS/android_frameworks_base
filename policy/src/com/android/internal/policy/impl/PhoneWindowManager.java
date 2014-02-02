@@ -5015,12 +5015,6 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         }
     }
 
-    BroadcastReceiver mThemeChangeReceiver = new BroadcastReceiver() {
-        public void onReceive(Context context, Intent intent) {
-            mUiContext = null;
-        }
-    };
-
     private void disableQbCharger() {
         if (SystemProperties.getInt("sys.quickboot.enable", 0) == 1) {
             SystemProperties.set("sys.qbcharger.enable", "false");

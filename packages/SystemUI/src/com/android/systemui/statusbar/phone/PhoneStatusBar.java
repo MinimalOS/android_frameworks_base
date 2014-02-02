@@ -3394,6 +3394,10 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
             }
             loadDimens();
         }
+        if (mNavigationBarView != null)  {
+            mNavigationBarView.updateResources();
+            updateSearchPanel();
+        }
 
         // check for orientation change and update only the container layout
         // for all other configuration changes update complete QS
