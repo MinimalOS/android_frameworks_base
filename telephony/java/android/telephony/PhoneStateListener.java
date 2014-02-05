@@ -24,7 +24,6 @@ import android.telephony.SignalStrength;
 import android.telephony.CellLocation;
 import android.telephony.CellInfo;
 import android.telephony.Rlog;
-import android.telephony.MSimTelephonyManager;
 
 import com.android.internal.telephony.IPhoneStateListener;
 
