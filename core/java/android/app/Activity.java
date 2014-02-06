@@ -18,6 +18,7 @@ package android.app;
 
 import android.util.ArrayMap;
 import android.util.SuperNotCalledException;
+
 import com.android.internal.app.ActionBarImpl;
 import com.android.internal.policy.PolicyManager;
 
@@ -40,6 +41,7 @@ import android.database.ContentObserver;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Point;
 import android.graphics.drawable.Drawable;
 import android.media.AudioManager;
 import android.net.Uri;
@@ -59,14 +61,18 @@ import android.text.TextUtils;
 import android.text.method.TextKeyListener;
 import android.util.AttributeSet;
 import android.util.EventLog;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.PrintWriterPrinter;
+import android.util.TypedValue;
 import android.util.Slog;
 import android.util.SparseArray;
 import android.view.ActionMode;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.ContextThemeWrapper;
+import android.view.Display;
+import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -1509,6 +1515,9 @@ public class Activity extends ContextThemeWrapper
         if (mWindow != null) {
             // Pass the configuration changed event to the window
             mWindow.onConfigurationChanged(newConfig);
+            if (mWindow.mIsFloatingWindow) {
+                scaleFloatingWindow(null);
+            }
         }
 
         if (mActionBar != null) {
@@ -2450,6 +2459,8 @@ public class Activity extends ContextThemeWrapper
         return onKeyShortcut(event.getKeyCode(), event);
     }
 
+    boolean scaleW, scaleH, move;
+    Point lastPos;
     /**
      * Called to process touch screen events.  You can override this to
      * intercept all touch screen events before they are dispatched to the
@@ -2461,8 +2472,47 @@ public class Activity extends ContextThemeWrapper
      * @return boolean Return true if this event was consumed.
      */
     public boolean dispatchTouchEvent(MotionEvent ev) {
-        if (ev.getAction() == MotionEvent.ACTION_DOWN) {
-            onUserInteraction();
+        WindowManager.LayoutParams attrs = mWindow.getAttributes();
+        switch (ev.getAction()) {
+            case MotionEvent.ACTION_DOWN:
+                onUserInteraction();
+                if (mWindow.mIsFloatingWindow) {
+                    Log.d(TAG, "Y: " + ev.getY() + " Raw: " + ev.getRawY());
+                    if (ev.getX() >= attrs.width - 50) scaleW = true;
+                    if (ev.getY() >= attrs.height - 50) scaleH = true;
+                    if (ev.getY() <= 50) move = true;
+                    if (move || scaleW || scaleH) {
+                        lastPos = new Point((int)ev.getRawX(), (int)ev.getRawY());
+                        return true;
+                    }
+                }
+                break;
+            case MotionEvent.ACTION_MOVE:
+                if (mWindow.mIsFloatingWindow && lastPos != null) {
+                    int x = attrs.x;
+                    int y = attrs.y;
+                    Point screenSize = new Point();
+                    mWindowManager.getDefaultDisplay().getSize(screenSize);
+                    if (move) {
+                        Log.e(TAG, "Move!");
+                        x = attrs.x + ((int)ev.getRawX() - lastPos.x);
+                        y = attrs.y + ((int)ev.getRawY() - lastPos.y);
+                    }
+                    int width = (int) (scaleW ? attrs.width + ((int)ev.getRawX() - lastPos.x) : attrs.width);
+                    int height = (int) (scaleH ? attrs.height + ((int)ev.getRawY() - lastPos.y) : attrs.height);
+                    mWindow.setLayout(Math.max(0, Math.min(x, screenSize.x - width)), Math.max(0, Math.min(y, screenSize.y - height)), 
+                            Math.min(width, screenSize.x), Math.min(height, screenSize.y));
+                    lastPos.x = (int)ev.getRawX();
+                    lastPos.y = (int)ev.getRawY();
+                    return true;
+                }
+                break;
+            case MotionEvent.ACTION_UP:
+                boolean ret = scaleW || scaleH || move;
+                scaleW = scaleH = move = false;
+                lastPos = null;
+                if (ret) return true;
+                break;
         }
         if (getWindow().superDispatchTouchEvent(ev)) {
             return true;
@@ -4234,6 +4284,10 @@ public class Activity extends ContextThemeWrapper
         }
     }
 
+    public void finishFloating() {
+        mMainThread.performFinishFloating();
+    }
+
     /**
      * Finish this activity as well as all activities immediately below it
      * in the current task that have the same affinity.  This is typically
@@ -5196,7 +5250,10 @@ public class Activity extends ContextThemeWrapper
 
         mFragments.attachActivity(this, mContainer, null);
         
-        mWindow = PolicyManager.makeNewWindow(this);
+        if (makeNewWindow(context, intent, info)) {
+            parent = null;
+        }
+
         mWindow.setCallback(this);
         mWindow.getLayoutInflater().setPrivateFactory(this);
         if (info.softInputMode != WindowManager.LayoutParams.SOFT_INPUT_STATE_UNSPECIFIED) {
@@ -5229,6 +5286,73 @@ public class Activity extends ContextThemeWrapper
         }
         mWindowManager = mWindow.getWindowManager();
         mCurrentConfig = config;
+    }
+
+    private boolean makeNewWindow(Context context, Intent intent, ActivityInfo info) {
+        boolean floating = (intent.getFlags() & Intent.FLAG_FLOATING_WINDOW) == Intent.FLAG_FLOATING_WINDOW;
+        boolean history = (intent.getFlags() & Intent.FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY) == Intent.FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY;
+        if (intent != null && floating && !history) {
+
+            TypedArray styleArray = context.obtainStyledAttributes(info.theme, com.android.internal.R.styleable.Window);
+            TypedValue backgroundValue = styleArray.peekValue(com.android.internal.R.styleable.Window_windowBackground);
+
+            // Apps that have no title don't need no title bar
+            TypedValue outValue = new TypedValue();
+            boolean result = styleArray.getValue(com.android.internal.R.styleable.Window_windowNoTitle, outValue);
+
+            if (backgroundValue != null && backgroundValue.toString().contains("light")) {
+                context.getTheme().applyStyle(com.android.internal.R.style.Theme_DeviceDefault_FloatingWindowLight, true);
+            } else {
+                context.getTheme().applyStyle(com.android.internal.R.style.Theme_DeviceDefault_FloatingWindow, true);
+            }
+
+            // Create our new window
+            mWindow = PolicyManager.makeNewWindow(this);
+            mWindow.mIsFloatingWindow = true;
+            mWindow.setCloseOnTouchOutsideIfNotSet(false);
+            mWindow.setGravity(Gravity.TOP | Gravity.LEFT);
+            
+            //if (android.os.Process.myUid() == android.os.Process.SYSTEM_UID) {
+            int flags = WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL;
+                mWindow.setFlags(flags, flags);
+                WindowManager.LayoutParams params = mWindow.getAttributes();
+                params.alpha = 1f;
+                //params.dimAmount = 0.25f;
+                //params.x = 10;
+                //params.y = 10;
+                mWindow.setAttributes(params);
+            //}
+
+            // Scale it
+            scaleFloatingWindow(context);
+
+            return true;
+        } else {
+            mWindow = PolicyManager.makeNewWindow(this);
+
+            return false;
+        }
+    }
+
+    private void scaleFloatingWindow(Context context) {
+        if (!mWindow.mIsFloatingWindow) {
+            return;
+        }
+        WindowManager wm = null;
+        if (context != null) {
+            wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+        } else {
+            wm = (WindowManager) getSystemService(Context.WINDOW_SERVICE);
+        }
+        Display display = wm.getDefaultDisplay();
+        DisplayMetrics metrics = new DisplayMetrics();
+        display.getMetrics(metrics);
+        boolean portrait = metrics.heightPixels > metrics.widthPixels;
+        int width = (int)(metrics.widthPixels * (portrait ? 0.9f : 0.7f));
+        int height = (int)(metrics.heightPixels * (portrait ? 0.7f : 0.9f));
+        int x = (metrics.widthPixels - width) / 2;
+        int y = (metrics.heightPixels - height) / 2;
+        mWindow.setLayout(x, y, width, height);
     }
 
     /** @hide */
@@ -5403,6 +5527,14 @@ public class Activity extends ContextThemeWrapper
             mStopped = true;
         }
         mResumed = false;
+
+        // Floatingwindows activities should be kept volatile to prevent new activities taking
+        // up front in a minimized space. Every stop call, for instance when pressing home,
+        // will terminate the activity. If the activity is already finishing we might just
+        // as well let it go.
+        if (!mChangingConfigurations && mWindow != null && mWindow.mIsFloatingWindow && !isFinishing()) {
+            finish();
+        }
     }
 
     final void performDestroy() {
