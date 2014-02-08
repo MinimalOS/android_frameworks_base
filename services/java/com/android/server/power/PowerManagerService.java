@@ -528,21 +528,12 @@ public final class PowerManagerService extends IPowerManager.Stub
             resolver.registerContentObserver(Settings.System.getUriFor(
                     Settings.System.SCREEN_BRIGHTNESS_MODE),
                     false, mSettingsObserver, UserHandle.USER_ALL);
-<<<<<<< HEAD
-=======
-            resolver.registerContentObserver(Settings.System.getUriFor(
-                    Settings.System.AUTO_BRIGHTNESS_RESPONSIVENESS),
-                    false, mSettingsObserver, UserHandle.USER_ALL);
-            resolver.registerContentObserver(Settings.System.getUriFor(
-                    Settings.System.BUTTON_BACKLIGHT_TIMEOUT),
-                    false, mSettingsObserver, UserHandle.USER_ALL);
             resolver.registerContentObserver(Settings.System.getUriFor(
                     Settings.System.WAKELOCK_BLOCKING_ENABLED),
                     false, mSettingsObserver, UserHandle.USER_ALL);
             resolver.registerContentObserver(Settings.System.getUriFor(
                     Settings.System.WAKELOCK_BLOCKING_LIST),
                     false, mSettingsObserver, UserHandle.USER_ALL);
->>>>>>> cfccdd2... Wakelock Blocker [1/2]
 
             // Go.
             readConfigurationLocked();
@@ -2881,23 +2872,6 @@ public final class PowerManagerService extends IPowerManager.Stub
             }
         }
     }
-<<<<<<< HEAD
-=======
-
-    @Override
-    public int getCurrentScreenBrightnessValue(){
-        return mDisplayPowerController.getCurrentScreenBrightnessValue();
-    }
-
-    @Override
-    public int getCurrentButtonBrightnessValue(){
-        return mDisplayPowerController.getCurrentButtonBrightnessValue();
-    }
-
-    @Override
-    public void setButtonBrightness(int brightness){
-        mDisplayPowerController.setButtonBrightness(brightness);
-    }
 
     @Override
     public String getSeenWakeLocks(){
@@ -2923,5 +2897,4 @@ public final class PowerManagerService extends IPowerManager.Stub
             }
         }
     }
->>>>>>> cfccdd2... Wakelock Blocker [1/2]
 }
