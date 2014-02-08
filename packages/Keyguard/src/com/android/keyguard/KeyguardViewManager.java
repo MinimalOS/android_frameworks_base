@@ -295,11 +295,6 @@ public class KeyguardViewManager {
             final int vWidth = getWidth();
             final int vHeight = getHeight();
 
-            if (!mIsCoverflow) {
-                background.setBounds(0, 0, vWidth, vHeight);
-                return;
-            }
-
             final float bgAspect = (float) bgWidth / bgHeight;
             final float vAspect = (float) vWidth / vHeight;
 
