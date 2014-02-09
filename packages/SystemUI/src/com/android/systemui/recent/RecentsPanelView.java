@@ -1037,7 +1037,6 @@ public class RecentsPanelView extends FrameLayout implements OnItemClickListener
         }
         if (mRamUsageBarShadow != null) {
             mRamUsageBarShadow.setVisibility(ramBarEnabled ? View.VISIBLE : View.GONE);
-        }
     }
 
     class FakeClearUserDataObserver extends IPackageDataObserver.Stub {
