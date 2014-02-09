@@ -23,6 +23,7 @@ import android.content.IntentFilter;
 import android.content.res.Resources;
 import android.database.ContentObserver;
 import android.os.Handler;
+import android.os.Looper;
 import android.provider.Settings;
 import android.text.TextUtils;
 import android.text.format.DateFormat;
@@ -63,10 +64,7 @@ public class KeyguardStatusView extends GridLayout {
 
         @Override
         void onKeyguardVisibilityChanged(boolean showing) {
-            if (showing) {
-                if (DEBUG) Slog.v(TAG, "refresh statusview showing:" + showing);
-                refresh();
-            }
+            // Do nothing
         }
 
         @Override
