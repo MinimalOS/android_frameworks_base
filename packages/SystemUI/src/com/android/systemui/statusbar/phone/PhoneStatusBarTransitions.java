@@ -32,7 +32,7 @@ public final class PhoneStatusBarTransitions extends BarTransitions {
     private final PhoneStatusBarView mView;
     private final float mIconAlphaWhenOpaque;
 
-    private View mLeftSide, mStatusIcons, mSignalCluster, mBattery, mBatteryText, mClock, mStatsUp, mStatsDown;
+    private View mLeftSide, mStatusIcons, mSignalCluster, mBattery, mBatteryText, mClock, mStatsUp, mStatsUpArrow, mStatsDown, mStatsDownArrow;
     private Animator mCurrentAnimation;
 
     public PhoneStatusBarTransitions(PhoneStatusBarView view) {
@@ -50,7 +50,9 @@ public final class PhoneStatusBarTransitions extends BarTransitions {
         mBatteryText = mView.findViewById(R.id.battery_text);
         mClock = mView.findViewById(R.id.clock);
         mStatsUp = mView.findViewById(R.id.bytes_tx);
+        mStatsUpArrow = mView.findViewById(R.id.bytes_tx_arrow);
         mStatsDown = mView.findViewById(R.id.bytes_rx);
+        mStatsDownArrow = mView.findViewById(R.id.bytes_rx_arrow);
         applyModeBackground(-1, getMode(), false /*animate*/);
         applyMode(getMode(), false /*animate*/);
     }
@@ -96,8 +98,10 @@ public final class PhoneStatusBarTransitions extends BarTransitions {
                     animateTransitionTo(mBattery, newAlphaBC),
                     animateTransitionTo(mBatteryText, newAlphaBC),
                     animateTransitionTo(mClock, newAlphaBC),
-                    animateTransitionTo(mStatsUp, newAlphaBC),
-                    animateTransitionTo(mStatsDown, newAlphaBC)
+                    animateTransitionTo(mStatsUp, newAlpha),
+                    animateTransitionTo(mStatsUpArrow, newAlpha),
+                    animateTransitionTo(mStatsDown, newAlpha),
+                    animateTransitionTo(mStatsDownArrow, newAlpha)
                     );
             if (mode == MODE_LIGHTS_OUT) {
                 anims.setDuration(LIGHTS_OUT_DURATION);
@@ -111,6 +115,10 @@ public final class PhoneStatusBarTransitions extends BarTransitions {
             mBattery.setAlpha(newAlphaBC);
             mBatteryText.setAlpha(newAlphaBC);
             mClock.setAlpha(newAlphaBC);
+            mStatsUp.setAlpha(newAlpha);
+            mStatsDown.setAlpha(newAlpha);
+            mStatsUpArrow.setAlpha(newAlpha);
+            mStatsDownArrow.setAlpha(newAlpha);
         }
     }
 }
