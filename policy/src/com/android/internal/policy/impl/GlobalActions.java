@@ -20,6 +20,7 @@ import com.android.internal.app.AlertController;
 import com.android.internal.app.AlertController.AlertParams;
 import com.android.internal.telephony.TelephonyIntents;
 import com.android.internal.telephony.TelephonyProperties;
+import com.android.internal.widget.LockPatternUtils;
 import com.android.internal.R;
 
 import android.app.ActivityManagerNative;
@@ -80,6 +81,7 @@ import java.util.UUID;
  */
 import android.content.ServiceConnection;
 import android.content.ComponentName;
+import android.content.ContentResolver;
 import android.os.IBinder;
 import android.os.Messenger;
 import android.os.RemoteException;
@@ -112,7 +114,9 @@ class GlobalActions implements DialogInterface.OnDismissListener, DialogInterfac
 
     private MyAdapter mAdapter;
 
+    private LockPatternUtils mLockPatternUtils;
     private boolean mKeyguardShowing = false;
+
     private boolean mDeviceProvisioned = false;
     private ToggleAction.State mAirplaneState = ToggleAction.State.Off;
     private ToggleAction.State mImmersiveState = ToggleAction.State.Off;
@@ -120,6 +124,11 @@ class GlobalActions implements DialogInterface.OnDismissListener, DialogInterfac
     private boolean mHasTelephony;
     private boolean mHasVibrator;
     private final boolean mShowSilentToggle;
+
+    private int mAirplaneOption = -1;
+    private int mImmersiveOption = -1;
+    private int mRebootOption = -1;
+    private int mScreenshotOption = -1;
 
     /**
      * @param context everything needs a context :(
@@ -158,6 +167,8 @@ class GlobalActions implements DialogInterface.OnDismissListener, DialogInterfac
 
         mShowSilentToggle = SHOW_SILENT_TOGGLE && !mContext.getResources().getBoolean(
                 com.android.internal.R.bool.config_useFixedVolume);
+
+        mLockPatternUtils = new LockPatternUtils(mContext);
     }
 
     /**
@@ -208,6 +219,30 @@ class GlobalActions implements DialogInterface.OnDismissListener, DialogInterfac
         return mUiContext != null ? mUiContext : mContext;
     }
 
+    protected boolean checkOptionAndKeyguard(int option) {
+        /**
+         1 : Dialog option is enabled and keyguard preference does not matter
+         2 : Dialog option is enabled and if secure keyguard is present hide
+         */
+        boolean show = false;
+        switch (option) {
+            case 0:
+                show = false;
+                break;
+            case 1:
+                show = true;
+                break;
+            case 2:
+                if (mKeyguardShowing && mLockPatternUtils.isSecure()) {
+                    show = false;
+                } else {
+                    show = true;
+                }
+                break;
+        }
+        return show;
+    }
+
     /**
      * Create the global actions dialog.
      * @return A new dialog.
@@ -219,6 +254,14 @@ class GlobalActions implements DialogInterface.OnDismissListener, DialogInterfac
         } else {
             mSilentModeAction = new SilentModeTriStateAction(mContext, mAudioManager, mHandler);
         }
+
+        // Power menu customization
+        ContentResolver resolver = mContext.getContentResolver();
+        mAirplaneOption = Settings.AOKP.getInt(resolver, Settings.AOKP.AIRPLANE_MODE_OPTIONS, 1);
+        mImmersiveOption = Settings.AOKP.getInt(resolver, Settings.AOKP.IMMERSIVE_MODE_OPTIONS, 0);
+        mRebootOption = Settings.AOKP.getInt(resolver, Settings.AOKP.REBOOT_MODE_OPTIONS, 1);
+        mScreenshotOption = Settings.AOKP.getInt(resolver, Settings.AOKP.SCREENSHOT_MODE_OPTIONS, 0);
+
         mAirplaneModeOn = new ToggleAction(
                 R.drawable.ic_lock_airplane_mode,
                 R.drawable.ic_lock_airplane_mode_off,
@@ -253,7 +296,8 @@ class GlobalActions implements DialogInterface.OnDismissListener, DialogInterfac
             }
 
             public boolean showDuringKeyguard() {
-                return true;
+                boolean toggle = checkOptionAndKeyguard(mAirplaneOption);
+                return toggle;
             }
 
             public boolean showBeforeProvisioning() {
@@ -280,7 +324,8 @@ class GlobalActions implements DialogInterface.OnDismissListener, DialogInterfac
             }
 
             public boolean showDuringKeyguard() {
-                return true;
+                boolean toggle = checkOptionAndKeyguard(mImmersiveOption);
+                return toggle;
             }
 
             public boolean showBeforeProvisioning() {
@@ -310,9 +355,8 @@ class GlobalActions implements DialogInterface.OnDismissListener, DialogInterfac
                 }
             });
 
+        if (mRebootOption != 0) {
         // next: reboot
-         if (Settings.System.getInt(mContext.getContentResolver(),
-                Settings.System.POWER_MENU_REBOOT_ENABLED, 1) == 1) {
         mItems.add(
             new SinglePressAction(R.drawable.ic_lock_reboot, R.string.global_action_reboot) {
                 public void onPress() {
@@ -324,42 +368,45 @@ class GlobalActions implements DialogInterface.OnDismissListener, DialogInterfac
                     return true;
                 }
 
+                @Override
                 public boolean showDuringKeyguard() {
-                    return true;
+                    boolean toggle = checkOptionAndKeyguard(mRebootOption);
+                    return toggle;
                 }
 
+                @Override
                 public boolean showBeforeProvisioning() {
                     return true;
                 }
             });
         }
 
-        // next: screenshot
-        // only shown if enabled, disabled by default
-        if (Settings.System.getInt(mContext.getContentResolver(),
-                Settings.System.POWER_MENU_SCREENSHOT_ENABLED, 1) == 1) {
-        mItems.add(
-            new SinglePressAction(R.drawable.ic_lock_screenshot, R.string.global_action_screenshot) {
-                public void onPress() {
-                    takeScreenshot();
-                }
+        if (mScreenshotOption != 0) {
+            // next: screenshot
+            mItems.add(
+                new SinglePressAction(R.drawable.ic_lock_screenshot, R.string.global_action_screenshot) {
+                    public void onPress() {
+                        takeScreenshot();
+                    }
 
-                public boolean showDuringKeyguard() {
-                    return true;
-                }
+                    public boolean showDuringKeyguard() {
+                        boolean toggle = checkOptionAndKeyguard(mScreenshotOption);
+                        return toggle;
+                    }
 
-                public boolean showBeforeProvisioning() {
-                    return true;
-                }
-            });
-        }
+                    public boolean showBeforeProvisioning() {
+                        return true;
+                    }
+             });
+         }
 
-        // next: airplane mode
-        if (Settings.System.getInt(mContext.getContentResolver(),
-                Settings.System.POWER_MENU_AIRPLANE_ENABLED, 1) == 1) {
+            // next: airplane mode
+         if (mAirplaneOption != 0) {
             mItems.add(mAirplaneModeOn);
+         }
+         if (mImmersiveOption != 0) {
             mItems.add(mImmersiveModeOn);
-        }
+         }
 
         // next: bug report, if enabled
         if (Settings.Global.getInt(mContext.getContentResolver(),
@@ -411,9 +458,7 @@ class GlobalActions implements DialogInterface.OnDismissListener, DialogInterfac
         }
 
         // last: silent mode
-        if ((Settings.System.getInt(mContext.getContentResolver(),
-                Settings.System.POWER_MENU_SILENT_ENABLED, 1) == 1) &&
-                (SHOW_SILENT_TOGGLE)) {
+        if (mShowSilentToggle) {
             mItems.add(mSilentModeAction);
         }
 
@@ -1064,6 +1109,11 @@ class GlobalActions implements DialogInterface.OnDismissListener, DialogInterfac
         public void onChange(boolean selfChange) {
             onAirplaneModeChanged();
         }
+
+        @Override
+        public void onChange(boolean selfChange, android.net.Uri uri) {
+            onAirplaneModeChanged();
+        };
     };
 
     private ContentObserver mImmersiveModeObserver = new ContentObserver(new Handler()) {
@@ -1071,6 +1121,11 @@ class GlobalActions implements DialogInterface.OnDismissListener, DialogInterfac
         public void onChange(boolean selfChange) {
             onImmersiveModeChanged();
         }
+
+        @Override
+        public void onChange(boolean selfChange, android.net.Uri uri) {
+            onImmersiveModeChanged();
+        };
     };
 
     private static final int MESSAGE_DISMISS = 0;
@@ -1084,6 +1139,7 @@ class GlobalActions implements DialogInterface.OnDismissListener, DialogInterfac
             case MESSAGE_DISMISS:
                 if (mDialog != null) {
                     mDialog.dismiss();
+                    mDialog = null;
                 }
                 break;
             case MESSAGE_REFRESH:

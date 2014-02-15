@@ -3103,30 +3103,6 @@ public final class Settings {
         public static final String STATUSBAR_ENABLE_BRIGHTNESS_SLIDER = "statusbar_enable_brightness_slider";
 
         /**
-         * Whether the power menu reboot menu is enabled
-         * @hide
-         */
-        public static final String POWER_MENU_REBOOT_ENABLED = "power_menu_reboot_enabled";
-
-        /**
-         * Whether power menu screenshot is enabled
-         * @hide
-         */
-        public static final String POWER_MENU_SCREENSHOT_ENABLED = "power_menu_screenshot_enabled";
-
-        /**
-         * Whether power menu airplane toggle is enabled
-         * @hide
-         */
-        public static final String POWER_MENU_AIRPLANE_ENABLED = "power_menu_airplane_enabled";
-
-        /**
-         * Whether power menu silent mode is enabled
-         * @hide
-         */
-        public static final String POWER_MENU_SILENT_ENABLED = "power_menu_silent_enabled";
-
-        /**
          * @hide
          */
         public static final String SHADE_COLLAPSE_ALL = "status_bar_toggles_shade_collapse_all";
@@ -3227,11 +3203,6 @@ public final class Settings {
             QUIET_HOURS_MUTE,
             QUIET_HOURS_STILL,
             QUIET_HOURS_DIM,
-            POWER_MENU_SCREENSHOT_ENABLED,
-            POWER_MENU_REBOOT_ENABLED,
-            POWER_MENU_AIRPLANE_ENABLED,
-            POWER_MENU_SILENT_ENABLED,
-
         };
 
         // Settings moved to Settings.Secure
@@ -7685,6 +7656,22 @@ public final class Settings {
          * @hide
          */
         public static final String SCREENSHOT_TOGGLE_DELAY = "screenshot_toggle_delay";
+
+        /**
+         * The following Settings.AOKP fields are for use with power menu
+         * 0 : not shown in power menu
+         * 1 : Always shown including keyguard (secure/insecure)
+         * 2 : Always shown except for insecure lockscreen
+         *
+         */
+        /** Airplane Mode Menu Option */
+        public static final String AIRPLANE_MODE_OPTIONS = "airplane_mode_options";
+        /** Immersive Mode Menu Option */
+        public static final String IMMERSIVE_MODE_OPTIONS = "immersive_mode_options";
+        /** Reboot Menu Options */
+        public static final String REBOOT_MODE_OPTIONS = "reboot_mode_options";
+        /** Screenshot Menu Options */
+        public static final String SCREENSHOT_MODE_OPTIONS = "screenshot_mode_options";
 
     }
 
