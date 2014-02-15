@@ -837,7 +837,7 @@ class AlarmManagerService extends IAlarmManager.Stub {
                     alarmNanoseconds = (alarm.when % 1000) * 1000 * 1000;
                     Slog.w(TAG,"Clear alarm type=" + alarm.type + ",alarmSeconds=" +
                        alarmSeconds);
-                    clear(mDescriptor, alarm.type, alarmSeconds, alarmNanoseconds);
+                    clear2(mNativeData, alarm.type, alarmSeconds, alarmNanoseconds);
                     mNextRtcWakeup = 0;
                 }
             }
@@ -1129,6 +1129,7 @@ class AlarmManagerService extends IAlarmManager.Stub {
     private native void close(long nativeData);
     private native void set(long nativeData, int type, long seconds, long nanoseconds);
     private native void clear(int fd, int type, long seconds, long nanoseconds);
+    private native void clear2(long nativeData, int type, long seconds, long nanoseconds);
     private native int waitForAlarm(long nativeData);
     private native int setKernelTimezone(long nativeData, int minuteswest);
 
