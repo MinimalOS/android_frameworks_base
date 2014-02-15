@@ -3127,12 +3127,6 @@ public final class Settings {
         public static final String POWER_MENU_SILENT_ENABLED = "power_menu_silent_enabled";
 
         /**
-         * Whether power menu immersive mode toggle is enabled
-         * @hide
-         */
-        public static final String POWER_MENU_IMMERSIVE_MODE_ENABLED = "power_menu_immersive_mode_enabled";
-
-        /**
          * @hide
          */
         public static final String SHADE_COLLAPSE_ALL = "status_bar_toggles_shade_collapse_all";
@@ -3237,7 +3231,6 @@ public final class Settings {
             POWER_MENU_REBOOT_ENABLED,
             POWER_MENU_AIRPLANE_ENABLED,
             POWER_MENU_SILENT_ENABLED,
-            POWER_MENU_IMMERSIVE_MODE_ENABLED,
 
         };
 
