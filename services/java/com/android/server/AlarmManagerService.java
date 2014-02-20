@@ -720,12 +720,19 @@ class AlarmManagerService extends IAlarmManager.Stub {
         }
     }
 
-    public void setTime(long millis) {
+    public boolean setTime(long millis) {
         mContext.enforceCallingOrSelfPermission(
                 "android.permission.SET_TIME",
                 "setTime");
 
-        SystemClock.setCurrentTimeMillis(millis);
+        if (mNativeData == 0) {
+            Slog.w(TAG, "Not setting time since no alarm driver is available.");
+            return false;
+        }
+
+        synchronized (mLock) {
+            return setKernelTime(mNativeData, millis) == 0;
+        }
     }
 
     public void setTimeZone(String tz) {
@@ -1131,6 +1138,7 @@ class AlarmManagerService extends IAlarmManager.Stub {
     private native void clear(int fd, int type, long seconds, long nanoseconds);
     private native void clear2(long nativeData, int type, long seconds, long nanoseconds);
     private native int waitForAlarm(long nativeData);
+    private native int setKernelTime(long nativeData, long millis);
     private native int setKernelTimezone(long nativeData, int minuteswest);
 
     private void triggerAlarmsLocked(ArrayList<Alarm> triggerList, long nowELAPSED, long nowRTC) {
