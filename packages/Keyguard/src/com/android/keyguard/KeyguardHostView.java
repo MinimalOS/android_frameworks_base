@@ -92,8 +92,6 @@ public class KeyguardHostView extends KeyguardViewBase {
     private SecurityMode mCurrentSecuritySelection = SecurityMode.Invalid;
     private int mAppWidgetToShow;
 
-    private View mExpandChallengeView;
-
     private boolean mDefaultAppWidgetAttached;
 
     protected OnDismissAction mDismissAction;
