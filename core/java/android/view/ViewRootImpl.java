@@ -821,9 +821,12 @@ public final class ViewRootImpl implements ViewParent,
     @Override
     public void requestLayout() {
         if (!mHandlingLayoutInLayoutRequest) {
-            checkThread();
-            mLayoutRequested = true;
-            scheduleTraversals();
+            try {
+                 checkThread();
+                 mLayoutRequested = true;
+                 scheduleTraversals();
+            } catch (Exception e) {
+            }
         }
     }
 

@@ -188,7 +188,7 @@ class SaveImageInBackgroundTask extends AsyncTask<SaveImageInBackgroundData, Voi
 
         // By default, AsyncTask sets the worker thread to have background thread priority, so
         // give highest possible priority to worker thread
-        Process.setThreadPriority(Process.THREAD_PRIORITY_URGENT_DISPLAY);
+        Process.setThreadPriority(Process.THREAD_PRIORITY_FOREGROUND);
 
         Context context = params[0].context;
         Bitmap image = params[0].image;
