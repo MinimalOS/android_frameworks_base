@@ -7568,6 +7568,8 @@ public final class Settings {
                 "wallpaper_intra_close",
         };
 
+        public static final String TOAST_ANIMATION = "toast_animation";
+
         public static final String ANIMATION_CONTROLS_DURATION = "animation_controls_duration";
 
         public static final String ANIMATION_CONTROLS_NO_OVERRIDE = "animation_controls_no_override";
