@@ -69,6 +69,7 @@ import android.widget.LinearLayout;
 import android.widget.RemoteViews;
 import android.widget.TextView;
 
+import com.android.internal.util.omni.DeviceUtils;
 import com.android.internal.widget.multiwaveview.GlowPadView;
 import com.android.internal.widget.multiwaveview.GlowPadView.OnTriggerListener;
 import com.android.internal.widget.multiwaveview.TargetDrawable;
@@ -181,7 +182,7 @@ public class ActiveDisplayView extends FrameLayout
     private ProximitySensorManager mProximitySensorManager;
     private LightSensorManager mLightSensorManager;
 
-    private boolean mProximityIsFar = false;
+    private boolean mProximityIsFar = true;
     private boolean mIsInBrightLight = false;
     private boolean mWakedByPocketMode = false;
     private long mPocketTime = 0;
@@ -823,8 +824,10 @@ public class ActiveDisplayView extends FrameLayout
     private void handleShowNotificationView() {
         mIsActive = true;
         setVisibility(View.VISIBLE);
-        Log.i(TAG, "ActiveDisplay: enable LightSensor");
-        mLightSensorManager.enable();
+        if (hasLightSensor()) {
+            Log.i(TAG, "ActiveDisplay: enable LightSensor");
+            mLightSensorManager.enable();
+        }
         adjustStatusBarLocked(true);
         // Warm up KeyguardTouchDelegate so it's ready by the time
         KeyguardTouchDelegate.getInstance(mContext);
@@ -835,8 +838,10 @@ public class ActiveDisplayView extends FrameLayout
         restoreBrightness();
         mWakedByPocketMode = false;
         cancelTimeoutTimer();
-        Log.i(TAG, "ActiveDisplay: disable LightSensor");
-        mLightSensorManager.disable(true);
+        if (hasLightSensor()) {
+            Log.i(TAG, "ActiveDisplay: disable LightSensor");
+            mLightSensorManager.disable(true);
+        }
         adjustStatusBarLocked(false);
         setVisibility(View.GONE);
     }
@@ -847,8 +852,10 @@ public class ActiveDisplayView extends FrameLayout
         mBar.disable(0);
         mWakedByPocketMode = false;
         cancelTimeoutTimer();
-        Log.i(TAG, "ActiveDisplay: disable LightSensor");
-        mLightSensorManager.disable(true);
+        if (hasLightSensor()) {
+            Log.i(TAG, "ActiveDisplay: disable LightSensor");
+            mLightSensorManager.disable(true);
+        }
         setVisibility(View.GONE);
     }
 
@@ -1322,7 +1329,18 @@ public class ActiveDisplayView extends FrameLayout
      * @return True if we should show this view.
      */
     private boolean shouldShowNotification() {
+        if (!hasProximitySensor()) {
+            return true;
+        }
         return mProximityIsFar;
+    }
+
+    private boolean hasProximitySensor() {
+        return DeviceUtils.deviceSupportsProximitySensor(mContext);
+    }
+
+    private boolean hasLightSensor() {
+        return DeviceUtils.deviceSupportsLightSensor(mContext);
     }
 
     /**
