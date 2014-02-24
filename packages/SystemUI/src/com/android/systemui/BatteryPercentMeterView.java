@@ -36,6 +36,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
+import android.database.ContentObserver;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -71,7 +72,19 @@ public class BatteryPercentMeterView extends ImageView {
     final static String StatusBar = "statusbar";
     private Handler mHandler;
     private Context mContext;
+    private boolean mPluggedEnabled;
     private BatteryReceiver mBatteryReceiver = null;
+
+    private ContentObserver mObserver = new ContentObserver(new Handler()) {
+        @Override
+        public void onChange(boolean selfChange) {
+            updateSettings();
+        }
+
+        public void onChange(boolean selfChange, android.net.Uri uri) {
+            updateSettings();
+        };
+    };
 
     // state variables
     private boolean mAttached;      // whether or not attached to a window
@@ -198,6 +211,9 @@ public class BatteryPercentMeterView extends ImageView {
     @Override
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
+        getContext().getContentResolver().registerContentObserver(
+            Settings.AOKP.getUriFor(Settings.AOKP.BATTERY_PERCENTAGE_INDICATOR_PLUGGED),
+            false, mObserver);
         if (!mAttached) {
             mAttached = true;
             mBatteryReceiver.updateRegistration();
@@ -234,7 +250,7 @@ public class BatteryPercentMeterView extends ImageView {
 
         if (level <= 14) {
             mPaintFont.setColor(mPaintRed.getColor());
-        } else if (mIsCharging) {
+        } else if (mIsCharging && mPluggedEnabled) {
             mPaintFont.setColor(mPercentTextChargingColor);
         } else {
             mPaintFont.setColor(mPercentTextColor);
@@ -270,9 +286,11 @@ public class BatteryPercentMeterView extends ImageView {
         ContentResolver resolver = mContext.getContentResolver();
 
         int defaultColor = res.getColor(com.android.systemui.R.color.batterymeter_charge_color);
+        int chargeColor = res.getColor(com.android.systemui.R.color.status_bar_battery_text_color_plugged);
+        mPluggedEnabled = Settings.AOKP.getBoolean(resolver, Settings.AOKP.BATTERY_PERCENTAGE_INDICATOR_PLUGGED, false);
 
         mPercentTextColor = defaultColor;
-        mPercentTextChargingColor = defaultColor;
+        mPercentTextChargingColor = chargeColor;
         mPercentColor = defaultColor;
 
         /*
