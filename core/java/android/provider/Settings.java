@@ -2483,8 +2483,13 @@ public final class Settings {
         public static final String STATUSBAR_CLOCK_DATE_FORMAT = "statusbar_clock_date_format";
 
         /**
+         * What color to use for the battery LED while charging - really full (100%)
+         * @hide
+         */
+        public static final String BATTERY_LIGHT_REALLY_FULL_COLOR = "battery_light_really_full_color";
+
+        /**
          * Clock Actions 0 = single, 1 = long, 2 = double click
-         *
          * @hide
          */
         public static final String[] NOTIFICATION_CLOCK = new String[] {
@@ -3038,6 +3043,83 @@ public final class Settings {
          * @hide
          */
         public static final String QUIET_HOURS_END = "quiet_hours_end";
+
+        /**
+	*
+	* SMOOTH PROGRESS BAR interpolator
+	* @hide
+	*/
+        public static final String PROGRESSBAR_INTERPOLATOR = "progressbar_interpolator";
+
+	/**
+	*
+	* SMOOTH PROGRESS BAR Mirror
+	* @hide
+	*/
+        public static final String PROGRESSBAR_MIRROR = "progressbar_mirror";
+
+	/**
+	*
+	* SMOOTH PROGRESS BAR Reverse
+	* @hide
+	*/
+        public static final String PROGRESSBAR_REVERSE = "progressbar_reverse";
+
+	/**
+	*
+	* SMOOTH PROGRESS BAR Speed
+	* @hide
+	*/
+        public static final String PROGRESSBAR_SPEED = "progressbar_speed";
+
+       /**
+	*
+	* SMOOTH PROGRESS BAR Width
+	* @hide
+	*/
+        public static final String PROGRESSBAR_WIDTH = "progressbar_width";
+
+        /**
+	*
+	* SMOOTH PROGRESS BAR Length
+	* @hide
+	*/
+        public static final String PROGRESSBAR_LENGTH = "progressbar_length";
+
+        /**
+	*
+	* SMOOTH PROGRESS BAR Count
+	* @hide
+	*/
+        public static final String PROGRESSBAR_COUNT = "progressbar_count";
+
+        /**
+	*
+	* SMOOTH PROGRESS BAR Color_1
+	* @hide
+	*/
+        public static final String PROGRESSBAR_COLOR_1 = "progressbar_color_1";
+
+        /**
+	*
+	* SMOOTH PROGRESS BAR Color_2
+	* @hide
+	*/
+        public static final String PROGRESSBAR_COLOR_2 = "progressbar_color_2";
+
+        /**
+	*
+	* SMOOTH PROGRESS BAR Color_3
+	* @hide
+	*/
+        public static final String PROGRESSBAR_COLOR_3 = "progressbar_color_3";
+
+        /**
+	*
+	* SMOOTH PROGRESS BAR Color_4
+	* @hide
+	*/
+        public static final String PROGRESSBAR_COLOR_4 = "progressbar_color_4";
 
         /**
          * Whether to remove the sound from outgoing notifications during quiet hours.
@@ -6657,6 +6739,11 @@ public final class Settings {
          * Control whether the process CPU usage meter should be shown.
          */
         public static final String SHOW_PROCESSES = "show_processes";
+
+        /**
+         * Control whether the process CPU info meter should be shown.
+         */
+        public static final String SHOW_CPU = "show_cpu";
 
         /**
          * If 1, the activity manager will aggressively finish activities and

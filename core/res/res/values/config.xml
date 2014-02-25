@@ -44,6 +44,8 @@
        <item><xliff:g id="id">clock</xliff:g></item>
     </string-array>
 
+    <string-array name="config_disabledComponents">
+    </string-array>
     <!-- Flag indicating whether the surface flinger has limited
          alpha compositing functionality in hardware.  If set, the window
          manager will disable alpha trasformation in animations where not
@@ -1433,4 +1435,8 @@
         <item>Trying to write MMS</item>
         <item>Trying to start at bootup</item>
     </string-array>
+
+    <!-- bool value to for enabling motion accelerometer -->
+    <bool name="use_motion_accel">false</bool>
+
 </resources>
