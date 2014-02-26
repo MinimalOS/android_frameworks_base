@@ -7557,8 +7557,71 @@ public final class Settings {
         }
 
         /**
+         * @hide
+         */
+        public static final String[] APP_WINDOW = new String[] {
+            "window_color",
+            "window_animation",
+            "window_animation_duration",
+            "window_size",
+            "window_space",
+        };
+
+        /**
+         * @hide
+         */
+        public static final String[] AOKP_LEFT_RIBBON = new String[] {
+            "left_enabled",
+            "left_ribbon_items",
+            "left_ribbon_size",
+            "left_handle_weight",
+            "left_handle_height",
+            "left_handle_opacity",
+            "left_handle_vibrate",
+            "left_handle_location",
+            "left_handle_long_swipe",
+            "left_handle_long_press",
+            "left_ribbon_auto_hide",
+            "left_ribbon_color",
+            "left_ribbon_animation_type",
+            "left_ribbon_animation_duration",
+            "left_ribbon_margin",
+            "left_ribbon_icon_gravity",
+        };
+
+        /**
+         * @hide
+         */
+        public static final String[] AOKP_RIGHT_RIBBON = new String[] {
+            "right_enabled",
+            "right_ribbon_items",
+            "right_ribbon_size",
+            "right_handle_weight",
+            "right_handle_height",
+            "right_handle_opacity",
+            "right_handle_vibrate",
+            "right_handle_location",
+            "right_handle_long_swipe",
+            "right_handle_long_press",
+            "right_ribbon_auto_hide",
+            "right_ribbon_color",
+            "right_ribbon_animation_type",
+            "right_ribbon_animation_duration",
+            "right_ribbon_margin",
+            "right_ribbon_icon_gravity",
+        };
+
+        /**
+         * @hide
+         */
+        public static final String[] AOKP_LOCKSCREEN_RIBBON = new String[] {
+            "lockscreen_ribbon_items",
+            "lockscreen_ribbon_size",
+            "lockscreen_ribbon_margin",
+        };
+
+        /**
          * Setting for animation controls
-         *
          * @hide
          */
         public static final String[] ACTIVITY_ANIMATION_CONTROLS = new String[] {
@@ -7573,6 +7636,8 @@ public final class Settings {
                 "wallpaper_intra_open",
                 "wallpaper_intra_close",
         };
+
+        public static final String TOAST_ANIMATION = "toast_animation";
 
         public static final String ANIMATION_CONTROLS_DURATION = "animation_controls_duration";
 
