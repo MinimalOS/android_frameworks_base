@@ -216,11 +216,11 @@ class GlobalScreenrecord {
 
             String fileName = "SCR_" + new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date()) + ".mp4";
             File pictures = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
-            File screenshots = new File(pictures, "Screenshots");
+            File screenshots = new File(pictures, "ScreenRecorder");
 
             if (!screenshots.exists()) {
                 if (!screenshots.mkdir()) {
-                    Log.e(TAG, "Cannot create screenshots directory");
+                    Log.e(TAG, "Cannot create screen recording directory");
                     return;
                 }
             }
