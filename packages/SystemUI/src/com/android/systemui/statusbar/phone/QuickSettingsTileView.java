@@ -17,6 +17,7 @@
 
 package com.android.systemui.statusbar.phone;
 
+import android.content.ClipData;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.content.Context;
@@ -27,6 +28,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewParent;
+import android.view.View.DragShadowBuilder;
 import android.view.View.OnClickListener;
 import android.view.View.OnLongClickListener;
 import android.widget.FrameLayout;
@@ -68,9 +70,7 @@ class QuickSettingsTileView extends FrameLayout {
         mColSpan = 1;
         mRowSpan = 1;
 
-        QuickSettingsTouchListener touchListener = new QuickSettingsTouchListener();
         QuickSettingsDragListener dragListener = new QuickSettingsDragListener();
-        setOnTouchListener(touchListener);
         setOnDragListener(dragListener);
     }
 
@@ -85,7 +85,6 @@ class QuickSettingsTileView extends FrameLayout {
     void setTemporary(boolean temporary) {
         mTemporary = temporary;
         if(temporary) { // No listeners needed
-            setOnTouchListener(null);
             setOnDragListener(null);
         }
     }
@@ -143,7 +142,20 @@ class QuickSettingsTileView extends FrameLayout {
                     toggleVisibility();
                 }
             });
-            setEditModeLongClickListener(null);
+            setEditModeLongClickListener(new OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View view) {
+                    QuickSettingsTileView tileView = ((QuickSettingsTileView) view);
+                    if(tileView.isEditModeEnabled()) {
+                        ClipData data = ClipData.newPlainText("", "");
+                        DragShadowBuilder shadowBuilder = new View.DragShadowBuilder(view);
+                        view.startDrag(data, shadowBuilder, view, 0);
+                        tileView.fadeOut();
+                        return true;
+                    }
+                    return false;
+                }
+            });
         } else {
             boolean temporaryEditMode = isTemporary() && enabled;
             setOnClickListener(temporaryEditMode ? null : mOnClickListener);
