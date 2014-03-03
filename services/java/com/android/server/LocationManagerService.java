@@ -353,11 +353,12 @@ public class LocationManagerService extends ILocationManager.Stub {
         addProviderLocked(passiveProvider);
         mEnabledProviders.add(passiveProvider.getName());
         mPassiveProvider = passiveProvider;
-        // Create a gps location provider
-        GpsLocationProvider gpsProvider = new GpsLocationProvider(mContext, this,
-                mLocationHandler.getLooper());
 
+        GpsLocationProvider gpsProvider = null;
         if (GpsLocationProvider.isSupported()) {
+            // Create a gps location provider
+            gpsProvider = new GpsLocationProvider(mContext, this,
+                    mLocationHandler.getLooper());
             mGpsStatusProvider = gpsProvider.getGpsStatusProvider();
             mNetInitiatedListener = gpsProvider.getNetInitiatedListener();
             addProviderLocked(gpsProvider);
@@ -445,15 +446,18 @@ public class LocationManagerService extends ILocationManager.Stub {
         }
 
         // bind to geofence provider
-        GeofenceProxy provider = GeofenceProxy.createAndBind(mContext,
+        GeofenceProxy provider = null;
+        if (gpsProvider != null) {
+            provider = GeofenceProxy.createAndBind(mContext,
                 com.android.internal.R.bool.config_enableGeofenceOverlay,
                 com.android.internal.R.string.config_geofenceProviderPackageName,
                 com.android.internal.R.array.config_locationProviderPackageNames,
                 mLocationHandler,
                 gpsProvider.getGpsGeofenceProxy(),
                 flpHardwareProvider.getGeofenceHardware());
-        if (provider == null) {
-            Slog.e(TAG,  "no geofence provider found");
+            if (provider == null) {
+                Slog.e(TAG,  "no geofence provider found");
+            }
         }
 
         mGeoFencerPackageName = resources.getString(
