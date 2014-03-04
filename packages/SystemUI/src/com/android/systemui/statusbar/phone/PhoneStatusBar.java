@@ -331,8 +331,6 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
         }
     };
 
-
-
     // ensure quick settings is disabled until the current user makes it through the setup wizard
     private boolean mUserSetup = false;
     private ContentObserver mUserSetupObserver = new ContentObserver(new Handler()) {
@@ -977,15 +975,16 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
 
     private void prepareNavigationBarView() {
         mNavigationBarView.reorient();
-
+        final boolean mCustomRecent = Settings.System.getBoolean(mContext.getContentResolver(), 
+                        Settings.System.CUSTOM_RECENT, false);
         if (mNavigationBarView.getRecentsButton() != null) {
             mNavigationBarView.getRecentsButton().setOnClickListener(mRecentsClickListener);
-            mNavigationBarView.getRecentsButton().setOnTouchListener(mRecentsPreloadOnTouchListener);
+            if(!mCustomRecent) mNavigationBarView.getRecentsButton().setOnTouchListener(mRecentsPreloadOnTouchListener);
         }
         if (mNavigationBarView.getHomeButton() != null) {
             mNavigationBarView.getHomeButton().setOnTouchListener(mHomeSearchActionListener);
         }
-        if (mNavigationBarView.getSearchLight() != null) {
+        if (mNavigationBarView.getSearchLight() != null || mCustomRecent) {
             mNavigationBarView.getSearchLight().setOnTouchListener(mHomeSearchActionListener);
         }
         updateSearchPanel();
@@ -2989,8 +2988,7 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
 
         makeStatusBarView();
         repositionNavigationBar();
-
-        rebuildRecentsScreen();
+        rebuildRecentsScreen(); //it follow toggle settings
 
         // recreate StatusBarIconViews.
         for (int i = 0; i < nIcons; i++) {

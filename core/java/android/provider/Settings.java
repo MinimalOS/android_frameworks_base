@@ -2976,7 +2976,14 @@ public final class Settings {
         public static final String FORMAL_TEXT_INPUT = "formal_text_input";
 
         /**
-         * Whether to use the custom status bar header or not
+         * Custom Recent Control
+         *
+         * @hide
+         */
+        public static final String CUSTOM_RECENT = "custom_recent";
+
+        /**
+         * whether to use the custom status bar header or not
          * @hide
          */
         public static final String STATUS_BAR_CUSTOM_HEADER = "status_bar_custom_header";
