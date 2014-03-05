@@ -99,10 +99,10 @@ public class RecentController implements RecentPanelView.OnExitListener,
                 // Screen goes off or system dialogs should close.
                 // Get rid of our recents screen
                 hideRecents(false);
-        if (DEBUG) Log.d(TAG, "braodcast system dialog");
+                if (DEBUG) Log.d(TAG, "braodcast system dialog");
             } else if (Intent.ACTION_SCREEN_OFF.equals(action)){
                 hideRecents(true);
-        if (DEBUG) Log.d(TAG, "broadcast screen off");
+                if (DEBUG) Log.d(TAG, "broadcast screen off");
             }
         }
     };
@@ -326,7 +326,7 @@ public class RecentController implements RecentPanelView.OnExitListener,
                 mAnimationState = ANIMATION_STATE_OUT;
                 mHandler.removeCallbacks(mRecentThirdStageLoader);
                 mHandler.postDelayed(mRecentThirdStageLoader, mContext.getResources().getInteger(
-                        com.android.internal.R.integer.config_recentExitDur));
+                        com.android.internal.R.integer.config_recentDefaultDur));
                 mWindowManager.removeView(mParentView);
                 return true;
             }
