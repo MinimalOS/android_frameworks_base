@@ -107,7 +107,6 @@ import com.android.systemui.aokp.AppWindow;
 import com.android.systemui.SearchPanelView;
 import com.android.systemui.SystemUI;
 import com.android.systemui.slimrecent.RecentController;
-import com.android.systemui.statusbar.AppSidebar;
 import com.android.systemui.statusbar.phone.KeyguardTouchDelegate;
 import com.android.systemui.statusbar.phone.PhoneStatusBar;
 import com.android.systemui.statusbar.halo.Halo;
