@@ -203,8 +203,6 @@ public abstract class BaseStatusBar extends SystemUI implements
 
     private boolean mDeviceProvisioned = false;
 
-    private RecentController mRecents;
-
     protected ActiveDisplayView mActiveDisplayView;
     private boolean mCustomRecent = false;
 
