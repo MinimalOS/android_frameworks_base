@@ -80,7 +80,9 @@ public class Clock extends TextView implements DemoMode {
     public static final int FONT_CONDENSED = 1;
     public static final int FONT_LIGHT = 2;
     public static final int FONT_LIGHT_ITALIC = 3;
-    public static final int FONT_NORMAL = 4;
+    public static final int FONT_DANCING = 4;
+    public static final int FONT_COMING = 5;
+    public static final int FONT_NORMAL = 6;
 
     protected int mClockFontStyle = FONT_NORMAL;
 
@@ -338,6 +340,12 @@ public class Clock extends TextView implements DemoMode {
             case FONT_LIGHT_ITALIC:
                 setTypeface(Typeface.create("sans-serif-light", Typeface.ITALIC));
                 break;
+            case FONT_DANCING:
+                setTypeface(Typeface.createFromFile("/system/fonts/DancingScript-Regular.ttf"));
+            break;
+            case FONT_COMING:
+                setTypeface(Typeface.createFromFile("/system/fonts/ComingSoon.ttf"));
+            break;
             case FONT_NORMAL:
             default:
                 setTypeface(Typeface.create("sans-serif", Typeface.NORMAL));
