@@ -32,6 +32,7 @@ import android.text.format.DateFormat;
 import android.text.style.CharacterStyle;
 import android.text.style.RelativeSizeSpan;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
@@ -74,6 +75,7 @@ public class Clock extends TextView implements DemoMode {
     public static final int CLOCK_DATE_STYLE_REGULAR = 0;
     public static final int CLOCK_DATE_STYLE_LOWERCASE = 1;
     public static final int CLOCK_DATE_STYLE_UPPERCASE = 2;
+    public static final int CLOCK_DATE_STYLE_CAPITALIZE = 3;
 
     protected int mClockDateStyle = CLOCK_DATE_STYLE_UPPERCASE;
     public static final int FONT_BOLD = 0;
@@ -218,6 +220,10 @@ public class Clock extends TextView implements DemoMode {
                 result = dateString.toString().toLowerCase() + result;
             } else if (mClockDateStyle == CLOCK_DATE_STYLE_UPPERCASE) {
                 result = dateString.toString().toUpperCase() + result;
+            } else if (mClockDateStyle == CLOCK_DATE_STYLE_CAPITALIZE) {
+                Log.v("CLOCK", "Before:" + result);
+                result = toTitleCase(dateString.toString()) + " " + result;
+                Log.v("CLOCK", "After:" + result);
             } else {
                 result = dateString.toString() + result;
             }
@@ -361,6 +367,15 @@ public class Clock extends TextView implements DemoMode {
     }
 
     private boolean mDemoMode;
+
+    protected String toTitleCase(String givenString) {
+        String[] arr = givenString.split(" ");
+        StringBuffer sb = new StringBuffer();
+        for (int i=0; i < arr.length; i++) {
+            sb.append(Character.toUpperCase(arr[i].charAt(0))).append(arr[i].substring(1)).append(" ");
+        }
+        return sb.toString().trim();
+    }
 
     @Override
     public void dispatchDemoCommand(String command, Bundle args) {
