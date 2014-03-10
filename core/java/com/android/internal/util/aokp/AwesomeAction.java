@@ -45,9 +45,6 @@ import android.util.Log;
 import android.view.InputDevice;
 import android.view.KeyCharacterMap;
 import android.view.KeyEvent;
-import android.widget.Toast;
-
-import com.android.internal.R;
 import com.android.internal.statusbar.IStatusBarService;
 
 import java.net.URISyntaxException;
@@ -105,7 +102,6 @@ public class AwesomeAction {
                         injectKeyDelayed(KeyEvent.KEYCODE_APP_SWITCH);
                         break;
                     case ACTION_KILL:
-                        Toast.makeText(mContext, R.string.app_killed_message, Toast.LENGTH_SHORT).show();
                         KillTask mKillTask = new KillTask(mContext);
                         mHandler.post(mKillTask);
                         break;
