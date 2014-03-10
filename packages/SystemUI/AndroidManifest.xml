@@ -145,16 +145,6 @@
             </intent-filter>
         </service>
 
-        <!-- started from PhoneWindowManager -->
-        <service android:name=".omni.screenrecord.TakeScreenrecordService"
-            android:process=":screenrecord"
-            android:permission="android.permission.SCREENRECORD"
-            android:exported="false" >
-            <intent-filter>
-                <android name="android.intent.action.SCREENRECORD"/>
-            </intent-filter>
-        </service>
-
         <service android:name=".LoadAverageService"
                 android:exported="true" />
 
