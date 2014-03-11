@@ -106,7 +106,7 @@ public final class Installer {
         }
     }
 
-    private synchronized boolean readBytes(byte buffer[], int len) {
+    private boolean readBytes(byte buffer[], int len) {
         int off = 0, count;
         try {
             if (len < 0 || mIn.available() < len)
