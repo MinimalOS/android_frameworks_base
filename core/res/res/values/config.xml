@@ -44,8 +44,6 @@
        <item><xliff:g id="id">clock</xliff:g></item>
     </string-array>
 
-    <string-array name="config_disabledComponents">
-    </string-array>
     <!-- Flag indicating whether the surface flinger has limited
          alpha compositing functionality in hardware.  If set, the window
          manager will disable alpha trasformation in animations where not

@@ -158,12 +158,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import libcore.io.ErrnoException;
 import libcore.io.IoUtils;
@@ -1139,11 +1139,11 @@ public class PackageManagerService extends IPackageManager.Stub {
         Display d = wm.getDefaultDisplay();
         d.getMetrics(mMetrics);
 
+        File frameworkDir;
+        // writer
+        int scanMode;
+        long startTime;
         synchronized (mInstallLock) {
-            // writer
-            File frameworkDir;
-            int scanMode;
-            long startTime;
             synchronized (mPackages) {
                 mHandlerThread.start();
                 mHandler = new PackageHandler(mHandlerThread.getLooper());
@@ -1321,69 +1321,67 @@ public class PackageManagerService extends IPackageManager.Stub {
                     }
                 }
             }
+        }
 
-            // Find base frameworks (resource packages without code).
-            mFrameworkInstallObserver = new AppDirObserver(
-                    frameworkDir.getPath(), OBSERVER_EVENTS, true, false);
-            mFrameworkInstallObserver.startWatching();
-            scanDirLI(frameworkDir, PackageParser.PARSE_IS_SYSTEM
-                    | PackageParser.PARSE_IS_SYSTEM_DIR,
-                    scanMode | SCAN_NO_DEX, 0);
+        // Find base frameworks (resource packages without code).
+        mFrameworkInstallObserver = new AppDirObserver(
+                frameworkDir.getPath(), OBSERVER_EVENTS, true, false);
+        mFrameworkInstallObserver.startWatching();
+        scanDir(frameworkDir, PackageParser.PARSE_IS_SYSTEM
+                | PackageParser.PARSE_IS_SYSTEM_DIR
+                | PackageParser.PARSE_IS_PRIVILEGED,
+                scanMode | SCAN_NO_DEX, 0);
 
-            // Collected privileged system packages.
-            File privilegedAppDir = new File(Environment.getRootDirectory(), "priv-app");
-            mPrivilegedInstallObserver = new AppDirObserver(
-                    privilegedAppDir.getPath(), OBSERVER_EVENTS, true, true);
-            mPrivilegedInstallObserver.startWatching();
-            scanDirLI(privilegedAppDir, PackageParser.PARSE_IS_SYSTEM
-                    | PackageParser.PARSE_IS_SYSTEM_DIR
-                    | PackageParser.PARSE_IS_PRIVILEGED, scanMode, 0);
+        // Collected privileged system packages.
+        File privilegedAppDir = new File(Environment.getRootDirectory(), "priv-app");
+        mPrivilegedInstallObserver = new AppDirObserver(
+                privilegedAppDir.getPath(), OBSERVER_EVENTS, true, true);
+        mPrivilegedInstallObserver.startWatching();
+        scanDir(privilegedAppDir, PackageParser.PARSE_IS_SYSTEM
+                | PackageParser.PARSE_IS_SYSTEM_DIR
+                | PackageParser.PARSE_IS_PRIVILEGED, scanMode, 0);
 
-            // Collect ordinary system packages.
-            File systemAppDir = new File(Environment.getRootDirectory(), "app");
-            mSystemInstallObserver = new AppDirObserver(
-                    systemAppDir.getPath(), OBSERVER_EVENTS, true, false);
-            mSystemInstallObserver.startWatching();
-            scanDirLI(systemAppDir, PackageParser.PARSE_IS_SYSTEM
-                    | PackageParser.PARSE_IS_SYSTEM_DIR, scanMode, 0);
+        // Collect ordinary system packages.
+        File systemAppDir = new File(Environment.getRootDirectory(), "app");
+        mSystemInstallObserver = new AppDirObserver(
+                systemAppDir.getPath(), OBSERVER_EVENTS, true, false);
+        mSystemInstallObserver.startWatching();
+        scanDir(systemAppDir, PackageParser.PARSE_IS_SYSTEM
+                | PackageParser.PARSE_IS_SYSTEM_DIR, scanMode, 0);
 
-            // Collect all vendor packages.
-            File vendorAppDir = new File("/vendor/app");
-            try {
-                vendorAppDir = vendorAppDir.getCanonicalFile();
-            } catch (IOException e) {
-                // failed to look up canonical path, continue with original one
-            }
-            mVendorInstallObserver = new AppDirObserver(
-                    vendorAppDir.getPath(), OBSERVER_EVENTS, true, false);
-            mVendorInstallObserver.startWatching();
-            scanDirLI(vendorAppDir, PackageParser.PARSE_IS_SYSTEM
-                    | PackageParser.PARSE_IS_SYSTEM_DIR, scanMode, 0);
+        // Collect all vendor packages.
+        File vendorAppDir = new File("/vendor/app");
+        mVendorInstallObserver = new AppDirObserver(
+                vendorAppDir.getPath(), OBSERVER_EVENTS, true, false);
+        mVendorInstallObserver.startWatching();
+        scanDir(vendorAppDir, PackageParser.PARSE_IS_SYSTEM
+                | PackageParser.PARSE_IS_SYSTEM_DIR, scanMode, 0);
 
-            final List<String> possiblyDeletedUpdatedSystemApps = new ArrayList<String>();
-            synchronized (mPackages) {
-                if (DEBUG_UPGRADE) Log.v(TAG, "Running installd update commands");
-                mInstaller.moveFiles();
+        final List<String> possiblyDeletedUpdatedSystemApps = new ArrayList<String>();
+        synchronized (mInstallLock) {
+        synchronized (mPackages) {
+            if (DEBUG_UPGRADE) Log.v(TAG, "Running installd update commands");
+            mInstaller.moveFiles();
 
-                // Prune any system packages that no longer exist.
-                if (!mOnlyCore) {
-                    Iterator<PackageSetting> psit = mSettings.mPackages.values().iterator();
-                    while (psit.hasNext()) {
-                        PackageSetting ps = psit.next();
+            // Prune any system packages that no longer exist.
+            if (!mOnlyCore) {
+                Iterator<PackageSetting> psit = mSettings.mPackages.values().iterator();
+                while (psit.hasNext()) {
+                    PackageSetting ps = psit.next();
 
                     /*
                      * If this is not a system app, it can't be a
                      * disable system app.
                      */
-                        if ((ps.pkgFlags & ApplicationInfo.FLAG_SYSTEM) == 0) {
-                            continue;
-                        }
+                    if ((ps.pkgFlags & ApplicationInfo.FLAG_SYSTEM) == 0) {
+                        continue;
+                    }
 
                     /*
                      * If the package is scanned, it's not erased.
                      */
-                        final PackageParser.Package scannedPkg = mPackages.get(ps.name);
-                        if (scannedPkg != null) {
+                    final PackageParser.Package scannedPkg = mPackages.get(ps.name);
+                    if (scannedPkg != null) {
                         /*
                          * If the system app is both scanned and in the
                          * disabled packages list, then it must have been
@@ -1391,157 +1389,144 @@ public class PackageManagerService extends IPackageManager.Stub {
                          * scanned package so the previously user-installed
                          * application can be scanned.
                          */
-                            if (mSettings.isDisabledSystemPackageLPr(ps.name)) {
-                                Slog.i(TAG, "Expecting better updatd system app for " + ps.name
-                                        + "; removing system app");
-                                removePackageLI(ps, true);
-                            }
-
-                            continue;
+                        if (mSettings.isDisabledSystemPackageLPr(ps.name)) {
+                            Slog.i(TAG, "Expecting better updatd system app for " + ps.name
+                                    + "; removing system app");
+                            removePackageLI(ps, true);
                         }
 
-                        if (!mSettings.isDisabledSystemPackageLPr(ps.name)) {
-                            psit.remove();
-                            String msg = "System package " + ps.name
-                                    + " no longer exists; wiping its data";
-                            reportSettingsProblem(Log.WARN, msg);
-                            removeDataDirsLI(ps.name);
-                        } else {
-                            final PackageSetting disabledPs = mSettings.getDisabledSystemPkgLPr(ps.name);
-                            if (disabledPs.codePath == null || !disabledPs.codePath.exists()) {
-                                possiblyDeletedUpdatedSystemApps.add(ps.name);
-                            }
-                        }
-                    }
-                }
-
-                //look for any incomplete package installations
-                ArrayList<PackageSetting> deletePkgsList = mSettings.getListOfIncompleteInstallPackagesLPr();
-                //clean up list
-                for (int i = 0; i < deletePkgsList.size(); i++) {
-                    //clean up here
-                    cleanupInstallFailedPackage(deletePkgsList.get(i));
-                }
-                //delete tmp files
-                deleteTempPackageFiles();
-
-                // Remove any shared userIDs that have no associated packages
-                mSettings.pruneSharedUsersLPw();
-            }
-
-                if (!mOnlyCore) {
-                    EventLog.writeEvent(EventLogTags.BOOT_PROGRESS_PMS_DATA_SCAN_START,
-                            SystemClock.uptimeMillis());
-                    mAppInstallObserver = new AppDirObserver(
-                            mAppInstallDir.getPath(), OBSERVER_EVENTS, false, false);
-                    mAppInstallObserver.startWatching();
-                    scanDirLI(mAppInstallDir, 0, scanMode, 0);
-
-                    mDrmAppInstallObserver = new AppDirObserver(
-                            mDrmAppPrivateInstallDir.getPath(), OBSERVER_EVENTS, false, false);
-                    mDrmAppInstallObserver.startWatching();
-                    scanDirLI(mDrmAppPrivateInstallDir, PackageParser.PARSE_FORWARD_LOCK,
-                            scanMode, 0);
-
-                    synchronized (mPackages) {
-                        /**
-                         * Remove disable package settings for any updated system
-                         * apps that were removed via an OTA. If they're not a
-                         * previously-updated app, remove them completely.
-                         * Otherwise, just revoke their system-level permissions.
-                         */
-                        for (String deletedAppName : possiblyDeletedUpdatedSystemApps) {
-                            PackageParser.Package deletedPkg = mPackages.get(deletedAppName);
-                            mSettings.removeDisabledSystemPackageLPw(deletedAppName);
-
-                            String msg;
-                            if (deletedPkg == null) {
-                                msg = "Updated system package " + deletedAppName
-                                        + " no longer exists; wiping its data";
-                                removeDataDirsLI(deletedAppName);
-                            } else {
-                                msg = "Updated system app + " + deletedAppName
-                                        + " no longer present; removing system privileges for "
-                                        + deletedAppName;
-
-                                deletedPkg.applicationInfo.flags &= ~ApplicationInfo.FLAG_SYSTEM;
-
-                                PackageSetting deletedPs = mSettings.mPackages.get(deletedAppName);
-                                deletedPs.pkgFlags &= ~ApplicationInfo.FLAG_SYSTEM;
-                            }
-                            reportSettingsProblem(Log.WARN, msg);
-                        }
-                    }
-                } else {
-                    mAppInstallObserver = null;
-                    mDrmAppInstallObserver = null;
-                }
-
-            synchronized (mPackages) {
-
-                // Now that we know all of the shared libraries, update all clients to have
-                // the correct library paths.
-                updateAllSharedLibrariesLPw();
-
-                EventLog.writeEvent(EventLogTags.BOOT_PROGRESS_PMS_SCAN_END,
-                        SystemClock.uptimeMillis());
-                Slog.i(TAG, "Time to scan packages: "
-                        + ((SystemClock.uptimeMillis() - startTime) / 1000f)
-                        + " seconds");
-
-                // If the platform SDK has changed since the last time we booted,
-                // we need to re-grant app permission to catch any new ones that
-                // appear.  This is really a hack, and means that apps can in some
-                // cases get permissions that the user didn't initially explicitly
-                // allow...  it would be nice to have some better way to handle
-                // this situation.
-                final boolean regrantPermissions = mSettings.mInternalSdkPlatform
-                        != mSdkVersion;
-                if (regrantPermissions) Slog.i(TAG, "Platform changed from "
-                        + mSettings.mInternalSdkPlatform + " to " + mSdkVersion
-                        + "; regranting permissions for internal storage");
-                mSettings.mInternalSdkPlatform = mSdkVersion;
-
-                updatePermissionsLPw(null, null, UPDATE_PERMISSIONS_ALL
-                        | (regrantPermissions
-                        ? (UPDATE_PERMISSIONS_REPLACE_PKG | UPDATE_PERMISSIONS_REPLACE_ALL)
-                        : 0));
-
-                // If this is the first boot, and it is a normal boot, then
-                // we need to initialize the default preferred apps.
-                if (!mRestoredSettings && !onlyCore) {
-                    mSettings.readDefaultPreferredAppsLPw(this, 0);
-                }
-
-                // Disable components marked for disabling at build-time
-                for (String name : mContext.getResources().getStringArray(
-                        com.android.internal.R.array.config_disabledComponents)) {
-                    ComponentName cn = ComponentName.unflattenFromString(name);
-                    Slog.v(TAG, "Disabling " + name);
-                    String className = cn.getClassName();
-                    PackageSetting pkgSetting = mSettings.mPackages.get(cn.getPackageName());
-                    if (pkgSetting == null || pkgSetting.pkg == null
-                            || !pkgSetting.pkg.hasComponentClassName(className)) {
-                        Slog.w(TAG, "Unable to disable " + name);
                         continue;
                     }
-                    pkgSetting.disableComponentLPw(className, UserHandle.USER_OWNER);
+
+                    if (!mSettings.isDisabledSystemPackageLPr(ps.name)) {
+                        psit.remove();
+                        String msg = "System package " + ps.name
+                                + " no longer exists; wiping its data";
+                        reportSettingsProblem(Log.WARN, msg);
+                        removeDataDirsLI(ps.name);
+                    } else {
+                        final PackageSetting disabledPs = mSettings.getDisabledSystemPkgLPr(ps.name);
+                        if (disabledPs.codePath == null || !disabledPs.codePath.exists()) {
+                            possiblyDeletedUpdatedSystemApps.add(ps.name);
+                        }
+                    }
                 }
+            }
 
-                // can downgrade to reader
-                mSettings.writeLPr();
+            //look for any incomplete package installations
+            ArrayList<PackageSetting> deletePkgsList = mSettings.getListOfIncompleteInstallPackagesLPr();
+            //clean up list
+            for (int i = 0; i < deletePkgsList.size(); i++) {
+                //clean up here
+                cleanupInstallFailedPackage(deletePkgsList.get(i));
+            }
+            //delete tmp files
+            deleteTempPackageFiles();
 
-                EventLog.writeEvent(EventLogTags.BOOT_PROGRESS_PMS_READY,
-                        SystemClock.uptimeMillis());
+            // Remove any shared userIDs that have no associated packages
+            mSettings.pruneSharedUsersLPw();
+        }
+        }
 
-                // Now after opening every single application zip, make sure they
-                // are all flushed.  Not really needed, but keeps things nice and
-                // tidy.
-                Runtime.getRuntime().gc();
+        if (!mOnlyCore) {
+            EventLog.writeEvent(EventLogTags.BOOT_PROGRESS_PMS_DATA_SCAN_START,
+                    SystemClock.uptimeMillis());
+            mAppInstallObserver = new AppDirObserver(
+                    mAppInstallDir.getPath(), OBSERVER_EVENTS, false, false);
+            mAppInstallObserver.startWatching();
+            scanDir(mAppInstallDir, 0, scanMode, 0);
 
-                mRequiredVerifierPackage = getRequiredVerifierLPr();
-            } // synchronized (mPackages)
-        } // synchronized (mInstallLock)
+            mDrmAppInstallObserver = new AppDirObserver(
+                    mDrmAppPrivateInstallDir.getPath(), OBSERVER_EVENTS, false, false);
+            mDrmAppInstallObserver.startWatching();
+            scanDir(mDrmAppPrivateInstallDir, PackageParser.PARSE_FORWARD_LOCK,
+                    scanMode, 0);
+
+            synchronized (mPackages) {
+                /**
+                 * Remove disable package settings for any updated system
+                 * apps that were removed via an OTA. If they're not a
+                 * previously-updated app, remove them completely.
+                 * Otherwise, just revoke their system-level permissions.
+                 */
+                for (String deletedAppName : possiblyDeletedUpdatedSystemApps) {
+                    PackageParser.Package deletedPkg = mPackages.get(deletedAppName);
+                    mSettings.removeDisabledSystemPackageLPw(deletedAppName);
+
+                    String msg;
+                    if (deletedPkg == null) {
+                        msg = "Updated system package " + deletedAppName
+                                + " no longer exists; wiping its data";
+                        removeDataDirsLI(deletedAppName);
+                    } else {
+                        msg = "Updated system app + " + deletedAppName
+                                + " no longer present; removing system privileges for "
+                                + deletedAppName;
+
+                        deletedPkg.applicationInfo.flags &= ~ApplicationInfo.FLAG_SYSTEM;
+
+                        PackageSetting deletedPs = mSettings.mPackages.get(deletedAppName);
+                        deletedPs.pkgFlags &= ~ApplicationInfo.FLAG_SYSTEM;
+                    }
+                    reportSettingsProblem(Log.WARN, msg);
+                }
+            }
+        } else {
+            mAppInstallObserver = null;
+            mDrmAppInstallObserver = null;
+        }
+
+        synchronized (mInstallLock) {
+        synchronized (mPackages) {
+
+            // Now that we know all of the shared libraries, update all clients to have
+            // the correct library paths.
+            updateAllSharedLibrariesLPw();
+
+            EventLog.writeEvent(EventLogTags.BOOT_PROGRESS_PMS_SCAN_END,
+                    SystemClock.uptimeMillis());
+            Slog.i(TAG, "Time to scan packages: "
+                    + ((SystemClock.uptimeMillis() - startTime) / 1000f)
+                    + " seconds");
+
+            // If the platform SDK has changed since the last time we booted,
+            // we need to re-grant app permission to catch any new ones that
+            // appear.  This is really a hack, and means that apps can in some
+            // cases get permissions that the user didn't initially explicitly
+            // allow...  it would be nice to have some better way to handle
+            // this situation.
+            final boolean regrantPermissions = mSettings.mInternalSdkPlatform
+                    != mSdkVersion;
+            if (regrantPermissions) Slog.i(TAG, "Platform changed from "
+                    + mSettings.mInternalSdkPlatform + " to " + mSdkVersion
+                    + "; regranting permissions for internal storage");
+            mSettings.mInternalSdkPlatform = mSdkVersion;
+
+            updatePermissionsLPw(null, null, UPDATE_PERMISSIONS_ALL
+                    | (regrantPermissions
+                    ? (UPDATE_PERMISSIONS_REPLACE_PKG | UPDATE_PERMISSIONS_REPLACE_ALL)
+                    : 0));
+
+            // If this is the first boot, and it is a normal boot, then
+            // we need to initialize the default preferred apps.
+            if (!mRestoredSettings && !onlyCore) {
+                mSettings.readDefaultPreferredAppsLPw(this, 0);
+            }
+
+            // can downgrade to reader
+            mSettings.writeLPr();
+
+            EventLog.writeEvent(EventLogTags.BOOT_PROGRESS_PMS_READY,
+                    SystemClock.uptimeMillis());
+
+            // Now after opening every single application zip, make sure they
+            // are all flushed.  Not really needed, but keeps things nice and
+            // tidy.
+            Runtime.getRuntime().gc();
+
+            mRequiredVerifierPackage = getRequiredVerifierLPr();
+        } // synchronized (mPackages)
+    } // synchronized (mInstallLock)
     }
 
     public boolean isFirstBoot() {
@@ -3544,7 +3529,7 @@ public class PackageManagerService extends IPackageManager.Stub {
         return finalList;
     }
 
-    private void scanDirLI(File dir, final int flags, final int scanMode, final long currentTime) {
+    private void scanDir(File dir, final int flags, final int scanMode, final long currentTime) {
         String[] files = dir.list();
         if (files == null) {
             Log.d(TAG, "No files in app dir " + dir);
@@ -4753,7 +4738,7 @@ public class PackageManagerService extends IPackageManager.Stub {
 
                     if (DEBUG_INSTALL) Slog.i(TAG, "Linking native library dir for " + path);
                     final int[] userIds = sUserManager.getUserIds();
-//                    synchronized (mInstallLock) {
+                    synchronized (mInstallLock) {
                         for (int userId : userIds) {
                             if (mInstaller.linkNativeLibraryDirectory(pkg.packageName,
                                     pkg.applicationInfo.nativeLibraryDir, userId) < 0) {
@@ -4762,7 +4747,7 @@ public class PackageManagerService extends IPackageManager.Stub {
                                 mLastScanError = PackageManager.INSTALL_FAILED_INTERNAL_ERROR;
                                 return null;
                             }
-//                        }
+                        }
                     }
                 }
             } catch (IOException ioe) {
