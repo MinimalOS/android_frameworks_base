@@ -4439,9 +4439,16 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                                 new KeyEvent(event.getDownTime(), event.getEventTime(), event.getAction(), newKeyCode, 0));
                             msg.setAsynchronous(true);
                             mHandler.sendMessageDelayed(msg, ViewConfiguration.getLongPressTimeout());
-                        } else {
-                            // If music is playing but we decided not to pass the key to the
-                            // application, handle the volume change here.
+                        }
+                        break;
+                    } else {
+                        if (mVolumeMusicControl && !down) {
+                            mHandler.removeMessages(MSG_DISPATCH_VOLKEY_WITH_WAKE_LOCK);
+                            if (mIsVolumeKeyLongPress) {
+                                break;
+                            }
+                        }
+                        if (!isScreenOn && !mVolumeWakeScreen && down) {
                             handleVolumeKey(AudioManager.STREAM_MUSIC, keyCode);
                         }
                         break;
