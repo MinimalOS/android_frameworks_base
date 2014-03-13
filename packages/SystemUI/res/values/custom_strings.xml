@@ -59,7 +59,7 @@
     <!-- Descriptive text of a running process: singular process, plural service. -->
     <string name="running_processes_item_description_s_p"><xliff:g id="numprocess">%1$d</xliff:g>
         process and <xliff:g id="numservices">%2$d</xliff:g> services</string>
-     <!-- Descriptive text of a running process: plural process, singular service. -->
+    <!-- Descriptive text of a running process: plural process, singular service. -->
     <string name="running_processes_item_description_p_s"><xliff:g id="numprocess">%1$d</xliff:g>
         processes and <xliff:g id="numservices">%2$d</xliff:g> service</string>
     <!-- Descriptive text of a running process: plural process, plural service. -->
@@ -96,4 +96,10 @@
     <string name="active_display_privacy_content">Content message not showing because privacy mode enabled</string>
 
 
+    <string name="onthego_notif_ticker">On-The-Go activated</string>
+    <string name="onthego_notif_title">On-The-Go is active</string>
+    <string name="onthego_notif_stop">Stop</string>
+    <string name="onthego_notif_options">Options</string>
+    <string name="onthego_notif_error">Unable to start On-The-Go</string>
+    <string name="onthego_transparency">Transparency</string>
 </resources>
