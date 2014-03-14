@@ -24,11 +24,16 @@
         <item name="android:background">@android:color/transparent</item>
     </style>
 
-     <style name="TextApperance.StatusBar.BatteryText" parent="@*android:style/TextAppearance.StatusBar.Icon">
+     <style name="TextAppearance.StatusBar.BatteryText" parent="@*android:style/TextAppearance.StatusBar.Icon">
         <!-- Note: must be dp to fit in status bar -->
         <item name="android:textSize">12dp</item>
         <item name="android:textStyle">normal</item>
         <item name="android:textColor">@color/status_bar_battery_text_color</item>
+     </style>
+
+    <style name="TextAppearance.StatusBar.Time" parent="@*android:style/TextAppearance.StatusBar">
+        <item name="android:textSize">@dimen/notification_subtext_size</item>
+        <item name="android:textColor">#999999</item>
     </style>
 
     <style name="BatteryText" parent="@*android:style/TextAppearance.StatusBar.Icon">
