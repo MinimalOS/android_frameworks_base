@@ -30,6 +30,7 @@ import android.view.DisplayInfo;
 import android.view.WindowManager;
 
 import com.android.internal.telephony.PhoneConstants;
+import com.android.internal.util.cm.TorchConstants;
 import static android.hardware.Sensor.TYPE_LIGHT;
 import static android.hardware.Sensor.TYPE_PROXIMITY;
 
@@ -94,7 +95,7 @@ public class DeviceUtils {
         try {
             List<ApplicationInfo> packages = pm.getInstalledApplications(0);
                 for (ApplicationInfo packageInfo : packages) {
-                    if (packageInfo.packageName.equals(OmniTorchConstants.APP_PACKAGE_NAME)) {
+                    if (packageInfo.packageName.equals(TorchConstants.APP_PACKAGE_NAME)) {
                         return true;
                     }
                 }

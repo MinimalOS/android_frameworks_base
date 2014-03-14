@@ -2742,9 +2742,6 @@ public final class Settings {
          * @hide
          */
         public static final String ACTIVE_DISPLAY_BYPASS = "active_display_bypass";
-<<<<<<< HEAD
->>>>>>> 752e13f... [1/2] Base: ActiveDisplay (rework interface)
-=======
 
         /**
          * Whether to not showing active display when there is annoying notifications.
@@ -2765,7 +2762,6 @@ public final class Settings {
          * @hide
          */
         public static final String SCREEN_ON_NOTIFICATION_LED = "screen_on_notification_led";
->>>>>>> f7679a6... [1/2] Base: more improve Active Display
 
         /**
          * @deprecated Use {@link android.provider.Settings.Global#LOW_BATTERY_SOUND}
@@ -3020,6 +3016,8 @@ public final class Settings {
          * @hide
          */
         public static final String STATUS_BAR_IME_SWITCHER = "status_bar_ime_switcher";
+
+        public static final String STATUS_BAR_NOTIF_COUNT="status_bar_notif_count";
 
         /**
          * Automatic keyboard rotation timeout.  0 to disable completely.

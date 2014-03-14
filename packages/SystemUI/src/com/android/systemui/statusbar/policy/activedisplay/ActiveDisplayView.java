@@ -237,7 +237,7 @@ public class ActiveDisplayView extends FrameLayout
 
         @Override
         public void onNotificationPosted(StatusBarNotification sbn) {
-            if (shouldShowNotification() && isValidNotification(sbn) && !inQuietHours()) {
+            if (shouldShowNotification() && isValidNotification(sbn)) {
                 // need to make sure either the screen is off or the user is currently
                 // viewing the notifications
                 if (getVisibility() == View.VISIBLE || !isScreenOn()) {
@@ -555,7 +555,7 @@ public class ActiveDisplayView extends FrameLayout
     public synchronized void onFar() {
         mProximityIsFar = true;
         if (!isScreenOn() && mPocketMode != POCKET_MODE_OFF
-            && !isOnCall() && mActiveDisplayEnabled && !inQuietHours()) {
+            && !isOnCall() && mActiveDisplayEnabled) {
             if ((System.currentTimeMillis() >= (mPocketTime + mProximityThreshold)) && (mPocketTime != 0)) {
                 if (mNotification == null) {
                     mNotification = getNextAvailableNotification();
@@ -913,7 +913,6 @@ public class ActiveDisplayView extends FrameLayout
     private void handleHideNotificationViewOnCall() {
         mIsActive = false;
         restoreBrightness();
-        mBar.disable(0);
         mWakedByPocketMode = false;
         cancelTimeoutTimer();
         if (hasLightSensor()) {
@@ -987,11 +986,6 @@ public class ActiveDisplayView extends FrameLayout
         setVisibility(View.GONE);
     }
 
-    private boolean inQuietHours() {
-        boolean isQuietHourDim = QuietHoursHelper.inQuietHours(mContext, Settings.System.QUIET_HOURS_DIM);
-        boolean isQuietHourMute = QuietHoursHelper.inQuietHours(mContext, Settings.System.QUIET_HOURS_MUTE);
-        return isQuietHourDim || isQuietHourMute;
-    }
 
     private void onScreenTurnedOn() {
         cancelRedisplayTimer();
@@ -1202,28 +1196,18 @@ public class ActiveDisplayView extends FrameLayout
     }
 
     private StatusBarNotification getNextAvailableNotification() {
-        // check if other notifications exist and if so display the next one
-        StatusBarNotification[] sbns = getSortedNotifications();
-        if (sbns == null) return null;
-        for (int i = sbns.length - 1; i >= 0; i--) {
-            if (sbns[i] == null)
-                continue;
-            if (isValidNotification(sbns[i])) {
-                return sbns[i];
-            }
-        }
-
-        return null;
-    }
-
-    private StatusBarNotification[] getSortedNotifications() {
         try {
             // check if other notifications exist and if so display the next one
             StatusBarNotification[] sbns = mNM
-                    .getActiveNotificationsFromSystemListener(mNotificationListener);
+                .getActiveNotificationsFromSystemListener(mNotificationListener);
             if (sbns == null) return null;
-            Arrays.sort(sbns, sNewestNotificationComparator);
-            return sbns;
+            for (int i = sbns.length - 1; i >= 0; i--) {
+                if (sbns[i] == null)
+                    continue;
+                if (isValidNotification(sbns[i])) {
+                    return sbns[i];
+                }
+            }
         } catch (RemoteException e) {
         }
         return null;
