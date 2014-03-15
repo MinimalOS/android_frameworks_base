@@ -4520,9 +4520,9 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                         }
                         break;
                     } else {
-                        if (mVolumeMusicControl && !down) {
+                        if (mVolBtnMusicControls && !down) {
                             mHandler.removeMessages(MSG_DISPATCH_VOLKEY_WITH_WAKE_LOCK);
-                            if (mIsVolumeKeyLongPress) {
+                            if (mIsLongPress) {
                                 break;
                             }
                         }

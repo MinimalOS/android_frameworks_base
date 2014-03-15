@@ -63,6 +63,7 @@ import com.android.systemui.statusbar.policy.LocationController.LocationSettings
 import com.android.systemui.statusbar.policy.NetworkController.NetworkSignalChangedCallback;
 import com.android.systemui.statusbar.policy.RotationLockController;
 import com.android.systemui.statusbar.policy.RotationLockController.RotationLockControllerCallback;
+import com.android.systemui.nameless.onthego.OnTheGoReceiver;
 
 import com.android.internal.util.omni.OmniTorchConstants;
 
@@ -198,21 +199,54 @@ public class QuickSettingsModel implements BluetoothStateChangeCallback,
     private BroadcastReceiver mUsbIntentReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            if (intent.getAction().equals(UsbManager.ACTION_USB_STATE)) {
+            String action = intent.getAction();
+            if (action.equals(UsbManager.ACTION_USB_STATE)) {
                 mUsbConnected = intent.getBooleanExtra(UsbManager.USB_CONNECTED, false);
-            }
-
-            if (intent.getAction().equals(Intent.ACTION_MEDIA_SHARED)) {
+            } else if (action.equals(Intent.ACTION_MEDIA_SHARED)) {
                 mMassStorageActive = true;
-            }
-
-            if (intent.getAction().equals(Intent.ACTION_MEDIA_UNSHARED)) {
+            } else if (action.equals(Intent.ACTION_MEDIA_UNSHARED)) {
                 mMassStorageActive = false;
             }
-
             onUsbChanged();
         }
     };
+
+    /** Broadcast receive to determine on-the-go. */
+    private BroadcastReceiver mOnTheGoReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            if (action.equals(OnTheGoReceiver.ACTION_START)) {
+                mOnTheGoRunning = true;
+            } else if (action.equals(OnTheGoReceiver.ACTION_ALREADY_STOP)) {
+                mOnTheGoRunning = false;
+            }
+            onOnTheGoChanged();
+        }
+    };
+
+    /** ContentObserver to determine the on-the-go tile */
+    private class OnTheGoObserver extends ContentObserver {
+        public OnTheGoObserver(Handler handler) {
+            super(handler);
+        }
+
+        @Override 
+        public void onChange(boolean selfChange) {
+            onOnTheGoChanged();
+        }
+
+        public void startObserving() {
+            final ContentResolver cr = mContext.getContentResolver();
+            cr.unregisterContentObserver(this);
+            cr.registerContentObserver(
+                    Settings.System.getUriFor(Settings.System.ONTHEGO_IN_POWER_MENU), false, this,
+                    UserHandle.USER_ALL);
+            cr.registerContentObserver(
+                    Settings.System.getUriFor(Settings.System.ON_THE_GO_CAMERA), false, this,
+                    UserHandle.USER_ALL);
+        }
+    }
 
     /** ContentObserver to determine the next alarm */
     private class NextAlarmObserver extends ContentObserver {
@@ -220,12 +254,14 @@ public class QuickSettingsModel implements BluetoothStateChangeCallback,
             super(handler);
         }
 
-        @Override public void onChange(boolean selfChange) {
+        @Override
+        public void onChange(boolean selfChange) {
             onNextAlarmChanged();
         }
 
         public void startObserving() {
             final ContentResolver cr = mContext.getContentResolver();
+            cr.unregisterContentObserver(this);
             cr.registerContentObserver(
                     Settings.System.getUriFor(Settings.System.NEXT_ALARM_FORMATTED), false, this,
                     UserHandle.USER_ALL);
@@ -238,12 +274,14 @@ public class QuickSettingsModel implements BluetoothStateChangeCallback,
             super(handler);
         }
 
-        @Override public void onChange(boolean selfChange) {
+        @Override
+        public void onChange(boolean selfChange) {
             onBugreportChanged();
         }
 
         public void startObserving() {
             final ContentResolver cr = mContext.getContentResolver();
+            cr.unregisterContentObserver(this);
             cr.registerContentObserver(
                     Settings.Global.getUriFor(Settings.Global.BUGREPORT_IN_POWER_MENU), false, this);
         }
@@ -284,6 +322,7 @@ public class QuickSettingsModel implements BluetoothStateChangeCallback,
 
         public void startObserving() {
             final ContentResolver cr = mContext.getContentResolver();
+            cr.unregisterContentObserver(this);
             cr.registerContentObserver(Settings.Global.getUriFor(
                     Settings.Global.PREFERRED_NETWORK_MODE), false, this);
         }
@@ -391,6 +430,7 @@ public class QuickSettingsModel implements BluetoothStateChangeCallback,
     private final BugreportObserver mBugreportObserver;
     private final BrightnessObserver mBrightnessObserver;
     private final NetAdbObserver mNetAdbObserver;
+    private final OnTheGoObserver mOnTheGoObserver;
     private final NetworkObserver mMobileNetworkObserver;
     private final SleepTimeObserver mSleepTimeObserver;
     private final ImmersiveObserver mImmersiveObserver;
@@ -407,6 +447,8 @@ public class QuickSettingsModel implements BluetoothStateChangeCallback,
 
     private final boolean mHasMobileData;
 
+    private boolean mOnTheGoRunning = false;
+
     private QuickSettingsTileView mUserTile;
     private RefreshCallback mUserCallback;
     private UserState mUserState = new UserState();
@@ -418,6 +460,10 @@ public class QuickSettingsModel implements BluetoothStateChangeCallback,
     private QuickSettingsTileView mAlarmTile;
     private RefreshCallback mAlarmCallback;
     private State mAlarmState = new State();
+
+    private QuickSettingsTileView mOnTheGoTile;
+    private RefreshCallback mOnTheGoCallback;
+    private State mOnTheGoState = new State();
 
     private QuickSettingsTileView mAirplaneModeTile;
     private RefreshCallback mAirplaneModeCallback;
@@ -542,6 +588,7 @@ public class QuickSettingsModel implements BluetoothStateChangeCallback,
                 mSleepTimeObserver.startObserving();
                 mImmersiveObserver.startObserving();
                 mNetAdbObserver.startObserving();
+                mOnTheGoObserver.startObserving();
                 refreshRotationLockTile();
                 onBrightnessLevelChanged();
                 onNextAlarmChanged();
@@ -559,6 +606,8 @@ public class QuickSettingsModel implements BluetoothStateChangeCallback,
         mBrightnessObserver.startObserving();
         mNetAdbObserver = new NetAdbObserver(mHandler);
         mNetAdbObserver.startObserving();
+        mOnTheGoObserver = new OnTheGoObserver(mHandler);
+        mOnTheGoObserver.startObserving();
         mMobileNetworkObserver = new NetworkObserver(mHandler);
         mMobileNetworkObserver.startObserving();
         mSleepTimeObserver = new SleepTimeObserver(mHandler);
@@ -609,7 +658,13 @@ public class QuickSettingsModel implements BluetoothStateChangeCallback,
             usbIntentFilter.addAction(Intent.ACTION_MEDIA_UNSHARED);
             context.registerReceiver(mUsbIntentReceiver, usbIntentFilter);
         }
+
+        IntentFilter onTheGofilter = new IntentFilter();
+        onTheGofilter.addAction(OnTheGoReceiver.ACTION_START);
+        onTheGofilter.addAction(OnTheGoReceiver.ACTION_ALREADY_STOP);
+        context.registerReceiver(mOnTheGoReceiver, onTheGofilter);
     }
+
 
     void updateResources() {
         refreshSettingsTile();
@@ -625,6 +680,7 @@ public class QuickSettingsModel implements BluetoothStateChangeCallback,
         refreshImmersiveGlobalTile();
         refreshImmersiveModeTile();
         refreshWifiApTile();
+        onOnTheGoChanged();
     }
 
     // Settings
@@ -634,6 +690,9 @@ public class QuickSettingsModel implements BluetoothStateChangeCallback,
         refreshSettingsTile();
     }
     void refreshSettingsTile() {
+        if (mSettingsTile == null) {
+            return;
+        }
         Resources r = mContext.getResources();
         mSettingsState.label = r.getString(R.string.quick_settings_settings_label);
         mSettingsCallback.refreshView(mSettingsTile, mSettingsState);
@@ -643,7 +702,7 @@ public class QuickSettingsModel implements BluetoothStateChangeCallback,
     void addUserTile(QuickSettingsTileView view, RefreshCallback cb) {
         mUserTile = view;
         mUserCallback = cb;
-        mUserCallback.refreshView(mUserTile, mUserState);
+        mUserCallback.refreshView(view, mUserState);
     }
     void setUserTileInfo(String name, Drawable avatar) {
         mUserState.label = name;
@@ -658,6 +717,31 @@ public class QuickSettingsModel implements BluetoothStateChangeCallback,
         mTimeCallback.refreshView(view, mTimeState);
     }
 
+    // on-the-go
+    void addOnTheGoTile(QuickSettingsTileView view, RefreshCallback cb) {
+        mOnTheGoTile = view;
+        mOnTheGoCallback = cb;
+        onOnTheGoChanged();
+    }
+
+    void onOnTheGoChanged() {
+        if (mOnTheGoTile == null) {
+            return;
+        }
+
+        Resources r = mContext.getResources();
+        ContentResolver resolver = mContext.getContentResolver();
+        int mode = Settings.System.getInt(resolver,
+                               Settings.System.ON_THE_GO_CAMERA, 0);
+        boolean changeCamera = (mode != 0);
+        mOnTheGoState.iconId = changeCamera ? R.drawable.ic_qs_onthego_front
+                        : R.drawable.ic_qs_onthego;
+        mOnTheGoState.label = changeCamera ? r.getString(R.string.quick_settings_onthego_front)
+                        : r.getString(R.string.quick_settings_onthego_back);
+        mOnTheGoState.enabled = mOnTheGoRunning;
+        mOnTheGoCallback.refreshView(mOnTheGoTile, mOnTheGoState);
+    }
+
     // Alarm
     void addAlarmTile(QuickSettingsTileView view, RefreshCallback cb) {
         mAlarmTile = view;
@@ -665,10 +749,18 @@ public class QuickSettingsModel implements BluetoothStateChangeCallback,
         mAlarmCallback.refreshView(view, mAlarmState);
     }
     void onAlarmChanged(Intent intent) {
+        if (mAlarmTile == null) {
+            return;
+        }
+
         mAlarmState.enabled = intent.getBooleanExtra("alarmSet", false);
         mAlarmCallback.refreshView(mAlarmTile, mAlarmState);
     }
     void onNextAlarmChanged() {
+        if (mAlarmTile == null) {
+            return;
+        }
+
         final String alarmText = Settings.System.getStringForUser(mContext.getContentResolver(),
                 Settings.System.NEXT_ALARM_FORMATTED,
                 UserHandle.USER_CURRENT);
@@ -759,6 +851,7 @@ public class QuickSettingsModel implements BluetoothStateChangeCallback,
                 Settings.Global.AIRPLANE_MODE_ON, 0);
         onAirplaneModeChanged(airplaneMode != 0);
     }
+
     private void setAirplaneModeState(boolean enabled) {
         // TODO: Sets the view to be "awaiting" if not already awaiting
 
@@ -772,6 +865,7 @@ public class QuickSettingsModel implements BluetoothStateChangeCallback,
         intent.putExtra("state", enabled);
         mContext.sendBroadcast(intent);
     }
+
     // NetworkSignalChanged callback
     @Override
     public void onAirplaneModeChanged(boolean enabled) {
@@ -782,7 +876,9 @@ public class QuickSettingsModel implements BluetoothStateChangeCallback,
                 R.drawable.ic_qs_airplane_on :
                 R.drawable.ic_qs_airplane_off);
         mAirplaneModeState.label = r.getString(R.string.quick_settings_airplane_mode_label);
-        mAirplaneModeCallback.refreshView(mAirplaneModeTile, mAirplaneModeState);
+        if (mAirplaneModeTile != null) {
+            mAirplaneModeCallback.refreshView(mAirplaneModeTile, mAirplaneModeState);
+        }
     }
 
     // Sync Mode
@@ -808,6 +904,10 @@ public class QuickSettingsModel implements BluetoothStateChangeCallback,
     }
 
     private void updateSyncState() {
+        if (mSyncModeTile == null) {
+            return;
+        }
+
         Resources r = mContext.getResources();
         mSyncModeState.enabled = getSyncState();
         mSyncModeState.iconId = (getSyncState() ?
@@ -824,7 +924,9 @@ public class QuickSettingsModel implements BluetoothStateChangeCallback,
         mWifiTile = view;
         mWifiCallback = cb;
         mWifiCallback.refreshView(mWifiTile, mWifiState);
+
     }
+
     // Remove the double quotes that the SSID may contain
     public static String removeDoubleQuotes(String string) {
         if (string == null) return null;
@@ -834,6 +936,7 @@ public class QuickSettingsModel implements BluetoothStateChangeCallback,
         }
         return string;
     }
+
     // Remove the period from the network name
     public static String removeTrailingPeriod(String string) {
         if (string == null) return null;
@@ -843,6 +946,7 @@ public class QuickSettingsModel implements BluetoothStateChangeCallback,
         }
         return string;
     }
+
     // NetworkSignalChanged callback
     @Override
     public void onWifiSignalChanged(boolean enabled, int wifiSignalIconId,
@@ -917,7 +1021,7 @@ public class QuickSettingsModel implements BluetoothStateChangeCallback,
             mRSSIState.label = enabled
                     ? removeTrailingPeriod(enabledDesc)
                     : r.getString(R.string.quick_settings_rssi_emergency_only);
-            mRSSICallback.refreshView(mRSSITile, mRSSIState);
+            refreshRssiTile();
         }
     }
 
@@ -1134,14 +1238,14 @@ public class QuickSettingsModel implements BluetoothStateChangeCallback,
     void addBatteryTile(QuickSettingsTileView view, RefreshCallback cb) {
         mBatteryTile = view;
         mBatteryCallback = cb;
-        mBatteryCallback.refreshView(mBatteryTile, mBatteryState);
+        refreshBatteryTile();
     }
     // BatteryController callback
     @Override
     public void onBatteryLevelChanged(int level, boolean pluggedIn) {
         mBatteryState.batteryLevel = level;
         mBatteryState.pluggedIn = pluggedIn;
-        mBatteryCallback.refreshView(mBatteryTile, mBatteryState);
+        refreshBatteryTile();
     }
     void refreshBatteryTile() {
         if (mBatteryCallback == null) {
@@ -1154,7 +1258,7 @@ public class QuickSettingsModel implements BluetoothStateChangeCallback,
     void addLocationTile(QuickSettingsTileView view, RefreshCallback cb) {
         mLocationTile = view;
         mLocationCallback = cb;
-        mLocationCallback.refreshView(mLocationTile, mLocationState);
+        mLocationCallback.refreshView(view, mLocationState);
     }
 
     void refreshLocationTile() {
@@ -1217,8 +1321,13 @@ public class QuickSettingsModel implements BluetoothStateChangeCallback,
         mBugreportCallback = cb;
         onBugreportChanged();
     }
+
     // SettingsObserver callback
     public void onBugreportChanged() {
+        if (mBugreportTile == null) {
+            return;
+        }
+
         final ContentResolver cr = mContext.getContentResolver();
         boolean enabled = false;
         try {
@@ -1288,8 +1397,9 @@ public class QuickSettingsModel implements BluetoothStateChangeCallback,
     void addImeTile(QuickSettingsTileView view, RefreshCallback cb) {
         mImeTile = view;
         mImeCallback = cb;
-        mImeCallback.refreshView(mImeTile, mImeState);
+        mImeCallback.refreshView(view, mImeState);
     }
+
     /* This implementation is taken from
        InputMethodManagerService.needsToShowImeSwitchOngoingNotification(). */
     private boolean needsToShowImeSwitchOngoingNotification(InputMethodManager imm) {
@@ -1335,6 +1445,7 @@ public class QuickSettingsModel implements BluetoothStateChangeCallback,
         }
         return false;
     }
+
     void onImeWindowStatusChanged(boolean visible) {
         InputMethodManager imm =
                 (InputMethodManager) mContext.getSystemService(Context.INPUT_METHOD_SERVICE);
@@ -1343,10 +1454,11 @@ public class QuickSettingsModel implements BluetoothStateChangeCallback,
         mImeState.enabled = (visible && needsToShowImeSwitchOngoingNotification(imm));
         mImeState.label = getCurrentInputMethodName(mContext, mContext.getContentResolver(),
                 imm, imis, mContext.getPackageManager());
-        if (mImeCallback != null) {
+        if ((mImeCallback != null) && (mImeTile != null)) {
             mImeCallback.refreshView(mImeTile, mImeState);
         }
     }
+
     private static String getCurrentInputMethodName(Context context, ContentResolver resolver,
             InputMethodManager imm, List<InputMethodInfo> imis, PackageManager pm) {
         if (resolver == null || imis == null) return null;
@@ -1375,10 +1487,12 @@ public class QuickSettingsModel implements BluetoothStateChangeCallback,
         mRotationLockController = rotationLockController;
         onRotationLockChanged();
     }
+
     void onRotationLockChanged() {
         onRotationLockStateChanged(mRotationLockController.isRotationLocked(),
                 mRotationLockController.isRotationLockAffordanceVisible());
     }
+
     @Override
     public void onRotationLockStateChanged(boolean rotationLocked, boolean affordanceVisible) {
         mRotationLockState.visible = affordanceVisible;
@@ -1391,6 +1505,7 @@ public class QuickSettingsModel implements BluetoothStateChangeCallback,
                 : mContext.getString(R.string.quick_settings_rotation_unlocked_label);
         mRotationLockCallback.refreshView(mRotationLockTile, mRotationLockState);
     }
+
     void refreshRotationLockTile() {
         if (mRotationLockTile != null) {
             onRotationLockChanged();
@@ -1403,6 +1518,7 @@ public class QuickSettingsModel implements BluetoothStateChangeCallback,
         mBrightnessCallback = cb;
         onBrightnessLevelChanged();
     }
+
     @Override
     public void onBrightnessLevelChanged() {
         Resources r = mContext.getResources();
@@ -1416,10 +1532,15 @@ public class QuickSettingsModel implements BluetoothStateChangeCallback,
                 ? R.drawable.ic_qs_brightness_auto_on
                 : R.drawable.ic_qs_brightness_auto_off;
         mBrightnessState.label = r.getString(R.string.quick_settings_brightness_label);
-        mBrightnessCallback.refreshView(mBrightnessTile, mBrightnessState);
+        if (mBrightnessTile != null) {
+            mBrightnessCallback.refreshView(mBrightnessTile, mBrightnessState);
+        }
     }
+
     void refreshBrightnessTile() {
-        onBrightnessLevelChanged();
+        if (mBrightnessTile != null) {
+            onBrightnessLevelChanged();
+        }
     }
 
     // Network ADB Tile
@@ -1472,6 +1593,7 @@ public class QuickSettingsModel implements BluetoothStateChangeCallback,
         // Set a sane default while we wait for the AsyncTask to finish (no cert).
         setSslCaCertWarningTileInfo(false, true);
     }
+
     public void setSslCaCertWarningTileInfo(boolean hasCert, boolean isManaged) {
         Resources r = mContext.getResources();
         mSslCaCertWarningState.enabled = hasCert;

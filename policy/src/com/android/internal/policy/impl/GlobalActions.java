@@ -18,6 +18,7 @@ package com.android.internal.policy.impl;
 
 import com.android.internal.app.AlertController;
 import com.android.internal.app.AlertController.AlertParams;
+import com.android.internal.statusbar.IStatusBarService;
 import com.android.internal.telephony.TelephonyIntents;
 import com.android.internal.telephony.TelephonyProperties;
 import com.android.internal.widget.LockPatternUtils;
@@ -182,9 +183,11 @@ class GlobalActions implements DialogInterface.OnDismissListener, DialogInterfac
         if (mDialog != null && mUiContext == null) {
             mDialog.dismiss();
             mDialog = null;
+            mDialog = createDialog();
             // Show delayed, so that the dismiss of the previous dialog completes
             mHandler.sendEmptyMessage(MESSAGE_SHOW);
         } else {
+            mDialog = createDialog();
             handleShow();
         }
     }
@@ -203,8 +206,15 @@ class GlobalActions implements DialogInterface.OnDismissListener, DialogInterfac
 
     private void handleShow() {
         awakenIfNecessary();
-        mDialog = createDialog();
         prepareDialog();
+
+        final IStatusBarService barService = IStatusBarService.Stub.asInterface(
+              ServiceManager.getService(Context.STATUS_BAR_SERVICE));
+        try {
+             barService.collapsePanels();
+        } catch (RemoteException ex) {
+             // bad bad
+        }
 
         WindowManager.LayoutParams attrs = mDialog.getWindow().getAttributes();
         attrs.setTitle("GlobalActions");
@@ -430,6 +440,32 @@ class GlobalActions implements DialogInterface.OnDismissListener, DialogInterfac
             mItems.add(mImmersiveModeOn);
          }
 
+        // next: onthego, if enabled
+        if (Settings.System.getInt(mContext.getContentResolver(),
+                Settings.System.ONTHEGO_IN_POWER_MENU, 0) != 0) {
+            mItems.add(
+                new SinglePressAction(com.android.internal.R.drawable.ic_lock_onthego,
+                        R.string.global_action_onthego) {
+
+                    public void onPress() {
+                        startOnTheGo();
+                    }
+
+                    public boolean onLongPress() {
+                        stopOnTheGo();
+                        return true;
+                    }
+
+                    public boolean showDuringKeyguard() {
+                        return false;
+                    }
+
+                    public boolean showBeforeProvisioning() {
+                        return true;
+                    }
+                });
+        }
+
         // next: bug report, if enabled
         if (Settings.Global.getInt(mContext.getContentResolver(),
                 Settings.Global.BUGREPORT_IN_POWER_MENU, 0) != 0 && isCurrentUserOwner()) {
@@ -650,6 +686,19 @@ class GlobalActions implements DialogInterface.OnDismissListener, DialogInterfac
     private void toggleScreenRecord() {
         final Intent recordIntent = new Intent("org.chameleonos.action.NOTIFY_RECORD_SERVICE");
         mContext.sendBroadcast(recordIntent, Manifest.permission.RECORD_SCREEN);
+    }
+
+    private void startOnTheGo() {
+        Intent startIntent = new Intent();
+        startIntent.setAction("com.android.systemui.action.ON_THE_GO_START");
+        mContext.sendBroadcast(startIntent);
+    }
+
+    private void stopOnTheGo() {
+        Intent stopIntent = new Intent();
+        stopIntent.setAction("com.android.systemui.action.ON_THE_GO_STOP");
+        mContext.sendBroadcast(stopIntent);
+        mHandler.sendEmptyMessage(MESSAGE_DISMISS);
     }
 
     private void prepareDialog() {

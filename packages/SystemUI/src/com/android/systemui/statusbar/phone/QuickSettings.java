@@ -27,6 +27,7 @@ import android.bluetooth.BluetoothAdapter;
 import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
 import android.content.ComponentName;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
@@ -72,6 +73,7 @@ import com.android.internal.app.MediaRouteDialogPresenter;
 import com.android.systemui.BatteryMeterView;
 import com.android.systemui.BatteryCircleMeterView;
 import com.android.internal.app.MediaRouteDialogPresenter;
+import com.android.internal.util.omni.DeviceUtils;
 import com.android.systemui.R;
 import com.android.systemui.statusbar.phone.QuickSettingsModel.ActivityState;
 import com.android.systemui.statusbar.phone.QuickSettingsModel.BluetoothState;
@@ -1073,7 +1075,7 @@ class QuickSettings {
         // Usb Mode
         final QuickSettingsBasicTile usbModeTile
                 = new QuickSettingsBasicTile(mContext);
-        usbModeTile.setTemporary(true);
+//        usbModeTile.setTemporary(true);
         usbModeTile.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
@@ -1098,6 +1100,39 @@ class QuickSettings {
         });
 
         parent.addView(usbModeTile);
+
+        // On-the-go tile
+        Log.v("ONTHEGO","Setting up onthego");        
+        if (DeviceUtils.deviceSupportsCamera(mContext)
+            && DeviceUtils.deviceSupportsFrontCamera(mContext)) {
+            Log.v("ONTHEGO", "Supports camera!");
+            final QuickSettingsBasicTile onthegoTile
+                       = new QuickSettingsBasicTile(mContext);
+            onthegoTile.setImageResource(R.drawable.ic_qs_onthego);
+            onthegoTile.setTextResource(R.string.quick_settings_onthego_back);
+            onthegoTile.setTemporary(true);
+            onthegoTile.setOnClickListener(new View.OnClickListener() {
+                 @Override
+                 public void onClick(View v) {
+                     ContentResolver resolver = mContext.getContentResolver();
+                     int mode = Settings.System.getInt(resolver,
+                               Settings.System.ON_THE_GO_CAMERA, 0);
+                     Settings.System.putInt(resolver,
+                               Settings.System.ON_THE_GO_CAMERA, (mode != 0) ? 0 : 1);
+                 }
+            });
+            mModel.addOnTheGoTile(onthegoTile, new QuickSettingsModel.RefreshCallback() {
+                 @Override
+                 public void refreshView(QuickSettingsTileView unused, State onthegoState) {
+                     onthegoTile.setImageResource(onthegoState.iconId);
+                     onthegoTile.setText(onthegoState.label);
+                     onthegoTile.setVisibility(onthegoState.enabled ? View.VISIBLE : View.GONE);
+                 }
+            });
+            parent.addView(onthegoTile);
+        } else {
+          Log.e("ONTHEGO","Could not find onthego camera");
+        }
 
         // Remote Display
         QuickSettingsBasicTile remoteDisplayTile

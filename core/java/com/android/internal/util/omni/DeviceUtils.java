@@ -23,6 +23,7 @@ import android.content.res.Resources;
 import android.hardware.SensorManager;
 import android.net.ConnectivityManager;
 import android.nfc.NfcAdapter;
+import android.os.SystemProperties;
 import android.os.Vibrator;
 import android.telephony.TelephonyManager;
 import android.util.DisplayMetrics;
@@ -31,8 +32,14 @@ import android.view.WindowManager;
 
 import com.android.internal.telephony.PhoneConstants;
 import com.android.internal.util.cm.TorchConstants;
+import static android.hardware.Sensor.TYPE_ACCELEROMETER;
+import static android.hardware.Sensor.TYPE_MAGNETIC_FIELD;
+import static android.hardware.Sensor.TYPE_GYROSCOPE;
 import static android.hardware.Sensor.TYPE_LIGHT;
+import static android.hardware.Sensor.TYPE_PRESSURE;
 import static android.hardware.Sensor.TYPE_PROXIMITY;
+import static android.hardware.Sensor.TYPE_GRAVITY;
+import static android.hardware.Sensor.TYPE_AMBIENT_TEMPERATURE;
 
 import java.util.List;
 
@@ -85,6 +92,26 @@ public class DeviceUtils {
         return context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_LOCATION_GPS);
     }
 
+    public static boolean deviceSupportsCamera(Context context) {
+        return context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA);
+    }
+
+    public static boolean deviceSupportsFrontCamera(Context context) {
+        return context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA_FRONT);
+    }
+
+    public static boolean deviceOnlySupportsFrontCamera(Context context) {
+        boolean supportBackCamera = deviceSupportsCamera(context);
+        boolean supportFrontCamera = deviceSupportsFrontCamera(context);
+        return (!supportBackCamera && supportFrontCamera);
+    }
+
+    public static boolean deviceOnlySupportsBackCamera(Context context) {
+        boolean supportBackCamera = deviceSupportsCamera(context);
+        boolean supportFrontCamera = deviceSupportsFrontCamera(context);
+        return (supportBackCamera && !supportFrontCamera);
+    }
+
     public static boolean deviceSupportsVibrator(Context ctx) {
         Vibrator vibrator = (Vibrator) ctx.getSystemService(Context.VIBRATOR_SERVICE);
         return vibrator.hasVibrator();
@@ -104,14 +131,50 @@ public class DeviceUtils {
         return false;
     }
 
-    public static boolean deviceSupportsProximitySensor(Context context) {
+    public static boolean deviceSupportsAcceleroMeter(Context context) {
         SensorManager sm = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
-        return sm.getDefaultSensor(TYPE_PROXIMITY) != null;
+        return sm.getDefaultSensor(TYPE_ACCELEROMETER) != null;
+    }
+
+    public static boolean deviceSupportsMagnetoMeter(Context context) {
+        SensorManager sm = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
+        return sm.getDefaultSensor(TYPE_MAGNETIC_FIELD) != null;
+    }
+
+    public static boolean deviceSupportsGyroscope(Context context) {
+        SensorManager sm = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
+        return sm.getDefaultSensor(TYPE_GYROSCOPE) != null;
     }
 
     public static boolean deviceSupportsLightSensor(Context context) {
         SensorManager sm = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
         return sm.getDefaultSensor(TYPE_LIGHT) != null;
+    }
+
+    public static boolean deviceSupportsPressure(Context context) {
+        SensorManager sm = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
+        return sm.getDefaultSensor(TYPE_PRESSURE) != null;
+    }
+
+    public static boolean deviceSupportsProximitySensor(Context context) {
+        SensorManager sm = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
+        return sm.getDefaultSensor(TYPE_PROXIMITY) != null;
+    }
+
+    public static boolean deviceSupportsGravitySensor(Context context) {
+        SensorManager sm = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
+        return sm.getDefaultSensor(TYPE_GRAVITY) != null;
+    }
+
+    public static boolean deviceSupportsTemperatureSensor(Context context) {
+        SensorManager sm = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
+        return sm.getDefaultSensor(TYPE_AMBIENT_TEMPERATURE) != null;
+    }
+
+    public static boolean deviceSupportNavigationBar(Context context) {
+        boolean hasNavBar = context.getResources().getBoolean(
+                com.android.internal.R.bool.config_showNavigationBar);
+        return hasNavBar || (SystemProperties.getInt("qemu.hw.mainkeys", 1) == 0);
     }
 
     public static boolean isAppInstalled(Context context, String appUri) {
