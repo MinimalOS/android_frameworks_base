@@ -3004,12 +3004,6 @@ public final class Settings {
         public static final String LOCKSCREEN_QUICK_UNLOCK_CONTROL = "lockscreen_quick_unlock_control";
 
         /**
-         * Whether lock before unlock is enabled or disabled
-         * @hide
-         */
-        public static final String LOCK_BEFORE_UNLOCK = "lock_before_unlock";
-
-        /**
           * Volume keys control cursor in text fields (default is 0)
           * 0 - Disabled
           * 1 - Volume up/down moves cursor left/right
@@ -4479,6 +4473,12 @@ public final class Settings {
          * @hide
          */
         public static final String LOCK_PATTERN_SIZE = "lock_pattern_size";
+
+        /**
+         * Whether lock before unlock is enabled or disabled
+         * @hide
+         */
+        public static final String LOCK_BEFORE_UNLOCK = "lock_before_unlock";
 
         /**
          * Whether lock pattern will vibrate as user enters (0 = false, 1 =
