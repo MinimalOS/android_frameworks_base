@@ -26,8 +26,7 @@ import java.util.ArrayList;
 
 public class BatteryController extends BroadcastReceiver {
     private static final String TAG = "StatusBar.BatteryController";
-    private static int sBatteryLevel = 50;
-    private static boolean sBatteryCharging = false;
+
 
     private ArrayList<BatteryStateChangeCallback> mChangeCallbacks =
             new ArrayList<BatteryStateChangeCallback>();
@@ -60,19 +59,10 @@ public class BatteryController extends BroadcastReceiver {
                     plugged = true;
                     break;
             }
-            sBatteryLevel = level;
-            sBatteryCharging = plugged;
-            updateCallbacks();
-        }
-    }
 
-    public void updateCallback(BatteryStateChangeCallback cb) {
-        cb.onBatteryLevelChanged(sBatteryLevel, sBatteryCharging);
-    }
-
-    public void updateCallbacks() {
-        for (BatteryStateChangeCallback cb : mChangeCallbacks) {
-            cb.onBatteryLevelChanged(sBatteryLevel, sBatteryCharging);
+            for (BatteryStateChangeCallback cb : mChangeCallbacks) {
+                cb.onBatteryLevelChanged(level, plugged);
+            }
         }
     }
 }

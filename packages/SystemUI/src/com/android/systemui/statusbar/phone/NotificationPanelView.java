@@ -21,7 +21,6 @@ import android.content.ContentResolver;
 import android.content.res.Resources;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
-import android.provider.Settings;
 import android.util.AttributeSet;
 import android.util.EventLog;
 import android.view.MotionEvent;
@@ -50,7 +49,6 @@ public class NotificationPanelView extends PanelView {
     int mFingers;
     PhoneStatusBar mStatusBar;
     boolean mOkToFlip;
-    int mToggleStyle;
     boolean mFastToggleEnabled;
     boolean mSwipeToSwitch;
     int mFastTogglePos;
@@ -67,8 +65,6 @@ public class NotificationPanelView extends PanelView {
 
     public NotificationPanelView(Context context, AttributeSet attrs) {
         super(context, attrs);
-        mToggleStyle = Settings.AOKP.getInt(context.getContentResolver(),
-                Settings.AOKP.TOGGLES_STYLE, 0);
     }
 
     public void setStatusBar(PhoneStatusBar bar) {
@@ -196,11 +192,6 @@ public class NotificationPanelView extends PanelView {
                       mTrackingSwipe = isFullyExpanded();
                     }
                     mOkToFlip = getExpandedHeight() == 0;
-                    if (mToggleStyle != 0) {
-                        // don't allow settings panel with non-tile toggles
-                        mOkToFlip = false;
-                        break;
-                    }
                     if (mFastTogglePos == 1) {
                         if ((event.getX(0) > getWidth()
                                 * (1.0f - STATUS_BAR_SETTINGS_FLIP_PERCENTAGE_RIGHT)

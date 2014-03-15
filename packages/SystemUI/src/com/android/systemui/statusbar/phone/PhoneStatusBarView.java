@@ -49,7 +49,6 @@ public class PhoneStatusBarView extends PanelBar {
     PanelView mNotificationPanel, mSettingsPanel;
     private boolean mShouldFade;
     private final PhoneStatusBarTransitions mBarTransitions;
-    private int mToggleStyle;
     private GestureDetector mDoubleTapGesture;
 
     public PhoneStatusBarView(Context context, AttributeSet attrs) {
@@ -65,9 +64,6 @@ public class PhoneStatusBarView extends PanelBar {
         }
         mFullWidthNotifications = mSettingsPanelDragzoneFrac <= 0f;
         mBarTransitions = new PhoneStatusBarTransitions(this);
-        // no need for observer, sysui gets killed when the style is changed.
-        mToggleStyle = Settings.AOKP.getInt(mContext.getContentResolver(),
-                Settings.AOKP.TOGGLES_STYLE, 0);
 
         mDoubleTapGesture = new GestureDetector(mContext, new GestureDetector.SimpleOnGestureListener() {
             @Override
@@ -155,9 +151,7 @@ public class PhoneStatusBarView extends PanelBar {
                     ? null
                     : mNotificationPanel;
         }
-        if(mToggleStyle != 0) {
-            return mNotificationPanel;
-        }
+
         // We split the status bar into thirds: the left 2/3 are for notifications, and the
         // right 1/3 for quick settings. If you pull the status bar down a second time you'll
         // toggle panels no matter where you pull it down.
