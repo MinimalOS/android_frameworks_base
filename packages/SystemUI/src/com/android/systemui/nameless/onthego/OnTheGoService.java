@@ -32,19 +32,24 @@ import android.graphics.PixelFormat;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
 import android.net.Uri;
+import android.hardware.SensorManager;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.UserHandle;
 import android.provider.Settings;
 import android.view.TextureView;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
 
+import com.android.internal.util.nameless.NamelessUtils;
+import com.android.internal.util.nameless.constants.FlashLightConstants;
+import com.android.internal.util.nameless.listeners.ShakeDetector;
 import com.android.systemui.R;
 
 import java.io.IOException;
 
-public class OnTheGoService extends Service {
+public class OnTheGoService extends Service implements ShakeDetector.Listener {
 
     private static final int ONTHEGO_NOTIFICATION_ID = 81333378;
 
@@ -66,6 +71,8 @@ public class OnTheGoService extends Service {
     private FrameLayout         mOverlay;
     private Camera              mCamera;
     private NotificationManager mNotificationManager;
+    private SensorManager       mSensorManager;
+    private ShakeDetector       mShakeDetector;
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -82,13 +89,26 @@ public class OnTheGoService extends Service {
     private void registerAlphaReceiver() {
         final IntentFilter alphaFilter = new IntentFilter(ACTION_TOGGLE_ALPHA);
         registerReceiver(mAlphaReceiver, alphaFilter);
+        final IntentFilter cameraFilter = new IntentFilter(ACTION_TOGGLE_CAMERA);
+        registerReceiver(mCameraReceiver, cameraFilter);
+
+        mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+        mShakeDetector = new ShakeDetector(this);
+        mShakeDetector.start(mSensorManager);
     }
 
     private void unregisterAlphaReceiver() {
         try {
             unregisterReceiver(mAlphaReceiver);
-        } catch (Exception ignored) {
-            // ignored
+        } catch (Exception ignored) { }
+        try {
+            unregisterReceiver(mCameraReceiver);
+        } catch (Exception ignored) { }
+
+        if (mShakeDetector != null) {
+            mShakeDetector.stop();
+            mShakeDetector = null;
+            mSensorManager = null;
         }
     }
 
@@ -344,5 +364,32 @@ public class OnTheGoService extends Service {
 
         mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         mNotificationManager.notify(ONTHEGO_NOTIFICATION_ID, notif);
+    }
+
+    private void logDebug(String msg) {
+        if (DEBUG) {
+            Log.e(TAG, msg);
+        }
+    }
+
+    private final        Object  mShakeLock     = new Object();
+    private final static int     SHAKE_TIMEOUT  = 1000;
+    private              boolean mIsShakeLocked = false;
+
+    @Override
+    public void hearShake() {
+        synchronized (mShakeLock) {
+            if (!mIsShakeLocked) {
+                final Intent intent = new Intent(FlashLightConstants.ACTION_TOGGLE_STATE);
+                sendBroadcastAsUser(intent, UserHandle.CURRENT);
+                mIsShakeLocked = true;
+                mHandler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        mIsShakeLocked = false;
+                    }
+                }, SHAKE_TIMEOUT);
+            }
+        }
     }
 }
