@@ -3027,6 +3027,12 @@ public final class Settings {
         public static final String STATUS_BAR_NOTIF_COUNT="status_bar_notif_count";
 
         /**
+         *  Enable statusbar double tap gesture on to put device to sleep
+         * @hide
+         */
+        public static final String DOUBLE_TAP_SLEEP_GESTURE = "double_tap_sleep_gesture";
+
+        /**
          * Automatic keyboard rotation timeout.  0 to disable completely.
          * @hide
          */
