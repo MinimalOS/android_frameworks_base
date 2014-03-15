@@ -3213,6 +3213,11 @@ public final class Settings {
         public static final String PROGRESSBAR_COLOR_4 = "progressbar_color_4";
 
         /**
+         * @hide
+         */
+        public static final String SMART_PHONE_CALLER = "smart_phone_caller";
+
+        /**
          * Whether to remove the sound from outgoing notifications during quiet hours.
          * @hide
          */
