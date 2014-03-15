@@ -82,28 +82,41 @@ public class OnTheGoService extends Service implements ShakeDetector.Listener {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        unregisterAlphaReceiver();
+        unregisterReceivers(false);
         resetViews();
     }
 
-    private void registerAlphaReceiver() {
+    private void registerReceivers(boolean isScreenOn) {
         final IntentFilter alphaFilter = new IntentFilter(ACTION_TOGGLE_ALPHA);
         registerReceiver(mAlphaReceiver, alphaFilter);
         final IntentFilter cameraFilter = new IntentFilter(ACTION_TOGGLE_CAMERA);
         registerReceiver(mCameraReceiver, cameraFilter);
+
+        if (!isScreenOn) {
+            final IntentFilter screenFilter = new IntentFilter();
+            screenFilter.addAction(Intent.ACTION_SCREEN_OFF);
+            screenFilter.addAction(Intent.ACTION_SCREEN_ON);
+            registerReceiver(mScreenReceiver, screenFilter);
+        }
 
         mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         mShakeDetector = new ShakeDetector(this);
         mShakeDetector.start(mSensorManager);
     }
 
-    private void unregisterAlphaReceiver() {
+    private void unregisterReceivers(boolean isScreenOff) {
         try {
             unregisterReceiver(mAlphaReceiver);
         } catch (Exception ignored) { }
         try {
             unregisterReceiver(mCameraReceiver);
         } catch (Exception ignored) { }
+
+        if (!isScreenOff) {
+            try {
+                unregisterReceiver(mScreenReceiver);
+            } catch (Exception ignored) { }
+        }
 
         if (mShakeDetector != null) {
             mShakeDetector.stop();
@@ -126,11 +139,32 @@ public class OnTheGoService extends Service implements ShakeDetector.Listener {
             super(handler);
         }
 
-        void observe() {
-            final ContentResolver resolver = getContentResolver();
-            resolver.registerContentObserver(Settings.System.getUriFor(
-                    Settings.System.ON_THE_GO_CAMERA), false, this);
+    private final BroadcastReceiver mScreenReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent == null) {
+                return;
+            }
+
+            synchronized (mRestartObject) {
+                final String action = intent.getAction();
+                if (action != null && !action.isEmpty()) {
+                    logDebug("mScreenReceiver: " + action);
+                    if (Intent.ACTION_SCREEN_ON.equals(action)) {
+                        setupViews(true);
+                        registerReceivers(true);
+                    } else if (Intent.ACTION_SCREEN_OFF.equals(action)) {
+                        unregisterReceivers(true);
+                        resetViews();
+                    }
+                }
+            }
         }
+    };
+
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        logDebug("onStartCommand called");
 
         @Override
         public void onChange(boolean selfChange, Uri uri) {
@@ -166,16 +200,14 @@ public class OnTheGoService extends Service implements ShakeDetector.Listener {
         }
 
         resetViews();
-        registerAlphaReceiver();
-        setupViews();
-        final SettingsObserver mObserver = new SettingsObserver(mHandler);
-        mObserver.observe();
+        registerReceivers(false);
+        setupViews(false);
 
         createNotification(NOTIFICATION_STARTED);
     }
 
     private void stopOnTheGo(boolean shouldRestart) {
-        unregisterAlphaReceiver();
+        unregisterReceivers(false);
         resetViews();
 
         // Cancel notification
