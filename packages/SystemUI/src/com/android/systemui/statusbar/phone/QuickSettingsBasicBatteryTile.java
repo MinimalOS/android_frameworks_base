@@ -28,12 +28,15 @@ import android.widget.TextView;
 
 import com.android.systemui.BatteryMeterView;
 import com.android.systemui.BatteryCircleMeterView;
+import com.android.systemui.BatteryPercentMeterView;
+
 import com.android.systemui.R;
 
 class QuickSettingsBasicBatteryTile extends QuickSettingsTileView {
     private final TextView mTextView;
     private BatteryMeterView mBattery;
     private BatteryCircleMeterView mCircleBattery;
+    private BatteryPercentMeterView mPercentBattery;
     
     public QuickSettingsBasicBatteryTile(Context context) {
         this(context, null);
@@ -59,6 +62,8 @@ class QuickSettingsBasicBatteryTile extends QuickSettingsTileView {
         mBattery = (BatteryMeterView) findViewById(R.id.image);
         mBattery.setVisibility(View.GONE);
         mCircleBattery = (BatteryCircleMeterView) findViewById(R.id.circle_battery);
+        mPercentBattery = (BatteryPercentMeterView) findViewById(R.id.percent_battery);
+
     }
 
     @Override
@@ -72,6 +77,10 @@ class QuickSettingsBasicBatteryTile extends QuickSettingsTileView {
 
     public BatteryCircleMeterView getCircleBattery() {
         return mCircleBattery;
+    }
+
+    public BatteryPercentMeterView getPercentBattery() {
+        return mPercentBattery;
     }
 
     public TextView getTextView() {
@@ -92,5 +101,6 @@ class QuickSettingsBasicBatteryTile extends QuickSettingsTileView {
         }
         mCircleBattery.updateSettings();
         mBattery.updateSettings();
+        mPercentBattery.updateSettings();
     }
 }
