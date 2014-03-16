@@ -25,6 +25,7 @@ import com.android.internal.widget.SizeAdaptiveLayout;
 import com.android.systemui.R;
 import com.android.systemui.SearchPanelView;
 import com.android.systemui.SystemUI;
+import com.android.systemui.slimrecent.RecentController;
 import com.android.systemui.recent.RecentTasksLoader;
 import com.android.systemui.recent.RecentsActivity;
 import com.android.systemui.recent.TaskDescription;
@@ -336,7 +337,7 @@ public abstract class BaseStatusBar extends SystemUI implements
                         mContext.getContentResolver(), Settings.System.CUSTOM_RECENT, false);
 
         if(mCustomRecent){
-            cRecents = new RecentController(mContext);
+            cRecents = new RecentController(mContext,mLayoutDirection);
         }else{
             mRecents = getComponent(RecentsComponent.class);
         }
