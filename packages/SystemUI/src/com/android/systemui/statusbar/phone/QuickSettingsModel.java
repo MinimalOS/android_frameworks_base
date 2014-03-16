@@ -158,7 +158,22 @@ class QuickSettingsModel implements BluetoothStateChangeCallback,
         @Override
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
+            final ContentResolver cr = mContext.getContentResolver();
             if (action.equals(Intent.ACTION_BOOT_COMPLETED)) {
+                mHandler.postDelayed(new Runnable() {
+                    @Override public void run() {
+                        if (deviceHasMobileData()) {
+                                mMobileNetworkState.label =
+                                    mContext.getResources()
+                                            .getString(R.string.quick_settings_network_disabled);
+                                mMobileNetworkState.iconId =
+                                    R.drawable.ic_qs_unexpected_network;
+                                mMobileNetworkCallback.refreshView(mMobileNetworkTile,
+                                                                    mMobileNetworkState);
+                        }
+                    }
+                }, 200);
+
                 refreshMobileNetworkTile();
             }
             context.unregisterReceiver(mBootReceiver);
@@ -749,12 +764,12 @@ class QuickSettingsModel implements BluetoothStateChangeCallback,
             mRSSIState.signalContentDescription = enabled && (mobileSignalIconId > 0)
                     ? signalContentDescription
                     : r.getString(R.string.accessibility_no_signal);
-            mRSSIState.dataTypeIconId = enabled && (dataTypeIconId > 0) && !mWifiState.enabled
+            mRSSIState.dataTypeIconId = enabled && (dataTypeIconId > 0) && !mWifiState.connected
                     ? dataTypeIconId
                     : 0;
             mRSSIState.activityIn = enabled && activityIn;
             mRSSIState.activityOut = enabled && activityOut;
-            mRSSIState.dataContentDescription = enabled && (dataTypeIconId > 0) && !mWifiState.enabled
+            mRSSIState.dataContentDescription = enabled && (dataTypeIconId > 0) && !mWifiState.connected
                     ? dataContentDescription
                     : r.getString(R.string.accessibility_no_data);
             mRSSIState.label = enabled
@@ -798,27 +813,32 @@ class QuickSettingsModel implements BluetoothStateChangeCallback,
         int network = getCurrentPreferredNetworkMode(mContext);
         switch(network) {
             case Phone.NT_MODE_GLOBAL:
+            case Phone.NT_MODE_LTE_WCDMA:
             case Phone.NT_MODE_LTE_GSM_WCDMA:
             case Phone.NT_MODE_LTE_ONLY:
-            case Phone.NT_MODE_LTE_WCDMA:
-            case Phone.NT_MODE_LTE_CDMA_AND_EVDO:
-            case Phone.NT_MODE_LTE_CMDA_EVDO_GSM_WCDMA:
                 // 2G Only
                 tm.toggleMobileNetwork(Phone.NT_MODE_GSM_ONLY);
                 break;
+            case Phone.NT_MODE_LTE_CDMA_AND_EVDO:
+            case Phone.NT_MODE_LTE_CMDA_EVDO_GSM_WCDMA:
+                // 2G Only
+                tm.toggleMobileNetwork(Phone.NT_MODE_CDMA_NO_EVDO);
+                break;
             case Phone.NT_MODE_GSM_ONLY:
-            case Phone.NT_MODE_CDMA:
                 // 3G Only
                 tm.toggleMobileNetwork(Phone.NT_MODE_WCDMA_ONLY);
                 break;
             case Phone.NT_MODE_WCDMA_ONLY:
-            case Phone.NT_MODE_CDMA_NO_EVDO:
-                // 2G/3G Pref
+                // 2G/3G
                 tm.toggleMobileNetwork(Phone.NT_MODE_WCDMA_PREF);
+                break;
+            case Phone.NT_MODE_EVDO_NO_CDMA:
+            case Phone.NT_MODE_CDMA_NO_EVDO:
+                // 2G/3G
+                tm.toggleMobileNetwork(Phone.NT_MODE_CDMA);
                 break;
             case Phone.NT_MODE_WCDMA_PREF:
             case Phone.NT_MODE_GSM_UMTS:
-            case Phone.NT_MODE_EVDO_NO_CDMA:
                 // LTE
                 if (deviceSupportsLTE()) {
                     if (usesQcLte) {
@@ -829,6 +849,9 @@ class QuickSettingsModel implements BluetoothStateChangeCallback,
                 } else {
                     tm.toggleMobileNetwork(Phone.NT_MODE_GSM_ONLY);
                 }
+                break;
+            case Phone.NT_MODE_CDMA:
+                tm.toggleMobileNetwork(Phone.NT_MODE_LTE_CDMA_AND_EVDO);
                 break;
         }
     }
@@ -846,6 +869,10 @@ class QuickSettingsModel implements BluetoothStateChangeCallback,
             case Phone.NT_MODE_WCDMA_ONLY:
             case Phone.NT_MODE_GSM_ONLY:
             case Phone.NT_MODE_WCDMA_PREF:
+            case Phone.NT_MODE_EVDO_NO_CDMA:
+            case Phone.NT_MODE_CDMA_NO_EVDO:
+            case Phone.NT_MODE_CDMA:
+
                 return r.getString(R.string.quick_settings_network_type);
         }
         return r.getString(R.string.quick_settings_network_unknown);
@@ -864,9 +891,12 @@ class QuickSettingsModel implements BluetoothStateChangeCallback,
             case Phone.NT_MODE_WCDMA_ONLY:
                 return R.drawable.ic_qs_3g_on;
             case Phone.NT_MODE_GSM_ONLY:
+            case Phone.NT_MODE_CDMA_NO_EVDO:
+            case Phone.NT_MODE_EVDO_NO_CDMA:
                 return R.drawable.ic_qs_2g_on;
             case Phone.NT_MODE_WCDMA_PREF:
             case Phone.NT_MODE_GSM_UMTS:
+            case Phone.NT_MODE_CDMA:
                 return R.drawable.ic_qs_2g3g_on;
         }
         return R.drawable.ic_qs_unexpected_network;
@@ -876,6 +906,12 @@ class QuickSettingsModel implements BluetoothStateChangeCallback,
         int network = Settings.Global.getInt(context.getContentResolver(),
                     Settings.Global.PREFERRED_NETWORK_MODE, -1);
         return network;
+    }
+
+    public boolean isMobileDataEnabled(Context context) {
+        ConnectivityManager cm =
+                (ConnectivityManager)context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        return cm.getMobileDataEnabled();
     }
 
     // Bluetooth
@@ -1327,26 +1363,35 @@ class QuickSettingsModel implements BluetoothStateChangeCallback,
 
     protected int getScreenTimeout() {
         return Settings.System.getInt(mContext.getContentResolver(),
-                Settings.System.SCREEN_OFF_TIMEOUT, 0);
+                Settings.System.SCREEN_OFF_TIMEOUT, SCREEN_TIMEOUT_30);
     }
 
     protected void screenTimeoutChangeState() {
-        int screenTimeout = getScreenTimeout();
+        final int currentScreenTimeout = getScreenTimeout();
+        int screenTimeout = currentScreenTimeout;
 
-        if (screenTimeout == SCREEN_TIMEOUT_15) {
-            screenTimeout = SCREEN_TIMEOUT_30;
-        } else if (screenTimeout == SCREEN_TIMEOUT_30) {
-            screenTimeout = SCREEN_TIMEOUT_60;
-        } else if (screenTimeout == SCREEN_TIMEOUT_60) {
-            screenTimeout = SCREEN_TIMEOUT_120;
-        } else if (screenTimeout == SCREEN_TIMEOUT_120) {
-            screenTimeout = SCREEN_TIMEOUT_300;
-        } else if (screenTimeout == SCREEN_TIMEOUT_300) {
-            screenTimeout = SCREEN_TIMEOUT_600;
-        } else if (screenTimeout == SCREEN_TIMEOUT_600) {
-            screenTimeout = SCREEN_TIMEOUT_1800;
-        } else if (screenTimeout == SCREEN_TIMEOUT_1800) {
-            screenTimeout = SCREEN_TIMEOUT_15;
+        switch(currentScreenTimeout) {
+            case SCREEN_TIMEOUT_15:
+                screenTimeout = SCREEN_TIMEOUT_30;
+                break;
+            case SCREEN_TIMEOUT_30:
+                screenTimeout = SCREEN_TIMEOUT_60;
+                break;
+            case SCREEN_TIMEOUT_60:
+                screenTimeout = SCREEN_TIMEOUT_120;
+                break;
+            case SCREEN_TIMEOUT_120:
+                screenTimeout = SCREEN_TIMEOUT_300;
+                break;
+            case SCREEN_TIMEOUT_300:
+                screenTimeout = SCREEN_TIMEOUT_600;
+                break;
+            case SCREEN_TIMEOUT_600:
+                screenTimeout = SCREEN_TIMEOUT_1800;
+                break;
+            case SCREEN_TIMEOUT_1800:
+                screenTimeout = SCREEN_TIMEOUT_15;
+                break;
         }
 
         Settings.System.putInt(
@@ -1375,8 +1420,6 @@ class QuickSettingsModel implements BluetoothStateChangeCallback,
     }
 
     // Immersive mode
-    private int immersiveModeLastState = 1;
-
     private static final int IMMERSIVE_MODE_OFF = 0;
     private static final int IMMERSIVE_MODE_FULL = 1;
     private static final int IMMERSIVE_MODE_HIDE_ONLY_NAVBAR = 2;
@@ -1410,18 +1453,23 @@ class QuickSettingsModel implements BluetoothStateChangeCallback,
     private void onImmersiveModeChanged() {
         Resources r = mContext.getResources();
         final int mode = getImmersiveMode();
-        if (mode == IMMERSIVE_MODE_OFF) {
-            mImmersiveModeState.iconId = R.drawable.ic_qs_immersive_off;
-            mImmersiveModeState.label = r.getString(R.string.quick_settings_immersive_mode_off_label);
-        } else if (mode == IMMERSIVE_MODE_FULL) {
-            mImmersiveModeState.iconId = R.drawable.ic_qs_immersive_full;
-            mImmersiveModeState.label = r.getString(R.string.quick_settings_immersive_mode_full_label);
-        } else if (mode == IMMERSIVE_MODE_HIDE_ONLY_NAVBAR) {
-            mImmersiveModeState.iconId = R.drawable.ic_qs_immersive_status_bar_off;
-            mImmersiveModeState.label = r.getString(R.string.quick_settings_immersive_mode_no_status_bar_label);
-        } else if (mode == IMMERSIVE_MODE_HIDE_ONLY_STATUSBAR) {
-            mImmersiveModeState.iconId = R.drawable.ic_qs_immersive_navigation_bar_off;
-            mImmersiveModeState.label = r.getString(R.string.quick_settings_immersive_mode_no_navigation_bar_label);
+        switch(mode) {
+            case IMMERSIVE_MODE_OFF:
+                mImmersiveModeState.iconId = R.drawable.ic_qs_immersive_off;
+                mImmersiveModeState.label = r.getString(R.string.quick_settings_immersive_mode_off_label);
+                break;
+            case IMMERSIVE_MODE_FULL:
+                mImmersiveModeState.iconId = R.drawable.ic_qs_immersive_full;
+                mImmersiveModeState.label = r.getString(R.string.quick_settings_immersive_mode_full_label);
+                break;
+            case IMMERSIVE_MODE_HIDE_ONLY_NAVBAR:
+                mImmersiveModeState.iconId = R.drawable.ic_qs_immersive_status_bar_off;
+                mImmersiveModeState.label = r.getString(R.string.quick_settings_immersive_mode_no_status_bar_label);
+                break;
+            case IMMERSIVE_MODE_HIDE_ONLY_STATUSBAR:
+                mImmersiveModeState.iconId = R.drawable.ic_qs_immersive_navigation_bar_off;
+                mImmersiveModeState.label = r.getString(R.string.quick_settings_immersive_mode_no_navigation_bar_label);
+                break;
         }
         mImmersiveModeCallback.refreshView(mImmersiveModeTile, mImmersiveModeState);
     }
@@ -1443,25 +1491,47 @@ class QuickSettingsModel implements BluetoothStateChangeCallback,
         Settings.System.putInt(mContext.getContentResolver(),
                 Settings.System.IMMERSIVE_MODE, style);
         if (style != 0) {
-            immersiveModeLastState = style;
+            setImmersiveLastActiveState(style);
         }
     }
 
+    private int getImmersiveLastActiveState() {
+        return Settings.System.getInt(mContext.getContentResolver(),
+                Settings.System.IMMERSIVE_LAST_ACTIVE_STATE, 1);
+    }
+
+    private void setImmersiveLastActiveState(int style) {
+        Settings.System.putInt(mContext.getContentResolver(),
+                Settings.System.IMMERSIVE_LAST_ACTIVE_STATE, style);
+    }
+
     protected void switchImmersiveGlobal() {
-        if (getImmersiveMode() == IMMERSIVE_MODE_OFF) {
-            setImmersiveMode(immersiveModeLastState);
-        } else if (getImmersiveMode() != IMMERSIVE_MODE_OFF) {
-            setImmersiveMode(IMMERSIVE_MODE_OFF);
+        final int current = getImmersiveMode();
+        final int lastState = getImmersiveLastActiveState();
+        switch(current) {
+            case IMMERSIVE_MODE_OFF:
+                setImmersiveMode(lastState);
+                break;
+            case IMMERSIVE_MODE_FULL:
+            case IMMERSIVE_MODE_HIDE_ONLY_NAVBAR:
+            case IMMERSIVE_MODE_HIDE_ONLY_STATUSBAR:
+                setImmersiveMode(IMMERSIVE_MODE_OFF);
+                break;
         }
     }
 
     protected void switchImmersiveMode() {
-        if (getImmersiveMode() == IMMERSIVE_MODE_FULL) {
-            setImmersiveMode(IMMERSIVE_MODE_HIDE_ONLY_NAVBAR);
-        } else if (getImmersiveMode() == IMMERSIVE_MODE_HIDE_ONLY_NAVBAR) {
-            setImmersiveMode(IMMERSIVE_MODE_HIDE_ONLY_STATUSBAR);
-        } else if (getImmersiveMode() == IMMERSIVE_MODE_HIDE_ONLY_STATUSBAR) {
-            setImmersiveMode(IMMERSIVE_MODE_FULL);
+        final int current = getImmersiveMode();
+        switch(current) {
+            case IMMERSIVE_MODE_FULL:
+                setImmersiveMode(IMMERSIVE_MODE_HIDE_ONLY_NAVBAR);
+                break;
+            case IMMERSIVE_MODE_HIDE_ONLY_NAVBAR:
+                setImmersiveMode(IMMERSIVE_MODE_HIDE_ONLY_STATUSBAR);
+                break;
+            case IMMERSIVE_MODE_HIDE_ONLY_STATUSBAR:
+                setImmersiveMode(IMMERSIVE_MODE_FULL);
+                break;
         }
     }
 
@@ -1488,16 +1558,8 @@ class QuickSettingsModel implements BluetoothStateChangeCallback,
         onWifiApChanged();
     }
 
-    protected void toggleWifiApState(QuickSettingsDualBasicTile tile) {
-        if (isWifiApEnabled()) {
-            setWifiApEnabled(false);
-            tile.setBackImageResource(R.drawable.ic_qs_wifi_ap_off);
-            tile.setBackTextResource(R.string.quick_settings_wifi_ap_off_label);
-        } else {
-            setWifiApEnabled(true);
-            tile.setBackImageResource(R.drawable.ic_qs_wifi_ap_on);
-            tile.setBackTextResource(R.string.quick_settings_wifi_ap_label);
-        }
+    protected void toggleWifiApState() {
+        setWifiApEnabled(isWifiApEnabled() ? false : true);
     }
 
     protected boolean isWifiApEnabled() {

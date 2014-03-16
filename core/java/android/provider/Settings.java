@@ -2677,6 +2677,12 @@ public final class Settings {
         public static final String GESTURE_ANYWHERE_ENABLED = "gesture_anywhere_enabled";
 
         /**
+         * Store last immersive state to persist through reboot
+         * @hide
+         */
+        public static final String IMMERSIVE_LAST_ACTIVE_STATE = "immersive_last_active_state";
+
+        /**
          * Position of gesture anywhere trigger.  Value is either Gravity.LEFT or Gravity.RIGHT
          * @hide
          */

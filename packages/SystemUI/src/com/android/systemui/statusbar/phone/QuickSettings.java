@@ -66,6 +66,7 @@ import android.view.WindowManager;
 import android.view.WindowManagerGlobal;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.android.internal.app.MediaRouteDialogPresenter;
 import com.android.systemui.BatteryMeterView;
@@ -510,7 +511,7 @@ class QuickSettings {
                     wifiTile.setBackOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
-                            mModel.toggleWifiApState(wifiTile);
+                            mModel.toggleWifiApState();
                         }
                     });
                     wifiTile.setBackOnLongClickListener(new View.OnLongClickListener() {
@@ -567,6 +568,8 @@ class QuickSettings {
 
                                 if (rssiState.dataTypeIconId > 0) {
                                     rssiTile.setFrontImageOverlayResource(rssiState.dataTypeIconId);
+                                } else if (!mModel.isMobileDataEnabled(mContext)) {
+                                    rssiTile.setFrontImageOverlayResource(R.drawable.ic_qs_signal_data_off);
                                 } else {
                                     rssiTile.setFrontImageOverlayDrawable(null);
                                 }
@@ -583,11 +586,15 @@ class QuickSettings {
                         });
                         // Back side (Mobile networks modes)
                         rssiTile.setBackImageResource(R.drawable.ic_qs_unexpected_network);
-                        rssiTile.setBackTextResource(R.string.quick_settings_network_unknown);
+                        rssiTile.setBackTextResource(R.string.quick_settings_network_disabled);
                         rssiTile.setBackOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View v) {
-                                mModel.toggleMobileNetworkState();
+                                    collapsePanels();
+                                    Toast.makeText(mContext,
+                                                   R.string.quick_settings_network_toast_disabled,
+                                                   Toast.LENGTH_SHORT).show();
+
                             }
                         });
                         rssiTile.setBackOnLongClickListener(new View.OnLongClickListener() {
@@ -657,6 +664,7 @@ class QuickSettings {
                     }
                 } else if(Tile.BATTERY.toString().equals(tile.toString())) { // Battery tile
                     batteryTile = new QuickSettingsBasicBatteryTile(mContext);
+                    batteryTile.setTileId(Tile.BATTERY);
                     updateBattery();
                     batteryTile.setOnClickListener(new View.OnClickListener() {
                         @Override
@@ -1017,6 +1025,27 @@ class QuickSettings {
         // Remote Display
         QuickSettingsBasicTile remoteDisplayTile
                 = new QuickSettingsBasicTile(mContext);
+        remoteDisplayTile.setTemporary(true);
+        remoteDisplayTile.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                collapsePanels();
+
+                final Dialog[] dialog = new Dialog[1];
+                dialog[0] = MediaRouteDialogPresenter.createDialog(mContext,
+                        MediaRouter.ROUTE_TYPE_REMOTE_DISPLAY,
+                        new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        dialog[0].dismiss();
+                        startSettingsActivity(
+                                android.provider.Settings.ACTION_WIFI_DISPLAY_SETTINGS);
+                    }
+                });
+                dialog[0].getWindow().setType(WindowManager.LayoutParams.TYPE_VOLUME_OVERLAY);
+                dialog[0].show();
+            }
+        });
         mModel.addRemoteDisplayTile(remoteDisplayTile,
                 new QuickSettingsModel.BasicRefreshCallback(remoteDisplayTile)
                         .setShowWhenEnabled(true));
