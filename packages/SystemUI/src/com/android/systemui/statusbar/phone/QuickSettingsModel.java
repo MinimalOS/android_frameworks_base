@@ -330,6 +330,8 @@ public class QuickSettingsModel implements BluetoothStateChangeCallback,
             cr.registerContentObserver(
                     Settings.System.getUriFor(Settings.System.VIBRATE_WHEN_RINGING), false, this,
                     UserHandle.USER_ALL);
+            cr.registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.IMMERSIVE_DEFAULT_APP_MODE), false, this);
         }
     }
 
@@ -1935,7 +1937,8 @@ public class QuickSettingsModel implements BluetoothStateChangeCallback,
         if (mode == IMMERSIVE_MODE_OFF) {
             mImmersiveGlobalState.iconId = enabled ?
                     R.drawable.ic_qs_pie_global_off : R.drawable.ic_qs_immersive_global_off;
-            mImmersiveGlobalState.label = r.getString(R.string.quick_settings_immersive_global_off_label);
+            mImmersiveGlobalState.label = r.getString(isDefault ?
+                    R.string.quick_settings_immersive_mode_app_default : R.string.quick_settings_immersive_global_off_label);
         } else {
             mImmersiveGlobalState.iconId = enabled ?
                     R.drawable.ic_qs_pie_global_on : R.drawable.ic_qs_immersive_global_on;

@@ -1506,7 +1506,13 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                 mNavigationBarWidthForRotation[mSeascapeRotation] = mNavigationBarWidth;
             }
 
-            updateImmersiveTileIfOnDefaultAppMode();
+            // update default param
+            boolean navTranslucent = (mLastSystemUiFlags & View.NAVIGATION_BAR_TRANSLUCENT) != 0;
+            boolean immersiveSticky = (mLastSystemUiFlags & View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY) != 0;
+            navTranslucent &= !immersiveSticky;  // transient trumps translucent
+            navTranslucent &= areTranslucentBarsAllowed();
+
+            updateImmersiveTileIfOnDefaultAppMode(navTranslucent);
 
             if (mSystemReady) {
                 int pointerLocation = Settings.System.getIntForUser(resolver,
@@ -1536,9 +1542,11 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         }
     }
 
-    private void updateImmersiveTileIfOnDefaultAppMode() {
-        boolean isOnDefaultAppMode = mImmersiveModeStyle == IMMERSIVE_MODE_OFF &&
-                (isImmersiveMode(mLastSystemUiFlags) || (mLastSystemUiFlags & View.SYSTEM_UI_FLAG_FULLSCREEN) != 0);
+    private void updateImmersiveTileIfOnDefaultAppMode(boolean translucent) {
+        boolean isNavBarImmersive = isImmersiveMode(mLastSystemUiFlags) ||
+                (mNavigationBar.isVisibleLw() && mNavigationBarController.isTransientShowing() && !translucent);
+        boolean isStatusBarImmersive = (mLastSystemUiFlags & View.SYSTEM_UI_FLAG_FULLSCREEN) != 0;
+        boolean isOnDefaultAppMode = (mImmersiveModeStyle == IMMERSIVE_MODE_OFF) && (isStatusBarImmersive || isNavBarImmersive);
         // store state
         Settings.System.putIntForUser(mContext.getContentResolver(), Settings.System.IMMERSIVE_DEFAULT_APP_MODE,
                 isOnDefaultAppMode ? 1 : 0, UserHandle.USER_CURRENT);
@@ -3227,6 +3235,12 @@ public class PhoneWindowManager implements WindowManagerPolicy {
             // then take that into account.
             navVisible |= !canHideNavigationBar();
 
+            // If we are in immersive mode but using native app's flags
+            // the tile will not refresh or show somehow that we are in
+            // immersive mode. Make it just refresh the label saying we're
+            // on app's default immersive mode.
+            updateImmersiveTileIfOnDefaultAppMode(navTranslucent);
+
             if (immersiveModeImplementsPie()) {
                 boolean isNavBarImmersive = isImmersiveMode(mLastSystemUiFlags);
                 boolean statusBarVisible = mStatusBar != null &&
@@ -3252,12 +3266,6 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                     }
                 }
             }
-
-            // If we are in immersive mode but using native app's flags
-            // the tile will not refresh or show somehow that we are in
-            // immersive mode. Make it just refresh the label saying we're
-            // on app's default immersive mode.
-            updateImmersiveTileIfOnDefaultAppMode();
 
             boolean updateSysUiVisibility = false;
             if (mNavigationBar != null) {
