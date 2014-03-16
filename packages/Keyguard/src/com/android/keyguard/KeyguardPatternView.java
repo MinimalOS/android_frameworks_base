@@ -145,8 +145,8 @@ public class KeyguardPatternView extends LinearLayout implements KeyguardSecurit
 
         mLockPatternView.setLockPatternSize(mLockPatternUtils.getLockPatternSize());
 
-        if (Settings.System.getInt(mContext.getContentResolver(),
-                    Settings.System.DOUBLE_TAP_SLEEP_GESTURE, 0) == 1) {
+        if (Settings.AOKP.getInt(mContext.getContentResolver(),
+                    Settings.AOKP.DOUBLE_TAP_SLEEP_GESTURE, 0) == 1) {
             mLockPatternView.setOnTouchListener(new OnTouchListener() {
                 @Override
                 public boolean onTouch(View v, MotionEvent event) {
