@@ -2684,6 +2684,13 @@ public final class Settings {
         public static final String IMMERSIVE_LAST_ACTIVE_STATE = "immersive_last_active_state";
 
         /**
+         * Store if the app is using its own immersive and we
+         * are not using forced one by tile
+         * @hide
+         */
+        public static final String IMMERSIVE_DEFAULT_APP_MODE = "immersive_default_app_mode";
+
+        /**
          * Position of gesture anywhere trigger.  Value is either Gravity.LEFT or Gravity.RIGHT
          * @hide
          */
