@@ -19,4 +19,7 @@
 <resources>
     <color name="status_bar_battery_text_color">#FFFFFFFF</color>
     <color name="status_bar_battery_text_color_plugged">#FF00FF00</color>
+    <color name="batterymeter_percent_color">#FFFFFFFF</color>
+    <color name="batterymeter_percent_warn_color">#FFFF0000</color><!-- red -->
+    <color name="batterymeter_percent_critical_color">#FFFFFF00</color><!-- yellow -->
 </resources>

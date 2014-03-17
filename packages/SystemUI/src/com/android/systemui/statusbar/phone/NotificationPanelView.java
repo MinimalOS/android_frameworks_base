@@ -190,6 +190,23 @@ public class NotificationPanelView extends PanelView {
                     if (event.getX(0) > getWidth() * mQuickPullDownPercentage) {
                         flip = true;
                     }
+                    if (mFastTogglePos == 1) {
+                        if ((event.getX(0) > getWidth()
+                                * (1.0f - STATUS_BAR_SETTINGS_FLIP_PERCENTAGE_RIGHT)
+                                && mFastToggleEnabled)
+                            || (mStatusBar.skipToSettingsPanel())
+                                && !mFastToggleEnabled) {
+                            shouldFlip = true;
+                        }
+                    } else if (mFastTogglePos == 2) {
+                        if ((event.getX(0) < getWidth()
+                                * (1.0f - STATUS_BAR_SETTINGS_FLIP_PERCENTAGE_LEFT)
+                                && mFastToggleEnabled)
+                            || (mStatusBar.skipToSettingsPanel())
+                                && !mFastToggleEnabled) {
+                            shouldFlip = true;
+                        }
+                    }
                     break;
                 case MotionEvent.ACTION_MOVE:
                     if (mSwipeToSwitch) {

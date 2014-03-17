@@ -85,6 +85,8 @@ import com.android.systemui.statusbar.policy.LocationController;
 import com.android.systemui.statusbar.policy.NetworkController;
 import com.android.systemui.statusbar.policy.RotationLockController;
 
+import com.android.internal.util.omni.OmniTorchConstants;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -112,7 +114,9 @@ class QuickSettings {
         LOCATION,
         IMMERSIVE,
         LIGHTBULB,
-        SLEEP
+        SLEEP,
+        SYNC,
+        TORCH
     }
 
     public static final String NO_TILES = "NO_TILES";
@@ -120,7 +124,9 @@ class QuickSettings {
     public static final String DEFAULT_TILES = Tile.USER + DELIMITER + Tile.BRIGHTNESS
         + DELIMITER + Tile.SETTINGS + DELIMITER + Tile.WIFI + DELIMITER + Tile.RSSI
         + DELIMITER + Tile.ROTATION + DELIMITER + Tile.BATTERY + DELIMITER + Tile.BLUETOOTH
-        + DELIMITER + Tile.LOCATION + DELIMITER + Tile.IMMERSIVE + DELIMITER + Tile.LIGHTBULB;
+        + DELIMITER + Tile.LOCATION + DELIMITER + Tile.IMMERSIVE + DELIMITER + Tile.LIGHTBULB
+        + DELIMITER + Tile.SYNC + DELIMITER + Tile.TORCH;
+
 
     private Context mContext;
     private PanelBar mBar;
@@ -662,6 +668,51 @@ class QuickSettings {
                         parent.addView(rotationLockTile);
                         if(addMissing) rotationLockTile.setVisibility(View.GONE);
                     }
+                    } else if (Tile.TORCH.toString().equals(tile.toString())) { // torch tile
+                  // Torch
+                  final QuickSettingsBasicTile torchTile
+                        = new QuickSettingsBasicTile(mContext);
+                  torchTile.setTileId(Tile.TORCH);
+                  torchTile.setOnLongClickListener(new View.OnLongClickListener() {
+                        @Override
+                        public boolean onLongClick(View v) {
+                            startSettingsActivity(OmniTorchConstants.INTENT_LAUNCH_APP);
+                            return true;
+                        }
+                  });
+                  mModel.addTorchTile(torchTile, new QuickSettingsModel.RefreshCallback() {
+                        @Override
+                        public void refreshView(QuickSettingsTileView unused, State state) {
+                            torchTile.setImageResource(state.iconId);
+                            torchTile.setText(state.label);
+                        }
+                  });
+                  parent.addView(torchTile);
+                  if (addMissing) torchTile.setVisibility(View.GONE);
+                    } else if (Tile.SYNC.toString().equals(tile.toString())) { // sync tile
+                  // sync
+                  final QuickSettingsBasicTile SyncTile
+                        = new QuickSettingsBasicTile(mContext);
+                  SyncTile.setTileId(Tile.SYNC);
+                  SyncTile.setOnLongClickListener(new View.OnLongClickListener() {
+                        @Override
+                        public boolean onLongClick(View v) {
+                            Intent intent = new Intent("android.settings.SYNC_SETTINGS");
+                            intent.addCategory(Intent.CATEGORY_DEFAULT);
+                            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                            startSettingsActivity(intent);
+                            return true;
+                        }
+                  });
+                  mModel.addSyncModeTile(SyncTile, new QuickSettingsModel.RefreshCallback() {
+                        @Override
+                        public void refreshView(QuickSettingsTileView unused, State state) {
+                            SyncTile.setImageResource(state.iconId);
+                            SyncTile.setText(state.label);
+                        }
+                  });
+                  parent.addView(SyncTile);
+                  if (addMissing) SyncTile.setVisibility(View.GONE);
                 } else if(Tile.BATTERY.toString().equals(tile.toString())) { // Battery tile
                     batteryTile = new QuickSettingsBasicBatteryTile(mContext);
                     batteryTile.setTileId(Tile.BATTERY);
