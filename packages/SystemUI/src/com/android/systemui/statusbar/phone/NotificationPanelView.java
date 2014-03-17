@@ -92,7 +92,7 @@ public class NotificationPanelView extends PanelView {
                 mFastToggleEnabled = Settings.AOKP.getBoolean(resolver,
                         Settings.AOKP.FAST_TOGGLE, false);
                 mSwipeToSwitch = Settings.AOKP.getBoolean(resolver,
-                        Settings.AOKP.SWIPE_TO_SWITCH, true);
+                        Settings.AOKP.SWIPE_TO_SWITCH, false);
             }
         };
 
