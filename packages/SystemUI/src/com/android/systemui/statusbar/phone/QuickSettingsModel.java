@@ -27,6 +27,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
+import android.content.SyncStatusObserver;
 import android.database.ContentObserver;
 import android.graphics.drawable.Drawable;
 import android.hardware.usb.UsbManager;
@@ -467,6 +468,24 @@ class QuickSettingsModel implements BluetoothStateChangeCallback,
     private RotationLockController mRotationLockController;
     private LocationController mLocationController;
 
+    private QuickSettingsTileView mSyncModeTile;
+    private RefreshCallback mSyncModeCallback;
+    private State mSyncModeState = new State();
+
+    private Object mSyncObserverHandle = null;
+
+    private SyncStatusObserver mSyncObserver = new SyncStatusObserver() {
+        public void onStatusChanged(int which) {
+            // update state/view if something happened
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    updateSyncState();
+                }
+            });
+        }
+    };
+
     public QuickSettingsModel(Context context) {
         mContext = context;
         mHandler = new Handler();
@@ -517,6 +536,16 @@ class QuickSettingsModel implements BluetoothStateChangeCallback,
         IntentFilter wifiApStateFilter = new IntentFilter();
         wifiApStateFilter.addAction(WifiManager.WIFI_AP_STATE_CHANGED_ACTION);
         context.registerReceiver(mWifiApStateReceiver, wifiApStateFilter);
+
+        if(mSyncObserverHandle != null) {
+            //Unregistering sync state listener
+            ContentResolver.removeStatusChangeListener(mSyncObserverHandle);
+            mSyncObserverHandle = null;
+        } else {
+            // Registering sync state listener
+            mSyncObserverHandle = ContentResolver.addStatusChangeListener(
+                    ContentResolver.SYNC_OBSERVER_TYPE_SETTINGS, mSyncObserver);
+        }
 
         // Only register for devices that support usb tethering
         if (DeviceUtils.deviceSupportsUsbTether(context)) {
@@ -675,6 +704,40 @@ class QuickSettingsModel implements BluetoothStateChangeCallback,
                 R.drawable.ic_qs_airplane_off);
         mAirplaneModeState.label = r.getString(R.string.quick_settings_airplane_mode_label);
         mAirplaneModeCallback.refreshView(mAirplaneModeTile, mAirplaneModeState);
+    }
+
+    // Sync Mode
+    void addSyncModeTile(QuickSettingsTileView view, RefreshCallback cb) {
+        mSyncModeTile = view;
+        mSyncModeTile.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (getSyncState()) {
+                    ContentResolver.setMasterSyncAutomatically(false);
+                } else {
+                    ContentResolver.setMasterSyncAutomatically(true);
+                }
+                updateSyncState();
+            }
+        });
+        mSyncModeCallback = cb;
+        updateSyncState();
+    }
+
+    private boolean getSyncState() {
+        return ContentResolver.getMasterSyncAutomatically();
+    }
+
+    private void updateSyncState() {
+        Resources r = mContext.getResources();
+        mSyncModeState.enabled = getSyncState();
+        mSyncModeState.iconId = (getSyncState() ?
+                R.drawable.ic_qs_sync_on :
+                R.drawable.ic_qs_sync_off);
+        mSyncModeState.label = (getSyncState() ?
+                r.getString(R.string.quick_settings_sync) :
+                r.getString(R.string.quick_settings_sync_off));
+        mSyncModeCallback.refreshView(mSyncModeTile, mSyncModeState);
     }
 
     // Wifi

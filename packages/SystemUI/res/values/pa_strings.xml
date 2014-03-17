@@ -71,4 +71,7 @@
     <string name="quick_settings_location_mode_high_label">High</string>
     <string name="quick_settings_location_mode_battery_label">Battery</string>
     <string name="quick_settings_location_mode_sensors_label">Device</string>
+
+    <string name="quick_settings_sync">Sync</string>
+    <string name="quick_settings_sync_off">Sync off</string>
 </resources>

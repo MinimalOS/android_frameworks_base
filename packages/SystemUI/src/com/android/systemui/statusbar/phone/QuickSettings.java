@@ -112,7 +112,8 @@ class QuickSettings {
         LOCATION,
         IMMERSIVE,
         LIGHTBULB,
-        SLEEP
+        SLEEP,
+        SYNC
     }
 
     public static final String NO_TILES = "NO_TILES";
@@ -120,7 +121,9 @@ class QuickSettings {
     public static final String DEFAULT_TILES = Tile.USER + DELIMITER + Tile.BRIGHTNESS
         + DELIMITER + Tile.SETTINGS + DELIMITER + Tile.WIFI + DELIMITER + Tile.RSSI
         + DELIMITER + Tile.ROTATION + DELIMITER + Tile.BATTERY + DELIMITER + Tile.BLUETOOTH
-        + DELIMITER + Tile.LOCATION + DELIMITER + Tile.IMMERSIVE + DELIMITER + Tile.LIGHTBULB;
+        + DELIMITER + Tile.LOCATION + DELIMITER + Tile.IMMERSIVE + DELIMITER + Tile.LIGHTBULB
+        + DELIMITER + Tile.SYNC;
+
 
     private Context mContext;
     private PanelBar mBar;
@@ -662,6 +665,30 @@ class QuickSettings {
                         parent.addView(rotationLockTile);
                         if(addMissing) rotationLockTile.setVisibility(View.GONE);
                     }
+                    } else if (Tile.SYNC.toString().equals(tile.toString())) { // sync tile
+                  // sync
+                  final QuickSettingsBasicTile SyncTile
+                        = new QuickSettingsBasicTile(mContext);
+                  SyncTile.setTileId(Tile.SYNC);
+                  SyncTile.setOnLongClickListener(new View.OnLongClickListener() {
+                        @Override
+                        public boolean onLongClick(View v) {
+                            Intent intent = new Intent("android.settings.SYNC_SETTINGS");
+                            intent.addCategory(Intent.CATEGORY_DEFAULT);
+                            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                            startSettingsActivity(intent);
+                            return true;
+                        }
+                  });
+                  mModel.addSyncModeTile(SyncTile, new QuickSettingsModel.RefreshCallback() {
+                        @Override
+                        public void refreshView(QuickSettingsTileView unused, State state) {
+                            SyncTile.setImageResource(state.iconId);
+                            SyncTile.setText(state.label);
+                        }
+                  });
+                  parent.addView(SyncTile);
+                  if (addMissing) SyncTile.setVisibility(View.GONE);
                 } else if(Tile.BATTERY.toString().equals(tile.toString())) { // Battery tile
                     batteryTile = new QuickSettingsBasicBatteryTile(mContext);
                     batteryTile.setTileId(Tile.BATTERY);
