@@ -2684,6 +2684,13 @@ public final class Settings {
         public static final String IMMERSIVE_LAST_ACTIVE_STATE = "immersive_last_active_state";
 
         /**
+         * Store if the app is using its own immersive and we
+         * are not using forced one by tile
+         * @hide
+         */
+        public static final String IMMERSIVE_DEFAULT_APP_MODE = "immersive_default_app_mode";
+
+        /**
          * Position of gesture anywhere trigger.  Value is either Gravity.LEFT or Gravity.RIGHT
          * @hide
          */
@@ -3211,6 +3218,11 @@ public final class Settings {
 	* @hide
 	*/
         public static final String PROGRESSBAR_COLOR_4 = "progressbar_color_4";
+
+        /**
+         * @hide
+         */
+        public static final String SMART_PHONE_CALLER = "smart_phone_caller";
 
         /**
          * Whether to remove the sound from outgoing notifications during quiet hours.
