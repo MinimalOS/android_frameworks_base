@@ -1041,7 +1041,9 @@ class QuickSettings {
                  });
                  parent.addView(netAdbTile);
                  if (addMissing) netAdbTile.setVisibility(View.GONE);
+                 }
             }
+        }
         if(!addMissing) addTiles(parent, true);
     }
 
