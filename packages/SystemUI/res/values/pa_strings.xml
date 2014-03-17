@@ -47,6 +47,8 @@
     <!-- QuickSettings: Lightbulb tile [CHAR LIMIT=NONE] -->
     <string name="quick_settings_lightbulb_label">Lightbulb</string>
     <string name="quick_settings_lightbulb_off_label">Lightbulb Off</string>
+    <string name="quick_settings_torch">Torch</string>
+    <string name="quick_settings_torch_off">Torch off</string>
     <!-- USB Tether Tile [CHAR LIMIT=NONE] -->
     <string name="quick_settings_usb_tether_connected_label">USB Tethering Off</string>
     <string name="quick_settings_usb_tether_on_label">USB Tethering</string>
