@@ -66,7 +66,7 @@ import com.android.internal.util.omni.OmniTorchConstants;
 
 import java.util.List;
 
-class QuickSettingsModel implements BluetoothStateChangeCallback,
+public class QuickSettingsModel implements BluetoothStateChangeCallback,
         NetworkSignalChangedCallback,
         BatteryStateChangeCallback,
         BrightnessStateChangeCallback,
@@ -1532,10 +1532,10 @@ class QuickSettingsModel implements BluetoothStateChangeCallback,
     }
 
     // Immersive mode
-    private static final int IMMERSIVE_MODE_OFF = 0;
-    private static final int IMMERSIVE_MODE_FULL = 1;
-    private static final int IMMERSIVE_MODE_HIDE_ONLY_NAVBAR = 2;
-    private static final int IMMERSIVE_MODE_HIDE_ONLY_STATUSBAR = 3;
+    public static final int IMMERSIVE_MODE_OFF = 0;
+    public static final int IMMERSIVE_MODE_FULL = 1;
+    public static final int IMMERSIVE_MODE_HIDE_ONLY_NAVBAR = 2;
+    public static final int IMMERSIVE_MODE_HIDE_ONLY_STATUSBAR = 3;
 
     void addImmersiveGlobalTile(QuickSettingsTileView view, RefreshCallback cb) {
         mImmersiveGlobalTile = view;
