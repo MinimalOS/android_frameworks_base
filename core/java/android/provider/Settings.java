@@ -3246,6 +3246,12 @@ public final class Settings {
         public static final String SMART_PHONE_CALLER = "smart_phone_caller";
 
         /**
+         * Setting to show determine if AOSP dialer is used
+         * @hide
+         */
+        public static final String AOSP_DIALER = "aosp_dialer";
+
+        /**
          * Whether to remove the sound from outgoing notifications during quiet hours.
          * @hide
          */
