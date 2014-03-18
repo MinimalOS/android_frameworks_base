@@ -3867,40 +3867,29 @@ public class AudioService extends IAudioService.Stub {
                 Settings.System.MODE_RINGER_STREAMS_AFFECTED), false, this);
             mContentResolver.registerContentObserver(Settings.Global.getUriFor(
                 Settings.Global.DOCK_AUDIO_MEDIA_ENABLED), false, this);
-            mContentResolver.registerContentObserver(Settings.System.getUriFor(
-<<<<<<< HEAD
-                    Settings.System.VOLUME_LINK_NOTIFICATION), false, this);
             mContentResolver.registerContentObserver(Settings.AOKP.getUriFor(
                     Settings.AOKP.MANUAL_SAFE_MEDIA_VOLUME), false, this);
-=======
-                Settings.System.SAFE_HEADSET_VOLUME), false, this,
-                UserHandle.USER_ALL);
             mContentResolver.registerContentObserver(Settings.System.getUriFor(
                 Settings.System.VOLUME_LINK_NOTIFICATION), false, this,
                 UserHandle.USER_ALL);
->>>>>>> 4a19a46... [1/2] base: volume panel styles and tweaks
         }
 
         @Override
-        public void onChange(boolean selfChange) {
+        public void onChange(boolean selfChange, Uri uri) {
             super.onChange(selfChange);
             // FIXME This synchronized is not necessary if mSettingsLock only protects mRingerMode.
             //       However there appear to be some missing locks around mRingerModeMutedStreams
             //       and mRingerModeAffectedStreams, so will leave this synchronized for now.
             //       mRingerModeMutedStreams and mMuteAffectedStreams are safe (only accessed once).
             synchronized (mSettingsLock) {
-<<<<<<< HEAD
                 if (updateRingerModeAffectedStreams()) {
                     /*
                      * Ensure all stream types that should be affected by ringer mode
                      * are in the proper state.
                      */
                     setRingerModeInt(getRingerMode(), false);
-=======
+                }
                 if (uri.equals(Settings.System.getUriFor(
-                    Settings.System.SAFE_HEADSET_VOLUME))) {
-                    mSafeVolumeEnabled = safeVolumeEnabled(mContentResolver);
-                } else if (uri.equals(Settings.System.getUriFor(
                     Settings.System.MODE_RINGER_STREAMS_AFFECTED))) {
                     if (updateRingerModeAffectedStreams()) {
                         /*
@@ -3925,7 +3914,6 @@ public class AudioService extends IAudioService.Stub {
                         mStreamVolumeAlias[AudioSystem.STREAM_NOTIFICATION] =
                             AudioSystem.STREAM_NOTIFICATION;
                     }
->>>>>>> 4a19a46... [1/2] base: volume panel styles and tweaks
                 }
                 boolean linkNotificationWithVolume = Settings.System.getInt(mContentResolver,
                         Settings.System.VOLUME_LINK_NOTIFICATION, 1) == 1;
