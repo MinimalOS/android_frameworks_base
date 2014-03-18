@@ -57,18 +57,8 @@
     <string name="immersive_mode_on">Immersive mode is ON</string>
     <string name="immersive_mode_off">Immersive mode is OFF</string>
 
-    <!-- XenonHD Actions -->
-    <string name="action_assist">Search (Google Now)</string>
-    <string name="action_clockoptions">Clock options</string>
-    <string name="action_voiceassist">Voice search</string>
-    <string name="action_event">Event</string>
-    <string name="action_today">Today</string>
-    <string name="action_alarm">Alarm</string>
-    <string name="action_app">Custom App/Shortcut</string>
-
     <!-- Long-press back kill application -->
     <string name="app_killed_message">Application killed</string>
-    <string name="action_null">Blank</string>
 
     <!-- Title of an application permission that lets an application view/edit revoked permissions. -->
     <string name="permlab_revokePermissions">Allows view and edit of revoked permissions. Not for use by normal applications.</string>
