@@ -422,35 +422,8 @@ class GlobalActions implements DialogInterface.OnDismissListener, DialogInterfac
                 });
         }
 
-        // next: On-The-Go, if enabled
-        boolean showOnTheGo = Settings.System.getBoolean(mContext.getContentResolver(),
-                Settings.System.POWER_MENU_ONTHEGO_ENABLED, false);
-        if (showOnTheGo) {
-            mItems.add(
-                    new SinglePressAction(R.drawable.ic_lock_onthego,
-                            R.string.global_action_onthego) {
-
-                        public void onPress() {
-                            startOnTheGo();
-                        }
-
-                        public boolean onLongPress() {
-                            return false;
-                        }
-
-                        public boolean showDuringKeyguard() {
-                            return true;
-                        }
-
-                        public boolean showBeforeProvisioning() {
-                            return true;
-                        }
-                    }
-            );
-        }
-
-        // next: airplane mode
-        if (mAirplaneOption !=0) {
+            // next: airplane mode
+         if (mAirplaneOption != 0) {
             mItems.add(mAirplaneModeOn);
          }
          if (mImmersiveOption != 0) {
@@ -677,15 +650,6 @@ class GlobalActions implements DialogInterface.OnDismissListener, DialogInterfac
     private void toggleScreenRecord() {
         final Intent recordIntent = new Intent("org.chameleonos.action.NOTIFY_RECORD_SERVICE");
         mContext.sendBroadcast(recordIntent, Manifest.permission.RECORD_SCREEN);
-    }
-
-    private void startOnTheGo() {
-        final ComponentName cn = new ComponentName("com.android.systemui",
-                "com.android.systemui.nameless.onthego.OnTheGoService");
-        final Intent startIntent = new Intent();
-        startIntent.setComponent(cn);
-        startIntent.setAction("start");
-        mContext.startService(startIntent);
     }
 
     private void prepareDialog() {
