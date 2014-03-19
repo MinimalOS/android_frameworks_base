@@ -119,16 +119,27 @@ class QuickSettings {
         SLEEP,
         SYNC,
         NETADB,
-        TORCH
+        TORCH,
+        VOLUME
     }
 
     public static final String NO_TILES = "NO_TILES";
     public static final String DELIMITER = ";";
-    public static final String DEFAULT_TILES = Tile.USER + DELIMITER + Tile.BRIGHTNESS
-        + DELIMITER + Tile.SETTINGS + DELIMITER + Tile.WIFI + DELIMITER + Tile.RSSI
-        + DELIMITER + Tile.ROTATION + DELIMITER + Tile.BATTERY + DELIMITER + Tile.BLUETOOTH
-        + DELIMITER + Tile.LOCATION + DELIMITER + Tile.IMMERSIVE + DELIMITER + Tile.LIGHTBULB
-        + DELIMITER + Tile.SYNC + DELIMITER + Tile.TORCH + DELIMITER + Tile.NETADB;
+    public static final String DEFAULT_TILES = Tile.USER 
+        + DELIMITER + Tile.BRIGHTNESS
+        + DELIMITER + Tile.SETTINGS 
+        + DELIMITER + Tile.WIFI 
+        + DELIMITER + Tile.RSSI
+        + DELIMITER + Tile.ROTATION 
+        + DELIMITER + Tile.BATTERY 
+        + DELIMITER + Tile.BLUETOOTH
+        + DELIMITER + Tile.LOCATION 
+        + DELIMITER + Tile.IMMERSIVE 
+        + DELIMITER + Tile.LIGHTBULB
+        + DELIMITER + Tile.SYNC 
+        + DELIMITER + Tile.TORCH 
+        + DELIMITER + Tile.NETADB
+        + DELIMITER + Tile.VOLUME;
 
 
     private Context mContext;
@@ -991,6 +1002,46 @@ class QuickSettings {
                     });
                     parent.addView(immersiveTile);
                     if(addMissing) immersiveTile.setVisibility(View.GONE);
+               } else if (Tile.VOLUME.toString().equals(tile.toString())) { // Volume tile
+                  // Volume mode
+                  final QuickSettingsDualBasicTile VolumeTile
+                        = new QuickSettingsDualBasicTile(mContext);
+
+                  VolumeTile.setTileId(Tile.VOLUME);
+                  VolumeTile.setFrontImageResource(R.drawable.ic_qs_volume);
+                  VolumeTile.setFrontText(mContext.getString(R.string.quick_settings_volume));
+                  VolumeTile.setBackText(mContext.getString(R.string.quick_settings_volume_status));
+                  VolumeTile.setFrontOnClickListener(new View.OnClickListener() {
+                       @Override
+                       public void onClick(View v) {
+                           collapsePanels();
+                           AudioManager am = (AudioManager) mContext.getSystemService(Context.AUDIO_SERVICE);
+                           am.adjustVolume(AudioManager.ADJUST_SAME, AudioManager.FLAG_SHOW_UI);
+                      }
+                  });
+                  VolumeTile.setFrontOnLongClickListener(new View.OnLongClickListener() {
+                      @Override
+                      public boolean onLongClick(View v) {
+                           startSettingsActivity(android.provider.Settings.ACTION_SOUND_SETTINGS);
+                           return true;
+                      }
+                  });
+                  mModel.addRingerModeTile(VolumeTile.getBack(), new QuickSettingsModel.RefreshCallback() {
+                        @Override
+                        public void refreshView(QuickSettingsTileView view, State state) {
+                            VolumeTile.setBackImageResource(state.iconId);
+                            VolumeTile.setBackText(state.label);
+                        }
+                  });
+                  VolumeTile.setBackOnLongClickListener(new View.OnLongClickListener() {
+                      @Override
+                      public boolean onLongClick(View v) {
+                           startSettingsActivity(android.provider.Settings.ACTION_SOUND_SETTINGS);
+                           return true;
+                      }
+                  });
+                  parent.addView(VolumeTile);
+                  if (addMissing) VolumeTile.setVisibility(View.GONE);
                 } else if(Tile.SLEEP.toString().equals(tile.toString())) { // Sleep tile
                     final PowerManager pm = (PowerManager) mContext.getSystemService(Context.POWER_SERVICE);
                     final QuickSettingsDualBasicTile sleepTile

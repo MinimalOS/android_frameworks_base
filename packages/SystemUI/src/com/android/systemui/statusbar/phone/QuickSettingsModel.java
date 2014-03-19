@@ -31,6 +31,7 @@ import android.content.SyncStatusObserver;
 import android.database.ContentObserver;
 import android.graphics.drawable.Drawable;
 import android.hardware.usb.UsbManager;
+import android.media.AudioManager;
 import android.media.MediaRouter;
 import android.media.MediaRouter.RouteInfo;
 import android.net.ConnectivityManager;
@@ -40,6 +41,7 @@ import android.net.NetworkUtils;
 import android.os.Handler;
 import android.os.SystemProperties;
 import android.os.UserHandle;
+import android.os.Vibrator;
 import android.provider.Settings;
 import android.provider.Settings.SettingNotFoundException;
 import android.text.TextUtils;
@@ -67,6 +69,7 @@ import com.android.systemui.nameless.onthego.OnTheGoReceiver;
 
 import com.android.internal.util.omni.OmniTorchConstants;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class QuickSettingsModel implements BluetoothStateChangeCallback,
@@ -153,6 +156,16 @@ public class QuickSettingsModel implements BluetoothStateChangeCallback,
         public void onReceive(Context context, Intent intent) {
             mTorchActive = intent.getIntExtra(OmniTorchConstants.EXTRA_CURRENT_STATE, 0) != 0;
             onTorchChanged();
+        }
+    };
+
+    /** Broadcast receive to determine ringer. */
+    private BroadcastReceiver mRingerIntentReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent.getAction().equals(AudioManager.RINGER_MODE_CHANGED_ACTION)) {
+                updateRingerState();
+            }
         }
     };
 
@@ -280,6 +293,25 @@ public class QuickSettingsModel implements BluetoothStateChangeCallback,
             cr.unregisterContentObserver(this);
             cr.registerContentObserver(
                     Settings.System.getUriFor(Settings.System.NEXT_ALARM_FORMATTED), false, this,
+                    UserHandle.USER_ALL);
+        }
+    }
+
+   /** ContentObserver to determine the ringer */
+    private class RingerObserver extends ContentObserver {
+        public RingerObserver(Handler handler) {
+            super(handler);
+        }
+
+        @Override 
+        public void onChange(boolean selfChange) {
+            updateRingerState();
+        }
+
+        public void startObserving() {
+            final ContentResolver cr = mContext.getContentResolver();
+            cr.registerContentObserver(
+                    Settings.System.getUriFor(Settings.System.VIBRATE_WHEN_RINGING), false, this,
                     UserHandle.USER_ALL);
         }
     }
@@ -448,6 +480,7 @@ public class QuickSettingsModel implements BluetoothStateChangeCallback,
     private final NetAdbObserver mNetAdbObserver;
     private final OnTheGoObserver mOnTheGoObserver;
     private final NetworkObserver mMobileNetworkObserver;
+    private final RingerObserver mRingerObserver;
     private final SleepTimeObserver mSleepTimeObserver;
     private final ImmersiveObserver mImmersiveObserver;
     private boolean mUsbTethered = false;
@@ -465,6 +498,18 @@ public class QuickSettingsModel implements BluetoothStateChangeCallback,
     private final boolean mHasMobileData;
 
     private boolean mOnTheGoRunning = false;
+    private static final Ringer[] RINGERS = new Ringer[] {
+        new Ringer(AudioManager.RINGER_MODE_SILENT, false, R.drawable.ic_qs_ring_off, R.string.quick_settings_ringer_off),
+        new Ringer(AudioManager.RINGER_MODE_VIBRATE, true, R.drawable.ic_qs_vibrate_on, R.string.quick_settings_vibration_on),
+        new Ringer(AudioManager.RINGER_MODE_NORMAL, false, R.drawable.ic_qs_ring_on, R.string.quick_settings_ringer_on),
+        new Ringer(AudioManager.RINGER_MODE_NORMAL, true, R.drawable.ic_qs_ring_vibrate_on, R.string.quick_settings_ringer_normal)
+    };
+
+    private ArrayList<Ringer> mRingers;
+    private int mRingerIndex;
+
+    private AudioManager mAudioManager;
+    private Vibrator mVibrator;
 
     private QuickSettingsTileView mUserTile;
     private RefreshCallback mUserCallback;
@@ -577,6 +622,10 @@ public class QuickSettingsModel implements BluetoothStateChangeCallback,
     private RefreshCallback mSyncModeCallback;
     private State mSyncModeState = new State();
 
+    private QuickSettingsTileView mRingerModeTile;
+    private RefreshCallback mRingerModeCallback;
+    private State mRingerModeState = new State();
+
     private QuickSettingsTileView mTorchTile;
     private RefreshCallback mTorchCallback;
     private State mTorchState = new State();
@@ -604,6 +653,7 @@ public class QuickSettingsModel implements BluetoothStateChangeCallback,
                 mBrightnessObserver.startObserving();
                 mSleepTimeObserver.startObserving();
                 mImmersiveObserver.startObserving();
+                mRingerObserver.startObserving();
                 mNetAdbObserver.startObserving();
                 mOnTheGoObserver.startObserving();
                 refreshRotationLockTile();
@@ -627,6 +677,8 @@ public class QuickSettingsModel implements BluetoothStateChangeCallback,
         mOnTheGoObserver.startObserving();
         mMobileNetworkObserver = new NetworkObserver(mHandler);
         mMobileNetworkObserver.startObserving();
+        mRingerObserver = new RingerObserver(mHandler);
+        mRingerObserver.startObserving();
         mSleepTimeObserver = new SleepTimeObserver(mHandler);
         mSleepTimeObserver.startObserving();
         mImmersiveObserver = new ImmersiveObserver(mHandler);
@@ -656,6 +708,10 @@ public class QuickSettingsModel implements BluetoothStateChangeCallback,
         wifiApStateFilter.addAction(WifiManager.WIFI_AP_STATE_CHANGED_ACTION);
         context.registerReceiver(mWifiApStateReceiver, wifiApStateFilter);
 
+        IntentFilter ringerIntentFilter = new IntentFilter();
+        ringerIntentFilter.addAction(AudioManager.RINGER_MODE_CHANGED_ACTION);
+        context.registerReceiver(mRingerIntentReceiver, ringerIntentFilter);
+
         IntentFilter torchIntentFilter = new IntentFilter();
         torchIntentFilter.addAction(OmniTorchConstants.ACTION_STATE_CHANGED);
         context.registerReceiver(mTorchIntentReceiver, torchIntentFilter);
@@ -669,6 +725,10 @@ public class QuickSettingsModel implements BluetoothStateChangeCallback,
             mSyncObserverHandle = ContentResolver.addStatusChangeListener(
                     ContentResolver.SYNC_OBSERVER_TYPE_SETTINGS, mSyncObserver);
         }
+
+        mRingers = new ArrayList<Ringer>();
+        mAudioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
+        mVibrator = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
 
         // Only register for devices that support usb tethering
         if (DeviceUtils.deviceSupportsUsbTether(context)) {
@@ -704,6 +764,7 @@ public class QuickSettingsModel implements BluetoothStateChangeCallback,
         refreshImmersiveModeTile();
         refreshWifiApTile();
         onOnTheGoChanged();
+        updateRingerState();
     }
 
     // Settings
@@ -1946,6 +2007,96 @@ public class QuickSettingsModel implements BluetoothStateChangeCallback,
                 mWifiManager.setWifiEnabled(true);
                 Settings.Global.putInt(cr, Settings.Global.WIFI_SAVED_STATE, 0);
             }
+        }
+    }
+
+    // Ringer Mode
+    void addRingerModeTile(QuickSettingsTileView view, RefreshCallback cb) {
+        mRingerModeTile = view;
+        mRingerModeTile.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                toggleRingerState();
+                updateRingerState();
+            }
+        });
+        mRingerModeCallback = cb;
+        updateRingerState();
+    }
+
+    private void updateRingerState() {
+        Resources r = mContext.getResources();
+        updateRingerSettings();
+        findCurrentState();
+        mRingerModeState.enabled = true;
+        mRingerModeState.iconId = mRingers.get(mRingerIndex).mDrawable;
+        mRingerModeState.label = r.getString(mRingers.get(mRingerIndex).mString);
+        mRingerModeCallback.refreshView(mRingerModeTile, mRingerModeState);
+    }
+
+
+    private void findCurrentState() {
+        boolean vibrateWhenRinging = Settings.System.getIntForUser(mContext.getContentResolver(),
+                Settings.System.VIBRATE_WHEN_RINGING, 0, UserHandle.USER_CURRENT) == 1;
+        int ringerMode = mAudioManager.getRingerMode();
+
+        mRingerIndex = 0;
+
+        for (int i = 0; i < mRingers.size(); i++) {
+            Ringer r = mRingers.get(i);
+            if (ringerMode == r.mRingerMode && vibrateWhenRinging == r.mVibrateWhenRinging) {
+                mRingerIndex = i;
+                break;
+            }
+        }
+    }
+
+    private void updateRingerSettings() {
+        boolean hasVibrator = mVibrator.hasVibrator();
+
+        mRingers.clear();
+
+        for (Ringer r : RINGERS) {
+             if (hasVibrator || !r.mVibrateWhenRinging) {
+                 mRingers.add(r);
+             }
+        }
+        if (mRingers.isEmpty()) {
+            mRingers.add(RINGERS[0]);
+        }
+    }
+
+    private void toggleRingerState() {
+        mRingerIndex++;
+        if (mRingerIndex >= mRingers.size()) {
+            mRingerIndex = 0;
+        }
+
+        Ringer r = mRingers.get(mRingerIndex);
+
+        // If we are setting a vibrating state, vibrate to indicate it
+        if (r.mVibrateWhenRinging) {
+            mVibrator.vibrate(250);
+        }
+
+        // Set the desired state
+        ContentResolver resolver = mContext.getContentResolver();
+        Settings.System.putIntForUser(resolver, Settings.System.VIBRATE_WHEN_RINGING,
+                r.mVibrateWhenRinging ? 1 : 0, UserHandle.USER_CURRENT);
+        mAudioManager.setRingerMode(r.mRingerMode);
+    }
+
+    private static class Ringer {
+        final boolean mVibrateWhenRinging;
+        final int mRingerMode;
+        final int mDrawable;
+        final int mString;
+
+        Ringer(int ringerMode, boolean vibrateWhenRinging, int drawable, int string) {
+            mVibrateWhenRinging = vibrateWhenRinging;
+            mRingerMode = ringerMode;
+            mDrawable = drawable;
+            mString = string;
         }
     }
 }
