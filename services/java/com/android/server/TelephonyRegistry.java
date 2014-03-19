@@ -873,7 +873,7 @@ class TelephonyRegistry extends ITelephonyRegistry.Stub {
         intent.putExtra(TelephonyManager.EXTRA_DISCONNECT_CAUSE, disconnectCause);
         intent.putExtra(TelephonyManager.EXTRA_PRECISE_DISCONNECT_CAUSE, preciseDisconnectCause);
         mContext.sendBroadcastAsUser(intent, UserHandle.ALL,
-                android.Manifest.permission.READ_PRECISE_PHONE_STATE);
+                android.Manifest.permission.READ_PHONE_STATE);
     }
 
     private void broadcastPreciseDataConnectionStateChanged(int state, int networkType,
@@ -888,7 +888,7 @@ class TelephonyRegistry extends ITelephonyRegistry.Stub {
         if (failCause != null) intent.putExtra(PhoneConstants.DATA_FAILURE_CAUSE_KEY, failCause);
 
         mContext.sendBroadcastAsUser(intent, UserHandle.ALL,
-                android.Manifest.permission.READ_PRECISE_PHONE_STATE);
+                android.Manifest.permission.READ_PHONE_STATE);
     }
 
     private boolean checkNotifyPermission(String method) {
@@ -922,7 +922,7 @@ class TelephonyRegistry extends ITelephonyRegistry.Stub {
 
         if ((events & PRECISE_PHONE_STATE_PERMISSION_MASK) != 0) {
             mContext.enforceCallingOrSelfPermission(
-                    android.Manifest.permission.READ_PRECISE_PHONE_STATE, null);
+                    android.Manifest.permission.READ_PHONE_STATE, null);
 
         }
     }
