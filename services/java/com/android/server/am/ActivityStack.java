@@ -1141,7 +1141,7 @@ final class ActivityStack {
                     // Aggregate current change flags.
                     configChanges |= r.configChangeFlags;
 
-                    if (r.fullscreen) {
+                    if (r.fullscreen && !r.floatingWindow) {
                         // At this point, nothing else needs to be shown
                         if (DEBUG_VISBILITY) Slog.v(TAG, "Fullscreen: at " + r);
                         behindFullscreen = true;
@@ -2635,6 +2635,9 @@ final class ActivityStack {
         if (mResumedActivity == r) {
             mResumedActivity = null;
         }
+        if (mPausingActivity == r) {
+            mPausingActivity = null;
+        }
         if (mService.mFocusedActivity == r) {
             mService.mFocusedActivity = null;
         }
@@ -3173,9 +3176,7 @@ final class ActivityStack {
 
         final TaskRecord task = mResumedActivity != null ? mResumedActivity.task : null;
         if (task == tr && task.mOnTopOfHome || numTasks <= 1) {
-            if (task != null) {
-                task.mOnTopOfHome = false;
-            }
+            tr.mOnTopOfHome = false;
             return mStackSupervisor.resumeHomeActivity(null);
         }
 
