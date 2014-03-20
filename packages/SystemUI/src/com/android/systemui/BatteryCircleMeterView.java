@@ -58,7 +58,7 @@ import com.android.systemui.BatteryMeterView;
 public class BatteryCircleMeterView extends ImageView {
     final static String QuickSettings = "quicksettings";
     final static String StatusBar = "statusbar";
-    private Handler mHandler;
+    private Handler mHandler = new Handler();
     private Context mContext;
     private BatteryReceiver mBatteryReceiver = null;
 
