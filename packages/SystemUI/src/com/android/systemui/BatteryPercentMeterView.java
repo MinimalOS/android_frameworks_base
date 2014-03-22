@@ -71,7 +71,6 @@ public class BatteryPercentMeterView extends ImageView {
     final static String QuickSettings = "quicksettings";
     final static String StatusBar = "statusbar";
     private Handler mHandler;
-    private Context mContext;
     private boolean mPluggedEnabled;
     private BatteryReceiver mBatteryReceiver = null;
 
@@ -129,10 +128,6 @@ public class BatteryPercentMeterView extends ImageView {
 
     // keeps track of current battery level and charger-plugged-state
     class BatteryReceiver extends BroadcastReceiver {
-        private boolean mIsRegistered = false;
-
-        public BatteryReceiver(Context context) {
-        }
 
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -149,31 +144,6 @@ public class BatteryPercentMeterView extends ImageView {
 
                     invalidate();
                 }
-            }
-        }
-
-        private void registerSelf() {
-            if (!mIsRegistered) {
-                mIsRegistered = true;
-
-                IntentFilter filter = new IntentFilter();
-                filter.addAction(Intent.ACTION_BATTERY_CHANGED);
-                mContext.registerReceiver(mBatteryReceiver, filter);
-            }
-        }
-
-        private void unregisterSelf() {
-            if (mIsRegistered) {
-                mIsRegistered = false;
-                mContext.unregisterReceiver(this);
-            }
-        }
-
-        private void updateRegistration() {
-            if (mActivated && mAttached) {
-                registerSelf();
-            } else {
-                unregisterSelf();
             }
         }
     }
@@ -202,9 +172,8 @@ public class BatteryPercentMeterView extends ImageView {
             mPercentBatteryView = StatusBar;
         }
 
-        mContext = context;
         mHandler = new Handler();
-        mBatteryReceiver = new BatteryReceiver(mContext);
+        mBatteryReceiver = new BatteryReceiver();
         updateSettings();
     }
 
@@ -216,8 +185,12 @@ public class BatteryPercentMeterView extends ImageView {
             false, mObserver);
         if (!mAttached) {
             mAttached = true;
-            mBatteryReceiver.updateRegistration();
-            updateSettings();
+            IntentFilter filter = new IntentFilter();
+            filter.addAction(Intent.ACTION_BATTERY_CHANGED);
+            final Intent sticky = getContext().registerReceiver(mBatteryReceiver, filter);
+            if (sticky != null) {
+                mBatteryReceiver.onReceive(getContext(), sticky);
+            }
             mHandler.postDelayed(mInvalidate, 250);
         }
     }
@@ -227,7 +200,7 @@ public class BatteryPercentMeterView extends ImageView {
         super.onDetachedFromWindow();
         if (mAttached) {
             mAttached = false;
-            mBatteryReceiver.updateRegistration();
+            getContext().unregisterReceiver(mBatteryReceiver);
             mRectLeft = null;   // makes sure, size based variables get
                                 // recalculated on next attach
             mPercentSize = 0;    // makes sure, mPercentSize is reread from icons on
@@ -283,7 +256,7 @@ public class BatteryPercentMeterView extends ImageView {
 
     public void updateSettings() {
         Resources res = getResources();
-        ContentResolver resolver = mContext.getContentResolver();
+        ContentResolver resolver = getContext().getContentResolver();
 
         int defaultColor = res.getColor(com.android.systemui.R.color.batterymeter_charge_color);
         int chargeColor = res.getColor(com.android.systemui.R.color.status_bar_battery_text_color_plugged);
@@ -306,10 +279,6 @@ public class BatteryPercentMeterView extends ImageView {
         mActivated = batteryStyle == 4;
 
         setVisibility(mActivated ? View.VISIBLE : View.GONE);
-
-        if (mBatteryReceiver != null) {
-            mBatteryReceiver.updateRegistration();
-        }
 
         if (mActivated && mAttached) {
             invalidate();
