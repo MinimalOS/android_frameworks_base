@@ -26,6 +26,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.content.SyncStatusObserver;
 import android.database.ContentObserver;
@@ -547,6 +548,10 @@ public class QuickSettingsModel implements BluetoothStateChangeCallback,
     private RefreshCallback mRemoteDisplayCallback;
     private State mRemoteDisplayState = new State();
 
+    private QuickSettingsTileView mThemeTile;
+    private RefreshCallback mThemeCallback;
+    private State mThemeState = new State();
+
     private QuickSettingsTileView mRSSITile;
     private RefreshCallback mRSSICallback;
     private RSSIState mRSSIState = new RSSIState();
@@ -765,6 +770,7 @@ public class QuickSettingsModel implements BluetoothStateChangeCallback,
         refreshWifiApTile();
         onOnTheGoChanged();
         updateRingerState();
+        refreshThemeTile();
     }
 
     // Settings
@@ -1621,9 +1627,47 @@ public class QuickSettingsModel implements BluetoothStateChangeCallback,
     }
 
     void refreshBrightnessTile() {
-        if (mBrightnessTile != null) {
-            onBrightnessLevelChanged();
+       if (mBrightnessTile != null) {
+           onBrightnessLevelChanged();
+       }
+    }
+
+    void addThemeTile(QuickSettingsTileView view, RefreshCallback cb) {
+       mThemeTile = view;
+       mThemeCallback = cb;
+       onThemeChanged();
+    }
+
+    private void onThemeChanged() {
+        int themeAutoMode = Settings.Secure.getIntForUser(mContext.getContentResolver(),
+                Settings.Secure.UI_THEME_AUTO_MODE, QuickSettings.THEME_MODE_MANUAL,
+                UserHandle.USER_CURRENT);
+
+        switch (themeAutoMode) {
+            case QuickSettings.THEME_MODE_MANUAL:
+                mThemeState.iconId = R.drawable.ic_qs_theme_manual;
+                break;
+            case QuickSettings.THEME_MODE_LIGHT_SENSOR:
+                mThemeState.iconId = R.drawable.ic_qs_theme_lightsensor;
+                break;
+            case QuickSettings.THEME_MODE_TWILIGHT:
+                mThemeState.iconId = R.drawable.ic_qs_theme_twilight;
+                break;
         }
+
+        if (mContext.getResources().getConfiguration().uiThemeMode
+                == Configuration.UI_THEME_MODE_HOLO_DARK) {
+            mThemeState.label = mContext.getString(R.string.quick_settings_theme_switch_dark);
+        } else {
+            mThemeState.label = mContext.getString(R.string.quick_settings_theme_switch_light);
+        }
+        mThemeState.enabled = true; 
+     }
+
+    void refreshThemeTile() {
+       if (mThemeTile != null) {
+           onThemeChanged();
+       }
     }
 
     // Network ADB Tile
