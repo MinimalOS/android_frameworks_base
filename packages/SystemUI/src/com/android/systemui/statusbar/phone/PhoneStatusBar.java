@@ -207,6 +207,7 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
     int mCurrUiThemeMode;
     private float mHeadsUpVerticalOffset;
     private int[] mPilePosition = new int[2];
+    int mCurrOrientation;
 
     StatusBarWindowView mStatusBarWindow;
     PhoneStatusBarView mStatusBarView;
@@ -3389,14 +3390,26 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
             loadDimens();
         }
 
-        // Update the QuickSettings container
-        if (mQS != null) mQS.updateResources();
+        // check for orientation change and update only the container layout
+        // for all other configuration changes update complete QS
+        int orientation = res.getConfiguration().orientation;
+        if (orientation != mCurrOrientation) {
+            mCurrOrientation = orientation;
+            // Update the settings container
+            if (mSettingsContainer != null) {
+                mSettingsContainer.updateResources();
+            }
 
-        if (mReminderEnabled == 1) {
+            if (mReminderEnabled == 1) {
                 toggleVisibleFlipper();
                 if (mExpandedVisible) {
                     // Reset to first view since we're expanded and start flipping again
                     toggleReminderFlipper(true);
+                }
+            }
+        } else {
+            if (mQS != null) {
+                mQS.updateResources();
             }
         }
     }
