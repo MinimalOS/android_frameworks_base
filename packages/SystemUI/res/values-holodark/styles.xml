@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
 /*
- * Copyright 2013, The Android Open Kang Project
+ * Copyright 2014, SlimRoms Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,11 @@
  * limitations under the License.
  */
 -->
-<resources>
-    <color name="status_bar_battery_text_color">#FFFFFFFF</color>
-    <color name="status_bar_battery_text_color_plugged">#FF00FF00</color>
-    <color name="batterymeter_percent_color">#FFFFFFFF</color>
-    <color name="batterymeter_percent_warn_color">#FFFF0000</color><!-- red -->
-    <color name="batterymeter_percent_critical_color">#FFFFFF00</color><!-- yellow -->
+
+<resources xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <style name="RecentBaseStyle"  parent="@*android:style/Theme.Holo">
+        <item name="android:popupMenuStyle">@*android:style/Widget.Holo.ListPopupWindow</item>
+    </style>
+
 </resources>
