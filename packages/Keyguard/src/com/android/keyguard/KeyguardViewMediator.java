@@ -1269,6 +1269,9 @@ public class KeyguardViewMediator {
             mKeyguardDonePending = false;
             updateActivityLockScreenState();
             adjustStatusBarLocked();
+
+            // KeyguardViewManager set mBlurredImage = null
+            setBackgroundBitmap(null);
         }
     }
 
