@@ -75,6 +75,8 @@ import com.android.systemui.BatteryMeterView;
 import com.android.systemui.BatteryCircleMeterView;
 import com.android.internal.app.MediaRouteDialogPresenter;
 import com.android.internal.util.omni.DeviceUtils;
+import com.android.internal.util.slim.TRDSActions;
+import com.android.internal.util.slim.TRDSConstant;
 import com.android.systemui.R;
 import com.android.systemui.statusbar.phone.QuickSettingsModel.ActivityState;
 import com.android.systemui.statusbar.phone.QuickSettingsModel.BluetoothState;
@@ -120,7 +122,8 @@ class QuickSettings {
         SYNC,
         NETADB,
         TORCH,
-        VOLUME
+        VOLUME,
+        THEME_MODE
     }
 
     public static final String NO_TILES = "NO_TILES";
@@ -139,7 +142,8 @@ class QuickSettings {
         + DELIMITER + Tile.SYNC 
         + DELIMITER + Tile.NETADB
         + DELIMITER + Tile.TORCH 
-        + DELIMITER + Tile.VOLUME;
+        + DELIMITER + Tile.VOLUME
+        + DELIMITER + Tile.THEME_MODE;
 
 
     private Context mContext;
@@ -167,6 +171,11 @@ class QuickSettings {
     private Handler mHandler;
     private QuickSettingsBasicBatteryTile batteryTile;
     private int mBatteryStyle;
+    private int mThemeAutoMode;
+
+    public static final int THEME_MODE_MANUAL       = 0;
+    public static final int THEME_MODE_LIGHT_SENSOR = 1;
+    public static final int THEME_MODE_TWILIGHT     = 2;
 
     public QuickSettings(Context context, QuickSettingsContainerView container) {
         mDevicePolicyManager
@@ -956,6 +965,44 @@ class QuickSettings {
                     });
                     parent.addView(locationTile);
                     if(addMissing) locationTile.setVisibility(View.GONE);
+                } else if (Tile.THEME_MODE.toString().equals(tile.toString())) { //Theme
+                    final QuickSettingsBasicTile themeTile
+                           = new QuickSettingsBasicTile(mContext);
+                    themeTile.setTileId(Tile.THEME_MODE);
+                    themeTile.setImageResource(R.drawable.ic_qs_theme_manual);
+                    themeTile.setTextResource(R.string.quick_settings_theme_switch_light);
+                    themeTile.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            TRDSActions.processAction(mContext, TRDSConstant.ACTION_THEME_SWITCH, false);
+                        }
+                    });
+
+                    themeTile.setOnLongClickListener(new View.OnLongClickListener() {
+                        @Override
+                        public boolean onLongClick(View v) {
+                        if (mThemeAutoMode == THEME_MODE_TWILIGHT) {
+                            mThemeAutoMode = THEME_MODE_MANUAL;
+                        } else {
+                            mThemeAutoMode = mThemeAutoMode + 1;
+                        }
+                        Settings.Secure.putIntForUser(mContext.getContentResolver(),
+                            Settings.Secure.UI_THEME_AUTO_MODE, mThemeAutoMode,
+                            UserHandle.USER_CURRENT);
+                        return true;
+                        }
+                    });
+
+                    mModel.addThemeTile(themeTile,
+                        new QuickSettingsModel.RefreshCallback() {
+                       @Override
+                       public void refreshView(QuickSettingsTileView unused, State state){
+                           themeTile.setText(state.label);
+                           themeTile.setImageResource(state.iconId);
+                       }
+                    });
+                    parent.addView(themeTile);
+                    if (addMissing) themeTile.setVisibility(View.GONE);
                 } else if(Tile.IMMERSIVE.toString().equals(tile.toString())) { // Immersive mode tile
                     final QuickSettingsDualBasicTile immersiveTile
                             = new QuickSettingsDualBasicTile(mContext);
