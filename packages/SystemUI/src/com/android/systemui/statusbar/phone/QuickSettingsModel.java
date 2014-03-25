@@ -1639,6 +1639,7 @@ public class QuickSettingsModel implements BluetoothStateChangeCallback,
     }
 
     private void onThemeChanged() {
+        Resources r = mContext.getResources();
         int themeAutoMode = Settings.Secure.getIntForUser(mContext.getContentResolver(),
                 Settings.Secure.UI_THEME_AUTO_MODE, QuickSettings.THEME_MODE_MANUAL,
                 UserHandle.USER_CURRENT);
@@ -1657,12 +1658,14 @@ public class QuickSettingsModel implements BluetoothStateChangeCallback,
 
         if (mContext.getResources().getConfiguration().uiThemeMode
                 == Configuration.UI_THEME_MODE_HOLO_DARK) {
-            mThemeState.label = mContext.getString(R.string.quick_settings_theme_switch_dark);
+            mThemeState.label = r.getString(R.string.quick_settings_theme_switch_dark);
         } else {
-            mThemeState.label = mContext.getString(R.string.quick_settings_theme_switch_light);
+            mThemeState.label = r.getString(R.string.quick_settings_theme_switch_light);
         }
         mThemeState.enabled = true; 
+        mThemeCallback.refreshView(mThemeTile, mThemeState);
      }
+
 
     void refreshThemeTile() {
        if (mThemeTile != null) {
