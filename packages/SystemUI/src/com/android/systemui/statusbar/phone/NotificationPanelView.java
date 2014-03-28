@@ -51,7 +51,7 @@ public class NotificationPanelView extends PanelView {
     PhoneStatusBar mStatusBar;
     boolean mOkToFlip;
     boolean mFastToggleEnabled;
-    boolean mSwipeToSwitch;
+    boolean mSwipeToSwitch = true;
     int mFastTogglePos;
     ContentObserver mEnableObserver;
     ContentObserver mChangeSideObserver;
@@ -115,7 +115,6 @@ public class NotificationPanelView extends PanelView {
         resolver.registerContentObserver(
                 Settings.AOKP.getUriFor(Settings.AOKP.SWIPE_TO_SWITCH),
                 true, mEnableObserver);
-
         resolver.registerContentObserver(
                 Settings.AOKP.getUriFor(Settings.AOKP.CHOOSE_FASTTOGGLE_SIDE),
                 true, mChangeSideObserver);
