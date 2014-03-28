@@ -214,6 +214,8 @@ public abstract class BaseStatusBar extends SystemUI implements
     protected boolean mHaloActive;
     public boolean mHaloTaskerActive = false;
     protected ImageView mHaloButton;
+    protected boolean mHaloEnabled;
+    protected boolean mHaloButtonVisible = true;
 
     // UI-specific methods
 
@@ -402,6 +404,9 @@ public abstract class BaseStatusBar extends SystemUI implements
             // If the system process isn't there we're doomed anyway.
         }
 
+        mHaloEnabled = Settings.System.getInt(mContext.getContentResolver(),
+                Settings.System.HALO_ENABLED, 0) == 1;
+
         mHaloActive = Settings.System.getInt(mContext.getContentResolver(),
                 Settings.System.HALO_ACTIVE, 0) == 1;
 
@@ -469,6 +474,13 @@ public abstract class BaseStatusBar extends SystemUI implements
             }
         };
         orientationListener.enable();
+        // Listen for HALO enabled switch
+        mContext.getContentResolver().registerContentObserver(
+                Settings.System.getUriFor(Settings.System.HALO_ENABLED), false, new ContentObserver(new Handler()) {
+            @Override
+            public void onChange(boolean selfChange) {
+                updateHalo();
+            }});
 
         // Listen for HALO state
         mContext.getContentResolver().registerContentObserver(
@@ -505,13 +517,31 @@ public abstract class BaseStatusBar extends SystemUI implements
         updateHalo();
     }
 
+    protected void updateHaloButton() {
+        if (!mHaloEnabled) {
+            mHaloButtonVisible = false;
+        } else {
+            mHaloButtonVisible = true;
+        }
+        if (mHaloButton != null) {
+            mHaloButton.setVisibility(mHaloButtonVisible && !mHaloActive ? View.VISIBLE : View.GONE);
+        }
+    }
+
     protected void updateHalo() {
         mHaloActive = Settings.System.getInt(mContext.getContentResolver(),
                 Settings.System.HALO_ACTIVE, 0) == 1;
 
+        mHaloEnabled = Settings.System.getInt(mContext.getContentResolver(),
+                Settings.System.HALO_ENABLED, 0) == 1;
+
         mHaloButton.setImageResource(mHaloActive
                 ? R.drawable.ic_notify_halo_pressed
                 : R.drawable.ic_notify_halo_normal);
+
+        if (!mHaloEnabled) {
+            mHaloActive = false;
+        }
 
         if (mHaloActive) {
             if (mHalo == null) {
