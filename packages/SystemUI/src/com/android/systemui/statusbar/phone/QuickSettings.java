@@ -872,6 +872,15 @@ class QuickSettings {
                                 }
                             }
                         });
+                        bluetoothTile.setBackOnLongClickListener(new View.OnLongClickListener() {
+                            @Override
+                            public boolean onLongClick(View v) {
+                                collapsePanels();
+                                startSettingsActivity(
+                                        android.provider.Settings.ACTION_BLUETOOTH_SETTINGS);
+                                return true; // Consume click
+                            }
+                        });
                         mModel.addBluetoothTile(bluetoothTile.getFront(),
                                 new QuickSettingsModel.RefreshCallback() {
                             @Override
@@ -958,15 +967,22 @@ class QuickSettings {
                                 return;
                             }
                             int newLocationMode = mLocationController.locationMode();
-                            if (mLocationController.isLocationEnabled()) {
-                                if (mLocationController.setBackLocationEnabled(newLocationMode)) {
+                            if (mLocationController.isLocationEnabled() && mLocationController.setBackLocationEnabled(newLocationMode)) {
                                     if (mLocationController.isLocationAllowPanelCollapse()) {
                                         Intent closeDialog = new Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS);
                                         mContext.sendBroadcast(closeDialog);
                                     }
-                                }
                             }
                         }} );
+                    locationTile.setBackOnLongClickListener(new View.OnLongClickListener() {
+                        @Override
+                        public boolean onLongClick(View v) {
+                            collapsePanels();
+                            startSettingsActivity(
+                                    android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                            return true; // Consume click
+                        }
+                    });
                     mModel.addLocationExtraTile(locationTile.getBack(), mLocationController,
                             new QuickSettingsModel.RefreshCallback() {
                         @Override

@@ -82,7 +82,7 @@ public class QuickSettingsModel implements BluetoothStateChangeCallback,
         BrightnessStateChangeCallback,
         RotationLockControllerCallback,
         LocationSettingsChangeCallback {
-    // Sett InputMethoManagerService
+    // Set InputMethodManagerService
     private static final String TAG_TRY_SUPPRESSING_IME_SWITCHER = "TrySuppressingImeSwitcher";
 
     /** Represents the state of a given attribute. */
