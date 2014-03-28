@@ -1947,12 +1947,16 @@ public class QuickSettingsModel implements BluetoothStateChangeCallback,
                 mImmersiveModeState.label = r.getString(R.string.quick_settings_immersive_mode_full_label);
                 break;
             case IMMERSIVE_MODE_HIDE_ONLY_NAVBAR:
-                mImmersiveModeState.iconId = R.drawable.ic_qs_immersive_status_bar_off;
-                mImmersiveModeState.label = r.getString(R.string.quick_settings_immersive_mode_no_status_bar_label);
+                mImmersiveModeState.iconId =
+                        R.drawable.ic_qs_immersive_navigation_bar_off;
+                mImmersiveModeState.label =
+                        r.getString(R.string.quick_settings_immersive_mode_no_status_bar_label);
                 break;
             case IMMERSIVE_MODE_HIDE_ONLY_STATUSBAR:
-                mImmersiveModeState.iconId = R.drawable.ic_qs_immersive_navigation_bar_off;
-                mImmersiveModeState.label = r.getString(R.string.quick_settings_immersive_mode_no_navigation_bar_label);
+                mImmersiveModeState.iconId =
+                        R.drawable.ic_qs_immersive_status_bar_off;
+                mImmersiveModeState.label =
+                        r.getString(R.string.quick_settings_immersive_mode_no_navigation_bar_label);
                 break;
         }
         mImmersiveModeCallback.refreshView(mImmersiveModeTile, mImmersiveModeState);
