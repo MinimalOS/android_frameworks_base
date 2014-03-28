@@ -1322,6 +1322,8 @@ public class Tethering extends INetworkManagementEventObserver.Stub {
                     service.addUpstreamV6Interface(iface);
                 } catch (RemoteException e) {
                     Log.e(TAG, "Unable to append v6 upstream interface");
+                } catch (IllegalStateException e) {
+                    Log.e(TAG, "ISE: Unable to add v6 upstream interface");
                 }
             }
 

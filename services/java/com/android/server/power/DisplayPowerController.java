@@ -48,7 +48,6 @@ import android.os.UserHandle;
 import android.provider.Settings;
 import android.text.format.DateUtils;
 import android.util.FloatMath;
-import android.util.Log;
 import android.util.Slog;
 import android.util.Spline;
 import android.util.TimeUtils;
@@ -597,7 +596,7 @@ final class DisplayPowerController {
                         bmp.recycle();
                         tmpBmp.recycle();
                     }
-                } else if (!seeThrough) mKeyguardService.setBackgroundBitmap(null);
+                }
                 mPendingRequestChangedLocked = true;
                 sendUpdatePowerStateLocked();
             }
