@@ -565,4 +565,14 @@
          linebreak to position it correctly.  [CHAR LIMIT=45] -->
     <string name="ssl_ca_cert_warning">Network may\nbe monitored</string>
 
+   <!-- Pie controls -->
+    <string name="pie_date_format">ccc, dd MMM yyyy</string>
+    <string name="pie_hour_format_12">hh:mm</string>
+    <string name="pie_hour_format_24">HH:mm</string>
+    <string name="pie_am_pm">a</string>
+    <string name="enable_pie_control_title">Pie controls</string>
+    <string name="enable_pie_control_message">Would you like to use pie controls while in immersive mode?</string>
+
+    <string name="pie_state">@string/enable_pie_control_title</string>
+
 </resources>

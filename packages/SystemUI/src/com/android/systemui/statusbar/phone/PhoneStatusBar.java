@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2010 The Android Open Source Project
+ * This code has been modified. Portions copyright (C) 2013, ParanoidAndroid Project.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,6 +38,7 @@ import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.StatusBarManager;
 import android.content.BroadcastReceiver;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.ContentResolver;
 import android.content.Intent;
@@ -58,6 +60,7 @@ import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.TransitionDrawable;
 import android.inputmethodservice.InputMethodService;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -107,6 +110,7 @@ import com.android.systemui.DemoMode;
 import com.android.systemui.EventLogTags;
 import com.android.systemui.R;
 import com.android.systemui.ReminderMessageView;
+import com.android.systemui.recent.RecentsActivity;
 import com.android.systemui.statusbar.BaseStatusBar;
 import com.android.systemui.statusbar.CommandQueue;
 import com.android.systemui.statusbar.GestureRecorder;
@@ -674,6 +678,7 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
             }});
 
         mStatusBarView = (PhoneStatusBarView) mStatusBarWindow.findViewById(R.id.status_bar);
+        mStatusBarView.setStatusBar(this);
         mStatusBarView.setBar(this);
 
         PanelHolder holder = (PanelHolder) mStatusBarWindow.findViewById(R.id.panel_holder);
@@ -1198,8 +1203,11 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
     private View.OnClickListener mRecentsClickListener = new View.OnClickListener() {
         public void onClick(View v) {
             awakenDreams();
-            toggleRecentApps();
-            Log.e(TAG, "recents click listener done");
+            if(isRecentAppsVisible() && hasRecentApps()) {
+                clearRecentApps();
+            } else {
+                toggleRecentApps();
+            }
         }
     };
 
@@ -1302,12 +1310,9 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
                     | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
                     | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
                     | WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH
-                    | WindowManager.LayoutParams.FLAG_SPLIT_TOUCH,
+                    | WindowManager.LayoutParams.FLAG_SPLIT_TOUCH
+                    | WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED,
                 PixelFormat.TRANSLUCENT);
-        // this will allow the navbar to run in an overlay on devices that support this
-        if (ActivityManager.isHighEndGfx()) {
-            lp.flags |= WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED;
-        }
 
         lp.setTitle("NavigationBar");
         lp.windowAnimations = 0;
@@ -1323,9 +1328,9 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
                     | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
                     | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
                     | WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM
-                    | WindowManager.LayoutParams.FLAG_SPLIT_TOUCH,
+                    | WindowManager.LayoutParams.FLAG_SPLIT_TOUCH
+                    | WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED,
                 PixelFormat.TRANSLUCENT);
-        lp.flags |= WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED;
         lp.gravity = Gravity.TOP;
         lp.y = getStatusBarHeight();
         lp.setTitle("Heads Up");
@@ -2645,6 +2650,8 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
 
     @Override
     public void topAppWindowChanged(boolean showMenu) {
+        if (mPieController != null && mPieController.getControlPanel() != null)
+            mPieController.getControlPanel().setMenu(showMenu);
         if (DEBUG) {
             Log.d(TAG, (showMenu?"showing":"hiding") + " the MENU button");
         }
@@ -3182,6 +3189,8 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
                 notifyNavigationBarScreenOn(false);
                 notifyHeadsUpScreenOn(false);
                 finishBarAnimations();
+                // detach pie when screen is turned off
+                if (mPieController != null) mPieController.detachPie();
             }
             else if (Intent.ACTION_SCREEN_ON.equals(action)) {
                 mScreenOn = true;
