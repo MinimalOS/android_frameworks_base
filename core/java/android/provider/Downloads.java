@@ -593,8 +593,9 @@ public final class Downloads {
         public static final int STATUS_QUEUED_FOR_WIFI = 196;
 
         /**
-	 * This download is paused by manual.
-         */
+          * This download is paused by manual.
+          * @hide
+          */
         public static final int STATUS_PAUSED_BY_MANUAL = 197;
 
         /**
