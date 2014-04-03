@@ -58,7 +58,7 @@
     <string name="immersive_mode_off">Immersive mode is OFF</string>
 
     <!-- Long-press back kill application -->
-    <string name="app_killed_message">Application killed</string>
+    <string name="app_killed_message">Feeling lucky? Punk!</string>
 
     <!-- Title of an application permission that lets an application view/edit revoked permissions. -->
     <string name="permlab_revokePermissions">Allows view and edit of revoked permissions. Not for use by normal applications.</string>
