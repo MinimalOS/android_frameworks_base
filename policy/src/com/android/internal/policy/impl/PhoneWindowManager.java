@@ -1544,7 +1544,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
 
     private void updateImmersiveTileIfOnDefaultAppMode(boolean translucent) {
         boolean isNavBarImmersive = isImmersiveMode(mLastSystemUiFlags) ||
-                (mNavigationBar.isVisibleLw() && mNavigationBarController.isTransientShowing() && !translucent);
+                (mNavigationBarController.isTransientShowing() && !translucent);
         boolean isStatusBarImmersive = (mLastSystemUiFlags & View.SYSTEM_UI_FLAG_FULLSCREEN) != 0;
         boolean isOnDefaultAppMode = (mImmersiveModeStyle == IMMERSIVE_MODE_OFF) && (isStatusBarImmersive || isNavBarImmersive);
         // store state
