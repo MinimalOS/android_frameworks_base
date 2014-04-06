@@ -13,17 +13,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
- * Modifications Copyright (C) 2014 The OmniROM Project
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 3
- * of the License, or (at your option) any later version.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
 package com.android.systemui;
@@ -36,7 +25,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
-import android.database.ContentObserver;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -46,20 +34,22 @@ import android.graphics.Paint;
 import android.graphics.Paint.Align;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.graphics.Typeface;
 import android.os.BatteryManager;
 import android.os.Handler;
 import android.os.UserHandle;
 import android.provider.Settings;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 
-import com.android.internal.R;
+import com.android.systemui.R;
 
 import com.android.systemui.BatteryMeterView;
 
 /***
- * Note about PercentBattery Implementation:
+ * Note about PieBattery Implementation:
  *
  * Unfortunately, we cannot use BatteryController or DockBatteryController here,
  * since communication between controller and this view is not possible without
@@ -67,27 +57,16 @@ import com.android.systemui.BatteryMeterView;
  * monitoring battery level and battery settings.
  */
 
-public class BatteryPercentMeterView extends ImageView {
+public class BatteryPieMeterView extends ImageView {
     final static String QuickSettings = "quicksettings";
     final static String StatusBar = "statusbar";
-    private Handler mHandler;
-    private boolean mPluggedEnabled;
+    private Handler mHandler = new Handler();
     private BatteryReceiver mBatteryReceiver = null;
-
-    private ContentObserver mObserver = new ContentObserver(new Handler()) {
-        @Override
-        public void onChange(boolean selfChange) {
-            updateSettings();
-        }
-
-        public void onChange(boolean selfChange, android.net.Uri uri) {
-            updateSettings();
-        };
-    };
 
     // state variables
     private boolean mAttached;      // whether or not attached to a window
     private boolean mActivated;     // whether or not activated due to system settings
+    private boolean mPiePercent; // whether or not to show percentage number
     private boolean mIsCharging;    // whether or not device is currently charging
     private int     mLevel;         // current battery level
     private int     mAnimOffset;    // current level of charging animation
@@ -96,11 +75,12 @@ public class BatteryPercentMeterView extends ImageView {
     private boolean mDockIsCharging;// whether or not dock battery is currently charging
     private boolean mIsDocked = false;      // whether or not dock battery is connected
 
-    private int     mPercentSize;    // draw size of percent. read rather complicated from
+    private int     mPieSize;    // draw size of pie. read rather complicated from
                                      // another status bar icon, so it fits the icon size
                                      // no matter the dps and resolution
-    private RectF   mRectLeft;      // contains the precalculated rect used in drawArc(), derived from mPercentSize
+    private RectF   mRectLeft;      // contains the precalculated rect used in drawArc(), derived from mPieSize
     private RectF   mRectRight;     // contains the precalculated rect used in drawArc() for dock battery
+    private RectF   mRectInner;
     private Float   mTextLeftX;     // precalculated x position for drawText() to appear centered
     private Float   mTextY;         // precalculated y position for drawText() to appear vertical-centered
     private Float   mTextRightX;    // precalculated x position for dock battery drawText()
@@ -110,12 +90,12 @@ public class BatteryPercentMeterView extends ImageView {
     private Paint   mPaintGray;
     private Paint   mPaintSystem;
     private Paint   mPaintRed;
-    private String  mPercentBatteryView;
+    private String  mPieBatteryView;
 
-    private int mPercentColor;
-    private int mPercentTextColor;
-    private int mPercentTextChargingColor;
-    private int mPercentAnimSpeed = 4;
+    private int mPieColor;
+    private int mPieTextColor;
+    private int mPieTextChargingColor;
+    private int mPieAnimSpeed = 4;
 
     // runnable to invalidate view via mHandler.postDelayed() call
     private final Runnable mInvalidate = new Runnable() {
@@ -138,8 +118,8 @@ public class BatteryPercentMeterView extends ImageView {
 
                 if (mActivated && mAttached) {
                     LayoutParams l = getLayoutParams();
-                    l.width = mPercentSize + getPaddingLeft()
-                            + (mIsDocked ? mPercentSize + getPaddingLeft() : 0);
+                    l.width = mPieSize + getPaddingLeft()
+                            + (mIsDocked ? mPieSize + getPaddingLeft() : 0);
                     setLayoutParams(l);
 
                     invalidate();
@@ -149,46 +129,59 @@ public class BatteryPercentMeterView extends ImageView {
     }
 
     /***
-     * Start of PercentBattery implementation
+     * Start of PieBattery implementation
      */
-    public BatteryPercentMeterView(Context context) {
+    public BatteryPieMeterView(Context context) {
         this(context, null);
     }
 
-    public BatteryPercentMeterView(Context context, AttributeSet attrs) {
+    public BatteryPieMeterView(Context context, AttributeSet attrs) {
         this(context, attrs, 0);
     }
 
-    public BatteryPercentMeterView(Context context, AttributeSet attrs, int defStyle) {
+    public BatteryPieMeterView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
 
-        TypedArray percentBatteryType = context.obtainStyledAttributes(attrs,
+        TypedArray pieBatteryType = context.obtainStyledAttributes(attrs,
             com.android.systemui.R.styleable.BatteryIcon, 0, 0);
 
-        mPercentBatteryView = percentBatteryType.getString(
+        mPieBatteryView = pieBatteryType.getString(
                 com.android.systemui.R.styleable.BatteryIcon_batteryView);
 
-        if (mPercentBatteryView == null) {
-            mPercentBatteryView = StatusBar;
+        if (mPieBatteryView == null) {
+            mPieBatteryView = StatusBar;
         }
 
         mHandler = new Handler();
         mBatteryReceiver = new BatteryReceiver();
+        initializePieVars();
         updateSettings();
     }
+
+    protected boolean isBatteryPresent() {
+        // the battery widget always is shown.
+        return true;
+    }
+
+    private boolean isBatteryStatusUnknown() {
+        return false;
+    }
+
+    private boolean isBatteryStatusCharging() {
+        return mIsCharging; 
+    }
+
 
     @Override
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
-        getContext().getContentResolver().registerContentObserver(
-            Settings.AOKP.getUriFor(Settings.AOKP.BATTERY_PERCENTAGE_INDICATOR_PLUGGED),
-            false, mObserver);
         if (!mAttached) {
             mAttached = true;
             IntentFilter filter = new IntentFilter();
             filter.addAction(Intent.ACTION_BATTERY_CHANGED);
             final Intent sticky = getContext().registerReceiver(mBatteryReceiver, filter);
             if (sticky != null) {
+                // preload the battery level
                 mBatteryReceiver.onReceive(getContext(), sticky);
             }
             mHandler.postDelayed(mInvalidate, 250);
@@ -201,39 +194,67 @@ public class BatteryPercentMeterView extends ImageView {
         if (mAttached) {
             mAttached = false;
             getContext().unregisterReceiver(mBatteryReceiver);
-            mRectLeft = null;   // makes sure, size based variables get
-                                // recalculated on next attach
-            mPercentSize = 0;    // makes sure, mPercentSize is reread from icons on
-                                // next attach
+            mRectLeft = null;
+            mPieSize = 0;
         }
     }
 
     @Override
+    public void setVisibility(int visibility) {
+        super.setVisibility(visibility);
+        mActivated = visibility == View.VISIBLE;
+    }
+
+    @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        if (mPercentSize == 0) {
+        if (mPieSize == 0) {
             initSizeMeasureIconHeight();
         }
 
-        setMeasuredDimension(mPercentSize + getPaddingLeft()
-                + (mIsDocked ? mPercentSize + getPaddingLeft() : 0), mPercentSize);
+        setMeasuredDimension(mPieSize + getPaddingLeft()
+                + (mIsDocked ? mPieSize + getPaddingLeft() : 0), mPieSize);
     }
 
-    private void drawPercent(Canvas canvas, int level, int animOffset, float textX, RectF drawRect) {
+    private void drawPie(Canvas canvas, int level, int animOffset, float textX, RectF drawRect) {
         Paint usePaint = mPaintSystem;
+        int internalLevel = level;
+        boolean unknownStatus = isBatteryStatusUnknown(); 
 
-        if (level <= 14) {
-            mPaintFont.setColor(mPaintRed.getColor());
-        } else if (mIsCharging && mPluggedEnabled) {
-            mPaintFont.setColor(mPercentTextChargingColor);
-        } else {
-            mPaintFont.setColor(mPercentTextColor);
+        if (unknownStatus) {
+	    usePaint = mPaintGray;
+            internalLevel = 100;
+        // turn red at 14% - same level android battery warning appears
+        } else if (internalLevel <= 14) {
+            usePaint = mPaintRed;
         }
-        if (level == 100) {
-            mPaintFont.setTextSize(mPercentSize / 1.8f);
-        } else {
-            mPaintFont.setTextSize(mPercentSize / 1.3f);
+
+        // pad pie percentage to 100% once it reaches 97%
+        // for one, the pie looks odd with a too small gap,
+        // for another, some phones never reach 100% due to hardware design
+        int padLevel = internalLevel;
+        if (padLevel >= 97) {
+            padLevel = 100;
         }
-        canvas.drawText(Integer.toString(level), textX, mTextY, mPaintFont);
+        final float sweepAngle = 3.6f * padLevel;
+
+        // draw thin gray ring first
+        canvas.drawArc(mRectInner, 270, 360, true, mPaintGray);
+        // draw colored arc representing charge level
+        canvas.drawArc(drawRect, 270 + animOffset + (360f-sweepAngle) / 2f , sweepAngle, true, usePaint);
+        // if chosen by options, draw percentage text in the middle
+        // always skip percentage when 100, so layout doesnt break
+        if (unknownStatus) {
+            canvas.drawText("?", textX, mTextY, mPaintFont);
+        } else if (internalLevel < 100 && mPiePercent) {
+            if (internalLevel <= 14) {
+                mPaintFont.setColor(mPaintRed.getColor());
+            } else if (mIsCharging) {
+                mPaintFont.setColor(mPieTextChargingColor);
+            } else {
+                mPaintFont.setColor(mPieTextColor);
+            }
+            canvas.drawText(Integer.toString(internalLevel), textX, mTextY, mPaintFont);
+        }
 
     }
 
@@ -245,13 +266,9 @@ public class BatteryPercentMeterView extends ImageView {
 
         updateChargeAnim();
 
-        if (mIsDocked) {
-            drawPercent(canvas, mDockLevel, (mDockIsCharging ? mAnimOffset : 0),
-                    mTextLeftX, mRectLeft);
-            drawPercent(canvas, mLevel, (mIsCharging ? mAnimOffset : 0), mTextRightX, mRectRight);
-        } else {
-            drawPercent(canvas, mLevel, (mIsCharging ? mAnimOffset : 0), mTextLeftX, mRectLeft);
-        }
+        drawPie(canvas, 
+               mLevel, 
+              (isBatteryStatusCharging() ? mAnimOffset : 0), mTextLeftX, mRectLeft);
     }
 
     public void updateSettings() {
@@ -259,24 +276,22 @@ public class BatteryPercentMeterView extends ImageView {
         ContentResolver resolver = getContext().getContentResolver();
 
         int defaultColor = res.getColor(com.android.systemui.R.color.batterymeter_charge_color);
-        int chargeColor = res.getColor(com.android.systemui.R.color.status_bar_battery_text_color_plugged);
-        mPluggedEnabled = Settings.AOKP.getBoolean(resolver, Settings.AOKP.BATTERY_PERCENTAGE_INDICATOR_PLUGGED, false);
+        int defaultText = res.getColor(com.android.systemui.R.color.batterymeter_bolt_color);
 
-        mPercentTextColor = defaultColor;
-        mPercentTextChargingColor = chargeColor;
-        mPercentColor = defaultColor;
+        mPieTextColor = defaultText;
+        mPieTextChargingColor = defaultText;
+        mPieColor = defaultColor;
 
-        /*
-         * initialize vars and force redraw
-         */
-        initializePercentVars();
+        mPaintSystem.setColor(mPieColor);
         mRectLeft = null;
-        mPercentSize = 0;
+        mPieSize = 0;
 
         int batteryStyle = Settings.System.getInt(getContext().getContentResolver(),
                                 Settings.System.STATUS_BAR_BATTERY_STYLE, 0);
 
-        mActivated = batteryStyle == 6;
+        Log.v("BatteryPieMeterView","Battery Style number is "+batteryStyle);
+        mPiePercent = batteryStyle == 5;
+        mActivated = (batteryStyle == 4 || mPiePercent);
 
         setVisibility(mActivated ? View.VISIBLE : View.GONE);
 
@@ -286,9 +301,9 @@ public class BatteryPercentMeterView extends ImageView {
     }
 
     /***
-     * Initialize the Percent vars for start
+     * Initialize the Pie vars for start
      */
-    private void initializePercentVars() {
+    private void initializePieVars() {
         // initialize and setup all paint variables
         // stroke width is later set in initSizeBasedStuff()
 
@@ -297,21 +312,22 @@ public class BatteryPercentMeterView extends ImageView {
         mPaintFont = new Paint();
         mPaintFont.setAntiAlias(true);
         mPaintFont.setDither(true);
-        mPaintFont.setStyle(Paint.Style.STROKE);
+        mPaintFont.setStyle(Paint.Style.FILL);
 
         mPaintGray = new Paint(mPaintFont);
         mPaintSystem = new Paint(mPaintFont);
         mPaintRed = new Paint(mPaintFont);
 
-        mPaintSystem.setColor(mPercentColor);
         // could not find the darker definition anywhere in resources
         // do not want to use static 0x404040 color value. would break theming.
-        mPaintGray.setColor(res.getColor(R.color.darker_gray));
-        mPaintRed.setColor(res.getColor(R.color.holo_red_light));
+        mPaintFont.setColor(res.getColor(R.color.battery_percentage_text_color));
+        mPaintSystem.setColor(res.getColor(R.color.batterymeter_charge_color));
+        mPaintGray.setColor(res.getColor(com.android.internal.R.color.darker_gray));
+        mPaintRed.setColor(res.getColor(com.android.internal.R.color.holo_red_light));
 
         // font needs some extra settings
         mPaintFont.setTextAlign(Align.CENTER);
-        mPaintFont.setFakeBoldText(true);
+        mPaintFont.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
     }
 
 
@@ -321,7 +337,7 @@ public class BatteryPercentMeterView extends ImageView {
      * uses mInvalidate for delayed invalidate() callbacks
      */
     private void updateChargeAnim() {
-        if (!(mIsCharging || mDockIsCharging)) {
+        if (!isBatteryStatusCharging() || mLevel >= 97 ) {
             if (mIsAnimating) {
                 mIsAnimating = false;
                 mAnimOffset = 0;
@@ -335,7 +351,7 @@ public class BatteryPercentMeterView extends ImageView {
         if (mAnimOffset > 360) {
             mAnimOffset = 0;
         } else {
-            mAnimOffset += mPercentAnimSpeed;
+            mAnimOffset += 3;
         }
 
         mHandler.removeCallbacks(mInvalidate);
@@ -345,40 +361,37 @@ public class BatteryPercentMeterView extends ImageView {
     /***
      * initializes all size dependent variables
      * sets stroke width and text size of all involved paints
+     * YES! i think the method name is appropriate
      */
     private void initSizeBasedStuff() {
-        if (mPercentSize == 0) {
+        if (mPieSize == 0) {
             initSizeMeasureIconHeight();
         }
 
-        mPaintFont.setTextSize(mPercentSize / 1.3f);
+        mPaintFont.setTextSize(mPieSize / 1.5f);
 
-        float strokeWidth = mPercentSize / 11f;
-        mPaintRed.setStrokeWidth(strokeWidth);
-        mPaintSystem.setStrokeWidth(strokeWidth);
-        mPaintGray.setStrokeWidth(strokeWidth / 3.5f);
-        // calculate rectangle
+        // calculate rectangle for drawArc calls
         int pLeft = getPaddingLeft();
-        mRectLeft = new RectF(pLeft + strokeWidth / 2.0f, 0 + strokeWidth / 2.0f, mPercentSize
-                - strokeWidth / 2.0f + pLeft, mPercentSize - strokeWidth / 2.0f);
-        int off = pLeft + mPercentSize;
-        mRectRight = new RectF(mRectLeft.left + off, mRectLeft.top, mRectLeft.right + off,
-                mRectLeft.bottom);
+        mRectLeft = new RectF(pLeft, 0, 
+                mPieSize+ pLeft, mPieSize);
+        final float innerPadding = getResources().getDisplayMetrics().density;
+        mRectInner = new RectF(mRectLeft.left + innerPadding, mRectLeft.top+innerPadding, 
+                    mRectLeft.right - innerPadding,
+                    mRectLeft.bottom - innerPadding);
 
         // calculate Y position for text
         Rect bounds = new Rect();
-        mPaintFont.getTextBounds("MM", 0, "MM".length(), bounds);
-        mTextLeftX = mPercentSize / 2f + getPaddingLeft();
-        mTextRightX = mTextLeftX + off;
-        
-        mTextY = mPercentSize / 2.0f + (bounds.bottom - bounds.top) / 2.0f;
+        mPaintFont.getTextBounds("99", 0, "99".length(), bounds);
+        mTextLeftX = mPieSize / 2.0f + getPaddingLeft();
+        // the +1 at end of formular balances out rounding issues. works out on all resolutions
+        mTextY = mPieSize / 2.0f + (bounds.bottom - bounds.top) / 2.0f + 1;
 
         // force new measurement for wrap-content xml tag
         onMeasure(0, 0);
     }
 
     /***
-     * we need to measure the size of the percent battery by checking another
+     * we need to measure the size of the pie battery by checking another
      * resource. unfortunately, those resources have transparent/empty borders
      * so we have to count the used pixel manually and deduct the size from
      * it. quiet complicated, but the only way to fit properly into the
@@ -386,18 +399,19 @@ public class BatteryPercentMeterView extends ImageView {
      */
     private void initSizeMeasureIconHeight() {
         Bitmap measure = null;
-        if (mPercentBatteryView.equals(QuickSettings)) {
+        if (mPieBatteryView.equals(QuickSettings)) {
             measure = BitmapFactory.decodeResource(getResources(),
                     com.android.systemui.R.drawable.ic_qs_wifi_full_4);
-        } else if (mPercentBatteryView.equals(StatusBar)) {
+        } else if (mPieBatteryView.equals(StatusBar)) {
             measure = BitmapFactory.decodeResource(getResources(),
                     com.android.systemui.R.drawable.stat_sys_wifi_signal_4_fully);
         }
         if (measure == null) {
             return;
         }
+        final int x = measure.getWidth() / 2;
 
-        mPercentSize = measure.getHeight();
+        mPieSize = measure.getHeight();
     }
 
 }

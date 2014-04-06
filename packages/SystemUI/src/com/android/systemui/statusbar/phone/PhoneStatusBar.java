@@ -106,6 +106,7 @@ import com.android.internal.statusbar.StatusBarIcon;
 import com.android.systemui.BatteryMeterView;
 import com.android.systemui.BatteryCircleMeterView;
 import com.android.systemui.BatteryPercentMeterView;
+import com.android.systemui.BatteryPieMeterView;
 import com.android.systemui.DemoMode;
 import com.android.systemui.EventLogTags;
 import com.android.systemui.R;
@@ -239,6 +240,7 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
     private BatteryMeterView mBattery;
     private BatteryCircleMeterView mCircleBattery;
     private BatteryPercentMeterView mPercentBattery;
+    private BatteryPieMeterView mPieBattery;
 
     // expanded notifications
     NotificationPanelView mNotificationPanel; // the sliding/resizing panel within the notification window
@@ -411,10 +413,11 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
     };
 
     private void updateBatteryIcons() {
-        if (mBattery != null && mCircleBattery != null && mPercentBattery != null) {
+        if (mBattery != null && mCircleBattery != null && mPercentBattery != null && mPieBattery != null) {
             mBattery.updateSettings();
             mCircleBattery.updateSettings();
             mPercentBattery.updateSettings();
+            mPieBattery.updateSettings();
             if (mQS != null) {
                 mQS.updateBattery();
             }
@@ -1050,6 +1053,7 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
         mNetworkController.setListener(this);
         mBattery = (BatteryMeterView) mStatusBarView.findViewById(R.id.battery);
         mCircleBattery = (BatteryCircleMeterView) mStatusBarView.findViewById(R.id.circle_battery);
+        mPieBattery = (BatteryPieMeterView) mStatusBarView.findViewById(R.id.pie_battery);
         mPercentBattery = (BatteryPercentMeterView) mStatusBarView.findViewById(R.id.percent_battery);
 
         return mStatusBarView;

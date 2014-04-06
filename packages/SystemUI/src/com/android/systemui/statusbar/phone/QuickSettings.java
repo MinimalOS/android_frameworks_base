@@ -76,6 +76,7 @@ import android.widget.Toast;
 import com.android.internal.app.MediaRouteDialogPresenter;
 import com.android.systemui.BatteryMeterView;
 import com.android.systemui.BatteryCircleMeterView;
+import com.android.systemui.BatteryPieMeterView;
 import com.android.internal.app.MediaRouteDialogPresenter;
 import com.android.internal.util.omni.DeviceUtils;
 import com.android.internal.util.slim.TRDSActions;
@@ -788,7 +789,7 @@ class QuickSettings {
                                         R.string.quick_settings_battery_charged_label);
                             } else {
                                 if (batteryState.pluggedIn) {
-                                    t = mBatteryStyle != 3 // circle percent
+                                    t = (mBatteryStyle != 3 || mBatteryStyle !=5) // circle percent
                                         ? mContext.getString(R.string.quick_settings_battery_charging_label,
                                             batteryState.batteryLevel)
                                         : mContext.getString(R.string.quick_settings_battery_charging);
