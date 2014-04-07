@@ -122,6 +122,11 @@ public class QuickSettingsModel implements BluetoothStateChangeCallback,
     static class NfcState extends State {
         boolean isEnabled;
     }
+
+    static class RecordingState extends State {
+        int recording;
+    }
+
     public static class RotationLockState extends State {
         boolean visible = false;
     }
@@ -589,6 +594,10 @@ public class QuickSettingsModel implements BluetoothStateChangeCallback,
     private RefreshCallback mBluetoothExtraCallback;
     private BluetoothState mBluetoothExtraState = new BluetoothState();
 
+    private QuickSettingsTileView mRecordingTile;
+    private RefreshCallback mRecordingCallback;
+    private RecordingState mRecordingState = new RecordingState();
+
     private QuickSettingsTileView mBatteryTile;
     private RefreshCallback mBatteryCallback;
     private BatteryState mBatteryState = new BatteryState();
@@ -804,6 +813,7 @@ public class QuickSettingsModel implements BluetoothStateChangeCallback,
         refreshWifiApTile();
         onOnTheGoChanged();
         updateRingerState();
+        updateRecordingTile();
         refreshThemeTile();
     }
 
@@ -841,6 +851,43 @@ public class QuickSettingsModel implements BluetoothStateChangeCallback,
             }
             mNfcCallback.refreshView(mNfcTile, mNfcState);
         } catch (Exception e) {}
+    }
+
+    void addRecordingTile(QuickSettingsTileView view, RefreshCallback cb) {
+         mRecordingTile = view;
+         mRecordingCallback = cb;
+         updateRecordingTile();
+
+    }
+
+    synchronized void updateRecordingTile() {
+        int playStateName = 0;
+        int playStateIcon = 0;
+
+        switch (mRecordingState.recording) {
+            case QuickSettings.QR_IDLE:
+                playStateName = R.string.quick_settings_quick_record_def;
+                playStateIcon = R.drawable.ic_qs_quickrecord;
+                break;
+            case QuickSettings.QR_PLAYING:
+                playStateName = R.string.quick_settings_quick_record_play;
+                playStateIcon = R.drawable.ic_qs_playing;
+                break;
+            case QuickSettings.QR_RECORDING:
+                playStateName = R.string.quick_settings_quick_record_rec;
+                playStateIcon = R.drawable.ic_qs_recording;
+                break;
+            case QuickSettings.QR_JUST_RECORDED:
+                playStateName = R.string.quick_settings_quick_record_save;
+                playStateIcon = R.drawable.ic_qs_saved;
+                break;
+            case QuickSettings.QR_NO_RECORDING:
+                playStateName = R.string.quick_settings_quick_record_nofile;
+                playStateIcon = R.drawable.ic_qs_quickrecord;
+                break;
+        }
+        mRecordingState.iconId = playStateIcon;
+        mRecordingState.label = mContext.getResources().getString(playStateName);
     }
 
     // User

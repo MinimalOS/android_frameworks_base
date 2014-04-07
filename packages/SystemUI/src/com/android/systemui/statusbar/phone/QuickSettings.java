@@ -43,6 +43,9 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.hardware.display.DisplayManager;
 import android.media.AudioManager;
+import android.media.MediaPlayer;
+import android.media.MediaPlayer.OnCompletionListener;
+import android.media.MediaRecorder;
 import android.media.MediaRouter;
 import android.net.ConnectivityManager;
 import android.net.wifi.WifiManager;
@@ -65,6 +68,7 @@ import android.provider.Settings.SettingNotFoundException;
 import android.util.Log;
 import android.util.Pair;
 import android.util.SettingConfirmationHelper;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
@@ -88,6 +92,7 @@ import com.android.systemui.statusbar.phone.QuickSettingsModel.RSSIState;
 import com.android.systemui.statusbar.phone.QuickSettingsModel.State;
 import com.android.systemui.statusbar.phone.QuickSettingsModel.UserState;
 import com.android.systemui.statusbar.phone.QuickSettingsModel.WifiState;
+import com.android.systemui.statusbar.phone.QuickSettingsModel.RecordingState;
 import com.android.systemui.statusbar.policy.BatteryController;
 import com.android.systemui.statusbar.policy.BluetoothController;
 import com.android.systemui.statusbar.policy.LocationController;
@@ -96,6 +101,8 @@ import com.android.systemui.statusbar.policy.RotationLockController;
 
 import com.android.internal.util.omni.OmniTorchConstants;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -128,7 +135,8 @@ class QuickSettings {
         TORCH,
         VOLUME,
         THEME_MODE,
-        NFC
+        NFC,
+        QUICKRECORD
     }
 
     public static final String NO_TILES = "NO_TILES";
@@ -150,7 +158,8 @@ class QuickSettings {
         + DELIMITER + Tile.TORCH 
         + DELIMITER + Tile.VOLUME
         + DELIMITER + Tile.THEME_MODE
-        + DELIMITER + Tile.NFC;
+        + DELIMITER + Tile.NFC
+        + DELIMITER + Tile.QUICKRECORD;
 
 
     private Context mContext;
@@ -164,6 +173,7 @@ class QuickSettings {
     private BluetoothAdapter mBluetoothAdapter;
     private WifiManager mWifiManager;
     private ConnectivityManager mConnectivityManager;
+    private RecordingState mRecordingState;
 
     private BluetoothController mBluetoothController;
     private RotationLockController mRotationLockController;
@@ -175,14 +185,26 @@ class QuickSettings {
     boolean mTilesSetUp = false;
     boolean mUseDefaultAvatar = false;
 
+    private File mFile;
     private Handler mHandler;
     private QuickSettingsBasicBatteryTile batteryTile;
     private int mBatteryStyle;
     private int mThemeAutoMode;
+    private MediaPlayer mPlayer = null;
+    private MediaRecorder mRecorder = null;
+    private static String mQuickAudio = null;
 
     public static final int THEME_MODE_MANUAL       = 0;
     public static final int THEME_MODE_LIGHT_SENSOR = 1;
     public static final int THEME_MODE_TWILIGHT     = 2;
+
+
+    public static final int QR_IDLE = 0;
+    public static final int QR_PLAYING = 1;
+    public static final int QR_RECORDING = 2;
+    public static final int QR_JUST_RECORDED = 3;
+    public static final int QR_NO_RECORDING = 4;
+    public static final int MAX_RECORD_TIME = 120000; 
 
     public QuickSettings(Context context, QuickSettingsContainerView container) {
         mDevicePolicyManager
@@ -197,6 +219,10 @@ class QuickSettings {
                    (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
 
         mHandler = new Handler();
+        mFile = new File(mContext.getFilesDir() + File.separator
+                + "quickrecord.3gp");
+        mQuickAudio = mFile.getAbsolutePath();
+
 
         IntentFilter filter = new IntentFilter();
         filter.addAction(DisplayManager.ACTION_WIFI_DISPLAY_STATUS_CHANGED);
@@ -1043,6 +1069,58 @@ class QuickSettings {
                     });
                     parent.addView(themeTile);
                     if (addMissing) themeTile.setVisibility(View.GONE);
+                } else if(Tile.QUICKRECORD.toString().equals(tile.toString())) {
+                    final QuickSettingsBasicTile recordTile
+                           = new QuickSettingsBasicTile(mContext);
+                    recordTile.setTileId(Tile.QUICKRECORD);
+                    recordTile.setImageResource(R.drawable.ic_qs_quickrecord);
+                    recordTile.setTextResource(R.string.quick_settings_quick_record_def);
+                    recordTile.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            if (!mFile.exists()) {
+                                mRecordingState.recording = QR_NO_RECORDING;
+                            }
+                            switch (mRecordingState.recording) {
+                                case QR_RECORDING:
+                                    stopRecording();
+                                    break;
+                                case QR_NO_RECORDING:
+                                    return;
+                                case QR_IDLE:
+                                case QR_JUST_RECORDED:
+                                    startPlaying();
+                                    break;
+                                case QR_PLAYING:
+                                    stopPlaying();
+                                    break;
+                            } 
+                        }
+                    });
+
+                    recordTile.setOnLongClickListener(new View.OnLongClickListener() {
+                        @Override
+                        public boolean onLongClick(View v) {
+                            switch (mRecordingState.recording) {
+                                case QR_NO_RECORDING:
+                               case QR_IDLE:
+                               case QR_JUST_RECORDED:
+                               startRecording();
+                               break;
+                            }
+                            return true;
+                        }
+                    });
+                    mModel.addRecordingTile(recordTile,
+                        new QuickSettingsModel.RefreshCallback() {
+                       @Override
+                       public void refreshView(QuickSettingsTileView unused, State state){
+                           recordTile.setText(state.label);
+                           recordTile.setImageResource(state.iconId);
+                       }
+                    });
+                    parent.addView(recordTile);
+                    if (addMissing) recordTile.setVisibility(View.GONE);
                 } else if(Tile.IMMERSIVE.toString().equals(tile.toString())) { // Immersive mode tile
                     final QuickSettingsDualBasicTile immersiveTile
                             = new QuickSettingsDualBasicTile(mContext);
@@ -1582,5 +1660,76 @@ class QuickSettings {
                     .start();
             }
         }
+    }
+
+    final Runnable delayTileRevert = new Runnable () {
+        public void run() {
+            if (mRecordingState.recording == QR_JUST_RECORDED) {
+                mRecordingState.recording = QR_IDLE;
+                updateResources();
+            }
+        }
+    };
+
+    final Runnable autoStopRecord = new Runnable() {
+        public void run() {
+            if (mRecordingState.recording == QR_RECORDING) {
+                stopRecording();
+            }
+        }
+    };
+
+    final OnCompletionListener stoppedPlaying = new OnCompletionListener(){
+        public void onCompletion(MediaPlayer mp) {
+            mRecordingState.recording = QR_IDLE;
+            updateResources();
+        }
+    };
+
+    private void startPlaying() {
+        mPlayer = new MediaPlayer();
+        try {
+            mPlayer.setDataSource(mQuickAudio);
+            mPlayer.prepare();
+            mPlayer.start();
+            mRecordingState.recording = QR_PLAYING;
+            updateResources();
+            mPlayer.setOnCompletionListener(stoppedPlaying);
+        } catch (IOException e) {
+            Log.e(TAG, "QuickRecord prepare() failed on play: ", e);
+        }
+    }
+
+    private void stopPlaying() {
+        mPlayer.release();
+        mPlayer = null;
+        mRecordingState.recording = QR_IDLE;
+        updateResources();
+    }
+
+    private void startRecording() {
+        mRecorder = new MediaRecorder();
+        mRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
+        mRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
+        mRecorder.setOutputFile(mQuickAudio);
+        mRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
+        try {
+            mRecorder.prepare();
+            mRecorder.start();
+            mRecordingState.recording = QR_RECORDING;
+            updateResources();
+            mHandler.postDelayed(autoStopRecord, MAX_RECORD_TIME);
+        } catch (IOException e) {
+            Log.e(TAG, "QuickRecord prepare() failed on record: ", e);
+        }
+    }
+
+    private void stopRecording() {
+        mRecorder.stop();
+        mRecorder.release();
+        mRecorder = null;
+        mRecordingState.recording = QR_JUST_RECORDED;
+        updateResources();
+        mHandler.postDelayed(delayTileRevert, 2000);
     }
 }
