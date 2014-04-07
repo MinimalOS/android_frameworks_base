@@ -73,6 +73,7 @@ import com.android.systemui.nameless.onthego.OnTheGoReceiver;
 
 import com.android.internal.util.omni.OmniTorchConstants;
 
+import java.lang.UnsupportedOperationException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -596,7 +597,7 @@ public class QuickSettingsModel implements BluetoothStateChangeCallback,
 
     private QuickSettingsTileView mRecordingTile;
     private RefreshCallback mRecordingCallback;
-    private RecordingState mRecordingState = new RecordingState();
+    public static RecordingState mRecordingState = new RecordingState();
 
     private QuickSettingsTileView mBatteryTile;
     private RefreshCallback mBatteryCallback;
@@ -840,8 +841,11 @@ public class QuickSettingsModel implements BluetoothStateChangeCallback,
     }
 
     void refreshNfcTile() {
+        if (mNfcTile == null) {
+            return;
+        }
+        Resources r = mContext.getResources();
         try {
-            Resources r = mContext.getResources();
             if(NfcAdapter.getNfcAdapter(mContext).isEnabled()) {
                 mNfcState.iconId = R.drawable.ic_qs_nfc_on;
                 mNfcState.label = r.getString(R.string.quick_settings_nfc_on);
@@ -850,7 +854,9 @@ public class QuickSettingsModel implements BluetoothStateChangeCallback,
                 mNfcState.label = r.getString(R.string.quick_settings_nfc_off);
             }
             mNfcCallback.refreshView(mNfcTile, mNfcState);
-        } catch (Exception e) {}
+        } catch (UnsupportedOperationException e) {
+          Log.e("QUICKSETTINGSMODEL", "Error" + e);
+        }
     }
 
     void addRecordingTile(QuickSettingsTileView view, RefreshCallback cb) {
@@ -866,28 +872,35 @@ public class QuickSettingsModel implements BluetoothStateChangeCallback,
 
         switch (mRecordingState.recording) {
             case QuickSettings.QR_IDLE:
+                Log.v("QUICKSETTINGSMODEL","IDLE");
                 playStateName = R.string.quick_settings_quick_record_def;
                 playStateIcon = R.drawable.ic_qs_quickrecord;
                 break;
             case QuickSettings.QR_PLAYING:
+                Log.v("QUICKSETTINGSMODEL","PLAYING");
                 playStateName = R.string.quick_settings_quick_record_play;
                 playStateIcon = R.drawable.ic_qs_playing;
                 break;
             case QuickSettings.QR_RECORDING:
+                Log.v("QUICKSETTINGSMODEL","RECORDING");
                 playStateName = R.string.quick_settings_quick_record_rec;
                 playStateIcon = R.drawable.ic_qs_recording;
                 break;
             case QuickSettings.QR_JUST_RECORDED:
+                Log.v("QUICKSETTINGSMODEL","JUST RECORDED");
                 playStateName = R.string.quick_settings_quick_record_save;
                 playStateIcon = R.drawable.ic_qs_saved;
                 break;
             case QuickSettings.QR_NO_RECORDING:
+                Log.v("QUICKSETTINGSMODEL","NO RECORDING");
                 playStateName = R.string.quick_settings_quick_record_nofile;
                 playStateIcon = R.drawable.ic_qs_quickrecord;
                 break;
         }
         mRecordingState.iconId = playStateIcon;
         mRecordingState.label = mContext.getResources().getString(playStateName);
+        mRecordingCallback.refreshView(mRecordingTile, mRecordingState);
+
     }
 
     // User

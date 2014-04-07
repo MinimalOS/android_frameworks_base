@@ -170,10 +170,10 @@ class QuickSettings {
     private DevicePolicyManager mDevicePolicyManager;
     private PhoneStatusBar mStatusBarService;
     private BluetoothState mBluetoothState;
+//    private RecordingState QuickSettingsModel.mRecordingState;
     private BluetoothAdapter mBluetoothAdapter;
     private WifiManager mWifiManager;
     private ConnectivityManager mConnectivityManager;
-    private RecordingState mRecordingState;
 
     private BluetoothController mBluetoothController;
     private RotationLockController mRotationLockController;
@@ -213,6 +213,9 @@ class QuickSettings {
         mContainerView = container;
         mModel = new QuickSettingsModel(context);
         mBluetoothState = new QuickSettingsModel.BluetoothState();
+//        QuickSettingsModel.mRecordingState = QuickSettingsModel.mRecordingState;
+
+
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         mWifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
         mConnectivityManager =
@@ -1079,35 +1082,43 @@ class QuickSettings {
                         @Override
                         public void onClick(View v) {
                             if (!mFile.exists()) {
-                                mRecordingState.recording = QR_NO_RECORDING;
+                                QuickSettingsModel.mRecordingState.recording = QR_NO_RECORDING;
                             }
-                            switch (mRecordingState.recording) {
+                            switch (QuickSettingsModel.mRecordingState.recording) {
                                 case QR_RECORDING:
+                                    Log.v("QUICKSETTINGS","RECORDING");
                                     stopRecording();
                                     break;
                                 case QR_NO_RECORDING:
+                                    Log.v("QUICKSETTINGS","NO RECORDING");
                                     return;
                                 case QR_IDLE:
+                                    Log.v("QUICKSETTINGS","IDLE");
                                 case QR_JUST_RECORDED:
+                                    Log.v("QUICKSETTINGS","JUST RECORDED");   
                                     startPlaying();
                                     break;
                                 case QR_PLAYING:
+                                    Log.v("QUICKSETTINGS","PLAYING");
                                     stopPlaying();
                                     break;
                             } 
+                            mModel.updateRecordingTile();
                         }
                     });
 
                     recordTile.setOnLongClickListener(new View.OnLongClickListener() {
                         @Override
                         public boolean onLongClick(View v) {
-                            switch (mRecordingState.recording) {
+                            switch (QuickSettingsModel.mRecordingState.recording) {
                                 case QR_NO_RECORDING:
                                case QR_IDLE:
                                case QR_JUST_RECORDED:
                                startRecording();
+                               Log.v("QUICKSETTINGS","STARTRECORDING");
                                break;
                             }
+                            mModel.updateRecordingTile();
                             return true;
                         }
                     });
@@ -1115,6 +1126,7 @@ class QuickSettings {
                         new QuickSettingsModel.RefreshCallback() {
                        @Override
                        public void refreshView(QuickSettingsTileView unused, State state){
+                           Log.v("QUICKSETTINGS",state.label+","+state.iconId);
                            recordTile.setText(state.label);
                            recordTile.setImageResource(state.iconId);
                        }
@@ -1270,13 +1282,11 @@ class QuickSettings {
                  });
                  parent.addView(netAdbTile);
                  if (addMissing) netAdbTile.setVisibility(View.GONE);
-                 }
-               } else if (Tile.NFC.toString().equals(tile.toString())) { // NFC tile
+               }  else if (Tile.NFC.toString().equals(tile.toString())) { // NFC tile
                   // NFC
 //                  if(mContext.getPackageManager().hasSystemFeature(PackageManager.FEATURE_NFC)) {
                       final QuickSettingsBasicTile nfcTile 
                              = new QuickSettingsBasicTile(mContext);
-
                       nfcTile.setTileId(Tile.NFC);
                       nfcTile.setImageResource(R.drawable.ic_qs_nfc_off);
                       nfcTile.setTextResource(R.string.quick_settings_nfc_off);
@@ -1299,14 +1309,20 @@ class QuickSettings {
                                 return true;
                             }
                       });
-                      mModel.addNfcTile(nfcTile,
-                             new QuickSettingsModel.BasicRefreshCallback(nfcTile));
+                      mModel.addNfcTile(nfcTile, new QuickSettingsModel.RefreshCallback() {
+                          @Override
+                          public void refreshView(QuickSettingsTileView unused, State state) {
+                           nfcTile.setImageResource(state.iconId);
+                           nfcTile.setText(state.label);
+                           }
+                      });
                       parent.addView(nfcTile);
                       if (addMissing) nfcTile.setVisibility(View.GONE);
+//                    }
                   }
-//            }
-        }
-        if(!addMissing) addTiles(parent, true);
+              }
+          }
+          if(!addMissing) addTiles(parent, true);
     }
 
     private void addTemporaryTiles(final ViewGroup parent) {
@@ -1664,8 +1680,8 @@ class QuickSettings {
 
     final Runnable delayTileRevert = new Runnable () {
         public void run() {
-            if (mRecordingState.recording == QR_JUST_RECORDED) {
-                mRecordingState.recording = QR_IDLE;
+            if (QuickSettingsModel.mRecordingState.recording == QR_JUST_RECORDED) {
+                QuickSettingsModel.mRecordingState.recording = QR_IDLE;
                 updateResources();
             }
         }
@@ -1673,7 +1689,7 @@ class QuickSettings {
 
     final Runnable autoStopRecord = new Runnable() {
         public void run() {
-            if (mRecordingState.recording == QR_RECORDING) {
+            if (QuickSettingsModel.mRecordingState.recording == QR_RECORDING) {
                 stopRecording();
             }
         }
@@ -1681,7 +1697,7 @@ class QuickSettings {
 
     final OnCompletionListener stoppedPlaying = new OnCompletionListener(){
         public void onCompletion(MediaPlayer mp) {
-            mRecordingState.recording = QR_IDLE;
+            QuickSettingsModel.mRecordingState.recording = QR_IDLE;
             updateResources();
         }
     };
@@ -1692,18 +1708,18 @@ class QuickSettings {
             mPlayer.setDataSource(mQuickAudio);
             mPlayer.prepare();
             mPlayer.start();
-            mRecordingState.recording = QR_PLAYING;
+            QuickSettingsModel.mRecordingState.recording = QR_PLAYING;
             updateResources();
             mPlayer.setOnCompletionListener(stoppedPlaying);
         } catch (IOException e) {
-            Log.e(TAG, "QuickRecord prepare() failed on play: ", e);
+            Log.e("QUICKSETTINGS", "QuickRecord prepare() failed on play: ", e);
         }
     }
 
     private void stopPlaying() {
         mPlayer.release();
         mPlayer = null;
-        mRecordingState.recording = QR_IDLE;
+        QuickSettingsModel.mRecordingState.recording = QR_IDLE;
         updateResources();
     }
 
@@ -1716,7 +1732,7 @@ class QuickSettings {
         try {
             mRecorder.prepare();
             mRecorder.start();
-            mRecordingState.recording = QR_RECORDING;
+            QuickSettingsModel.mRecordingState.recording = QR_RECORDING;
             updateResources();
             mHandler.postDelayed(autoStopRecord, MAX_RECORD_TIME);
         } catch (IOException e) {
@@ -1728,7 +1744,7 @@ class QuickSettings {
         mRecorder.stop();
         mRecorder.release();
         mRecorder = null;
-        mRecordingState.recording = QR_JUST_RECORDED;
+        QuickSettingsModel.mRecordingState.recording = QR_JUST_RECORDED;
         updateResources();
         mHandler.postDelayed(delayTileRevert, 2000);
     }
