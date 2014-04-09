@@ -598,6 +598,10 @@ public class QuickSettingsModel implements BluetoothStateChangeCallback,
     private QuickSettingsTileView mRecordingTile;
     private RefreshCallback mRecordingCallback;
     public static RecordingState mRecordingState = new RecordingState();
+ 
+    private QuickSettingsTileView mCameraTile;
+    private RefreshCallback mCameraCallback;
+    private State mCameraState = new State();
 
     private QuickSettingsTileView mBatteryTile;
     private RefreshCallback mBatteryCallback;
@@ -903,12 +907,22 @@ public class QuickSettingsModel implements BluetoothStateChangeCallback,
 
     }
 
+    void addCameraTile(QuickSettingsTileView view, RefreshCallback cb) {
+        mCameraTile = view;
+        mCameraCallback = cb;
+        mCameraState.label= mContext.getResources().getString(R.string.quick_settings_camera_label);
+        mCameraState.iconId = R.drawable.ic_qs_camera;
+
+        mCameraCallback.refreshView(view, mCameraState);
+    }
+
     // User
     void addUserTile(QuickSettingsTileView view, RefreshCallback cb) {
         mUserTile = view;
         mUserCallback = cb;
         mUserCallback.refreshView(view, mUserState);
     }
+
     void setUserTileInfo(String name, Drawable avatar) {
         mUserState.label = name;
         mUserState.avatar = avatar;
