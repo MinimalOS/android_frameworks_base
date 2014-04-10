@@ -589,6 +589,11 @@
     <!-- Camera tile toasts -->
     <string name="quick_settings_camera_error_connect">Can\'t connect to camera</string>
 
+    <string name="quick_settings_music_play">Play</string>
+    <string name="quick_settings_music_pause">Pause</string>
+    <string name="quick_settings_music_label">Music</string>
+
+
 
 
 

@@ -47,10 +47,15 @@ import android.hardware.display.DisplayManager;
 import android.hardware.Camera;
 import android.media.AudioManager;
 import android.media.ExifInterface;
+import android.media.IAudioService;
+import android.media.MediaMetadataEditor;
+import android.media.MediaMetadataRetriever;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
 import android.media.MediaRecorder;
 import android.media.MediaRouter;
+import android.media.RemoteControlClient;
+import android.media.RemoteController;
 import android.net.ConnectivityManager;
 import android.net.Uri;
 import android.net.wifi.WifiManager;
@@ -60,6 +65,7 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.PowerManager;
 import android.os.RemoteException;
+import android.os.ServiceManager;
 import android.os.SystemClock;
 import android.os.UserHandle;
 import android.os.UserManager;
@@ -78,6 +84,7 @@ import android.provider.Settings.SettingNotFoundException;
 import android.util.Log;
 import android.util.Pair;
 import android.util.SettingConfirmationHelper;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.OrientationEventListener;
@@ -87,6 +94,7 @@ import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
+import android.view.ViewTreeObserver;
 import android.view.WindowManager;
 import android.view.WindowManagerGlobal;
 import android.widget.FrameLayout;
@@ -159,7 +167,8 @@ class QuickSettings {
         THEME_MODE,
         NFC,
         QUICKRECORD,
-        CAMERA
+        CAMERA,
+        MUSIC
     }
 
     public static final String NO_TILES = "NO_TILES";
@@ -183,7 +192,8 @@ class QuickSettings {
         + DELIMITER + Tile.THEME_MODE
         + DELIMITER + Tile.NFC
         + DELIMITER + Tile.QUICKRECORD
-        + DELIMITER + Tile.CAMERA;
+        + DELIMITER + Tile.CAMERA
+        + DELIMITER + Tile.MUSIC;
 
 
     private Context mContext;
@@ -206,6 +216,13 @@ class QuickSettings {
     private Camera.CameraInfo mCameraInfo = new Camera.CameraInfo();
     private Camera.Parameters mParams;
     final QuickSettingsBasicCameraTile cameraTile;
+
+    private boolean mActive = false;
+    private boolean mClientIdLost = true;
+    protected Metadata mMetadata = new Metadata();
+    
+    private RemoteController mRemoteController;
+    private IAudioService mAudioService = null;
 
     private Storage mStorage = new Storage();
     private SimpleDateFormat mImageNameFormatter;
@@ -415,7 +432,7 @@ class QuickSettings {
     }
 
     private void startSettingsActivity(final String action) {
-        if (immsersiveStyleSelected()) {
+        if (immersiveStyleSelected()) {
             mHandler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
@@ -430,7 +447,7 @@ class QuickSettings {
     }
 
     private void startSettingsActivity(final Intent intent) {
-        if (immsersiveStyleSelected()) {
+        if (immersiveStyleSelected()) {
             mHandler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
@@ -1192,6 +1209,42 @@ class QuickSettings {
                     mIconContainer.setVisibility(View.VISIBLE);
                     Log.v("QUICKSETTINGS", "mIconContainer set to VISIBLE");
                     if (addMissing) cameraTile.setVisibility(View.GONE);
+                } else if (Tile.MUSIC.toString().equals(tile.toString())) {
+                    final QuickSettingsBasicTile musicTile
+                           = new QuickSettingsBasicTile(mContext);
+                    musicTile.setTileId(Tile.MUSIC);
+                    musicTile.setTextResource(R.string.quick_settings_music_label);
+//                   cameraTile.setImageResource(R.drawable.ic_qs_camera);
+                    mRemoteController = new RemoteController(mContext, mRCClientUpdateListener);
+                    AudioManager manager = (AudioManager) mContext.getSystemService(Context.AUDIO_SERVICE);
+                    manager.registerRemoteController(mRemoteController);
+                    mRemoteController.setArtworkConfiguration(true,100,80);
+
+                    musicTile.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            sendMediaButtonClick(KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE);
+                        }
+                    });
+                    musicTile.setOnLongClickListener(new View.OnLongClickListener() {
+                        @Override
+                        public boolean onLongClick(View v) {
+                            sendMediaButtonClick(KeyEvent.KEYCODE_MEDIA_NEXT);
+                            return true;
+                        }
+                    });
+                    mModel.addMusicTile(musicTile,
+                        new QuickSettingsModel.RefreshCallback() {
+                       @Override
+                       public void refreshView(QuickSettingsTileView unused, State state){
+                           musicTile.setText(state.label);
+                           musicTile.setImageResource(state.iconId);
+                           Log.v("QUICKSETTINGS",state.label+","+state.iconId);
+
+                       }
+                    });
+                    parent.addView(musicTile);
+                    if (addMissing) musicTile.setVisibility(View.GONE);
                 } else if(Tile.QUICKRECORD.toString().equals(tile.toString())) {
                     final QuickSettingsBasicTile recordTile
                            = new QuickSettingsBasicTile(mContext);
@@ -2251,6 +2304,121 @@ class QuickSettings {
 
         public int generateBucketIdInt() {
             return generateDirectory().toLowerCase().hashCode();
+        }
+    }
+
+    private void playbackStateUpdate(int state) {
+        boolean active;
+        switch (state) {
+            case RemoteControlClient.PLAYSTATE_PLAYING:
+                active = true;
+                break;
+            case RemoteControlClient.PLAYSTATE_ERROR:
+            case RemoteControlClient.PLAYSTATE_PAUSED:
+            default:
+                active = false;
+                break;
+        }
+        if (active != mActive) {
+            mActive = active;
+            mModel.updateMusicTile(mMetadata.trackTitle, mMetadata.bitmap, mActive);
+        }
+    }
+
+    private void sendMediaButtonClick(int keyCode) {
+        if (!mClientIdLost) {
+            mRemoteController.sendMediaKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, keyCode));
+            mRemoteController.sendMediaKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, keyCode));
+        } else {
+            long eventTime = SystemClock.uptimeMillis();
+            KeyEvent key = new KeyEvent(eventTime, eventTime, KeyEvent.ACTION_DOWN, keyCode, 0);
+            dispatchMediaKeyWithWakeLockToAudioService(key);
+            dispatchMediaKeyWithWakeLockToAudioService(
+                KeyEvent.changeAction(key, KeyEvent.ACTION_UP));
+        }
+    }
+
+    private void dispatchMediaKeyWithWakeLockToAudioService(KeyEvent event) {
+        mAudioService = getAudioService();
+        if (mAudioService != null) {
+            try {
+                mAudioService.dispatchMediaKeyEventUnderWakelock(event);
+            } catch (RemoteException e) {
+                Log.e(TAG, "dispatchMediaKeyEvent threw exception " + e);
+            }
+        }
+    }
+
+    private IAudioService getAudioService() {
+        if (mAudioService == null) {
+            mAudioService = IAudioService.Stub.asInterface(
+                    ServiceManager.checkService(Context.AUDIO_SERVICE));
+            if (mAudioService == null) {
+                Log.w(TAG, "Unable to find IAudioService interface.");
+            }
+        }
+        return mAudioService;
+    }
+
+    private RemoteController.OnClientUpdateListener mRCClientUpdateListener =
+            new RemoteController.OnClientUpdateListener() {
+
+        private String mCurrentTrack = null;
+        private Bitmap mCurrentBitmap = null;
+
+        @Override
+        public void onClientChange(boolean clearing) {
+            if (clearing) {
+                mMetadata.clear();
+                mCurrentTrack = null;
+                mCurrentBitmap = null;
+                mActive = false;
+                mClientIdLost = true;
+                mModel.updateMusicTile(null, null, mActive);
+            }
+        }
+
+        @Override
+        public void onClientPlaybackStateUpdate(int state, long stateChangeTimeMs,
+                long currentPosMs, float speed) {
+            mClientIdLost = false;
+            playbackStateUpdate(state);
+        }
+
+        @Override
+        public void onClientPlaybackStateUpdate(int state) {
+            mClientIdLost = false;
+            playbackStateUpdate(state);
+        }
+
+        @Override
+        public void onClientMetadataUpdate(RemoteController.MetadataEditor data) {
+            mMetadata.trackTitle = data.getString(MediaMetadataRetriever.METADATA_KEY_TITLE,
+                    mMetadata.trackTitle);
+            mMetadata.bitmap = data.getBitmap(MediaMetadataEditor.BITMAP_KEY_ARTWORK,
+                    mMetadata.bitmap);
+            mClientIdLost = false;
+            if ((mMetadata.trackTitle != null
+                    && !mMetadata.trackTitle.equals(mCurrentTrack))
+                || (mMetadata.bitmap != null && !mMetadata.bitmap.sameAs(mCurrentBitmap))) {
+                mCurrentTrack = mMetadata.trackTitle;
+                mCurrentBitmap = mMetadata.bitmap;
+                mModel.updateMusicTile(mCurrentTrack, mCurrentBitmap, mActive);
+            }
+        }
+
+        @Override
+        public void onClientTransportControlUpdate(int transportControlFlags) {
+        }
+    };
+
+    class Metadata {
+        public String trackTitle;
+        public Bitmap bitmap;
+
+        public void clear() {
+            trackTitle = null;
+            bitmap = null;
         }
     }
 }

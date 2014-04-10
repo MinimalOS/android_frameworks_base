@@ -30,7 +30,10 @@ import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.content.SyncStatusObserver;
 import android.database.ContentObserver;
+import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.BitmapDrawable;
 import android.hardware.usb.UsbManager;
 import android.media.AudioManager;
 import android.media.MediaRouter;
@@ -56,6 +59,7 @@ import android.view.View;
 import android.view.inputmethod.InputMethodInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.view.inputmethod.InputMethodSubtype;
+import android.widget.ImageView;
 
 import com.android.internal.telephony.Phone;
 import com.android.internal.telephony.PhoneConstants;
@@ -122,6 +126,10 @@ public class QuickSettingsModel implements BluetoothStateChangeCallback,
     }
     static class NfcState extends State {
         boolean isEnabled;
+    }
+    static class MusicState extends State {
+        String trackTitle; 
+        Bitmap mCurrentBitmap;
     }
 
     static class RecordingState extends State {
@@ -602,6 +610,11 @@ public class QuickSettingsModel implements BluetoothStateChangeCallback,
     private QuickSettingsTileView mCameraTile;
     private RefreshCallback mCameraCallback;
     private State mCameraState = new State();
+ 
+    protected QuickSettingsTileView mMusicTile;
+    private RefreshCallback mMusicCallback;
+    private State mMusicState = new State();
+    protected ImageView background;
 
     private QuickSettingsTileView mBatteryTile;
     private RefreshCallback mBatteryCallback;
@@ -914,6 +927,35 @@ public class QuickSettingsModel implements BluetoothStateChangeCallback,
         mCameraState.iconId = R.drawable.ic_qs_camera;
 
         mCameraCallback.refreshView(view, mCameraState);
+    }
+
+    void addMusicTile(QuickSettingsTileView view, RefreshCallback cb) {
+        mMusicTile = view;
+        background = (ImageView) mMusicTile.findViewById(R.id.image);
+        mMusicCallback = cb;
+ 
+    }
+
+    void updateMusicTile(String title, Bitmap cover, boolean mActive) {
+        if (background != null) {
+            if (cover != null) {
+                background.setImageDrawable(new BitmapDrawable(cover));
+                background.setColorFilter(
+                    Color.rgb(123,123,123), android.graphics.PorterDuff.Mode.MULTIPLY);
+            } else {
+                background.setImageDrawable(null);
+                background.setColorFilter(null);
+            }
+        }
+        if (mActive) {
+            mMusicState.iconId = R.drawable.ic_qs_media_pause;
+            mMusicState.label = title != null
+                ? title : mContext.getString(R.string.quick_settings_music_pause);
+        } else {
+            mMusicState.iconId = R.drawable.ic_qs_media_play;
+            mMusicState.label = mContext.getString(R.string.quick_settings_music_play);
+        }
+         mMusicCallback.refreshView(mMusicTile, mMusicState);
     }
 
     // User
