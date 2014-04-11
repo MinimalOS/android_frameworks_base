@@ -931,7 +931,7 @@ public class QuickSettingsModel implements BluetoothStateChangeCallback,
 
     void addMusicTile(QuickSettingsTileView view, RefreshCallback cb) {
         mMusicTile = view;
-        background = (ImageView) mMusicTile.findViewById(R.id.image);
+        background = (ImageView) mMusicTile.findViewById(R.id.background);
         mMusicCallback = cb;
  
     }

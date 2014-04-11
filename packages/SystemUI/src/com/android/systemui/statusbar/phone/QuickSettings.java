@@ -1210,8 +1210,8 @@ class QuickSettings {
                     Log.v("QUICKSETTINGS", "mIconContainer set to VISIBLE");
                     if (addMissing) cameraTile.setVisibility(View.GONE);
                 } else if (Tile.MUSIC.toString().equals(tile.toString())) {
-                    final QuickSettingsBasicTile musicTile
-                           = new QuickSettingsBasicTile(mContext);
+                    final QuickSettingsBasicMusicTile musicTile
+                           = new QuickSettingsBasicMusicTile(mContext);
                     musicTile.setTileId(Tile.MUSIC);
                     musicTile.setTextResource(R.string.quick_settings_music_label);
 //                   cameraTile.setImageResource(R.drawable.ic_qs_camera);
