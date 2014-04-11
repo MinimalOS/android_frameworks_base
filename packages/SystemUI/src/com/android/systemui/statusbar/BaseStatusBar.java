@@ -996,6 +996,11 @@ public abstract class BaseStatusBar extends SystemUI implements
         }
     };
 
+protected boolean isRecentAppsVisible() {
+        return RecentsActivity.isActivityShowing();
+    }
+
+
     protected void toggleRecentsActivity() {
         if (mRecents != null || cRecents != null) {
         mCustomRecent = Settings.System.getBoolean(mContext.getContentResolver(), 

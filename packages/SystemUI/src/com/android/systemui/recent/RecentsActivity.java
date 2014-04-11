@@ -46,7 +46,7 @@ public class RecentsActivity extends Activity {
 
     private RecentsPanelView mRecentsPanel;
     private IntentFilter mIntentFilter;
-    private boolean mShowing;
+    private static boolean mShowing;
     private boolean mForeground;
     protected boolean mBackPressed;
 
@@ -252,7 +252,7 @@ public class RecentsActivity extends Activity {
         return mForeground;
     }
 
-    boolean isActivityShowing() {
+    public static boolean isActivityShowing() {
          return mShowing;
     }
 }
