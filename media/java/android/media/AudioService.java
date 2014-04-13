@@ -4417,6 +4417,14 @@ public class AudioService extends IAudioService.Stub {
                         0,
                         0,
                         mStreamStates[AudioSystem.STREAM_MUSIC], 0);
+            } else if (action.equals(Intent.ACTION_HEADSET_PLUG)) {
+                int plugged = intent.getIntExtra("state", 0);
+                if(plugged == 1) {
+                    Intent headset=Intent.makeMainSelectorActivity(Intent.ACTION_MAIN,
+                        Intent.CATEGORY_APP_MUSIC);
+                    headset.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    context.startActivity(headset);
+                }
             }
         }
 
