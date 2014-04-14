@@ -1419,9 +1419,6 @@ public class DownloadManager {
 		case Downloads.Impl.STATUS_PAUSED_BY_MANUAL:
                     return PAUSED_BY_MANUAL;
 
-                case Downloads.Impl.STATUS_PAUSED_BY_MANUAL:
-                    return PAUSED_BY_MANUAL;
-
                 default:
                     return PAUSED_UNKNOWN;
             }
