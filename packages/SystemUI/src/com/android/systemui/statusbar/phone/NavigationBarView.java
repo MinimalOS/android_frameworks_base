@@ -1,6 +1,5 @@
 /*
  * Copyright (C) 2008 The Android Open Source Project
- * This code has been modified. Portions copyright (C) 2013, ParanoidAndroid Project.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,7 +31,6 @@ import android.content.IntentFilter;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.database.ContentObserver;
-import android.graphics.drawable.Drawable;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.net.Uri;
@@ -56,8 +54,6 @@ import android.widget.LinearLayout;
 import android.widget.Space;
 import com.android.internal.util.aokp.AwesomeConstants.AwesomeConstant;
 import com.android.systemui.R;
-import com.android.systemui.recent.NavigationCallback;
-import com.android.systemui.recent.RecentsActivity;
 import com.android.systemui.statusbar.BaseStatusBar;
 import com.android.systemui.statusbar.DelegateViewHelper;
 import com.android.systemui.statusbar.policy.DeadZone;
@@ -68,8 +64,7 @@ import java.io.FileDescriptor;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 
-public class NavigationBarView extends LinearLayout implements NavigationCallback {
-    private static final int CAMERA_BUTTON_FADE_DURATION = 200;
+public class NavigationBarView extends LinearLayout {
     final static boolean DEBUG = false;
     final static String TAG = "PhoneStatusBar/NavigationBarView";
 
@@ -108,9 +103,6 @@ public class NavigationBarView extends LinearLayout implements NavigationCallbac
             setupNavigationButtons();
         }
     };
-
-    private Drawable mBackIcon, mBackLandIcon, mBackAltIcon, mBackAltLandIcon,
-            mRecentIcon, mRecentLandIcon, mRecentAltIcon, mRecentAltLandIcon;
 
     private DelegateViewHelper mDelegateHelper;
     private DeadZone mDeadZone;
@@ -246,10 +238,6 @@ public class NavigationBarView extends LinearLayout implements NavigationCallbac
         mButtonWidth = res.getDimensionPixelSize(R.dimen.navigation_key_width);
         mMenuButtonWidth = res.getDimensionPixelSize(R.dimen.navigation_menu_key_width);
 
-        RecentsActivity.addNavigationCallback(this);
-
-        getIcons(res);
-
         mBarTransitions = new NavigationBarTransitions(this);
 
         mCameraDisabledByDpm = isCameraDisabledByDpm();
@@ -332,17 +320,6 @@ public class NavigationBarView extends LinearLayout implements NavigationCallbac
         return mCurrentView.findViewById(R.id.camera_button);
     }
 
-    private void getIcons(Resources res) {
-        mBackIcon = res.getDrawable(R.drawable.ic_sysbar_back);
-        mBackLandIcon = res.getDrawable(R.drawable.ic_sysbar_back_land);
-        mBackAltIcon = res.getDrawable(R.drawable.ic_sysbar_back_ime);
-        mBackAltLandIcon = res.getDrawable(R.drawable.ic_sysbar_back_ime);
-        mRecentIcon = res.getDrawable(R.drawable.ic_sysbar_recent);
-        mRecentLandIcon = res.getDrawable(R.drawable.ic_sysbar_recent_land);
-        mRecentAltIcon = res.getDrawable(R.drawable.ic_sysbar_recent_clear);
-        mRecentAltLandIcon = res.getDrawable(R.drawable.ic_sysbar_recent_clear_land);
-    }
-
     public void updateResources() {
         for (int i = 0; i < mRotatedViews.length; i++) {
             ViewGroup container = (ViewGroup) mRotatedViews[i];
@@ -368,15 +345,10 @@ public class NavigationBarView extends LinearLayout implements NavigationCallbac
     }
 
     public void setNavigationIconHints(int hints) {
-        setNavigationIconHints(NavigationCallback.NAVBAR_BACK_HINT, hints, false);
+        setNavigationIconHints(hints, false);
     }
 
     public void setNavigationIconHints(int hints, boolean force) {
-        setNavigationIconHints(NavigationCallback.NAVBAR_BACK_HINT, hints, force);
-    }
-
-    @Override
-    public void setNavigationIconHints(int button, int hints, boolean force) {
         if (!force && hints == mNavigationIconHints) return;
         final boolean backAlt = (hints & StatusBarManager.NAVIGATION_HINT_BACK_ALT) != 0;
         if ((mNavigationIconHints & StatusBarManager.NAVIGATION_HINT_BACK_ALT) != 0 && !backAlt) {
@@ -390,31 +362,13 @@ public class NavigationBarView extends LinearLayout implements NavigationCallbac
 
         mNavigationIconHints = hints;
 
-        getBackButton().setAlpha(
-            (0 != (hints & StatusBarManager.NAVIGATION_HINT_BACK_NOP)) ? 0.5f : 1.0f);
-        getHomeButton().setAlpha(
-            (0 != (hints & StatusBarManager.NAVIGATION_HINT_HOME_NOP)) ? 0.5f : 1.0f);
-        getRecentsButton().setAlpha(
-            (0 != (hints & StatusBarManager.NAVIGATION_HINT_RECENT_NOP)) ? 0.5f : 1.0f);
-
-        if(button == NavigationCallback.NAVBAR_BACK_HINT) {
-            ((ImageView)getBackButton()).setImageDrawable(
-                (0 != (hints & StatusBarManager.NAVIGATION_HINT_BACK_ALT))
-                    ? (mVertical ? mBackAltLandIcon : mBackAltIcon)
-                    : (mVertical ? mBackLandIcon : mBackIcon));
-        } else if (button == NavigationCallback.NAVBAR_RECENTS_HINT) {
-            ((ImageView)getRecentsButton()).setImageDrawable(
-                (0 != (hints & StatusBarManager.NAVIGATION_HINT_RECENT_ALT))
-                    ? (mVertical ? mRecentAltLandIcon : mRecentAltIcon)
-                    : (mVertical ? mRecentLandIcon : mRecentIcon));
+        if (getBackButton() != null) {
+            ((ImageView) getBackButton()).setImageResource(backAlt
+                    ? R.drawable.ic_sysbar_back_ime
+                    : R.drawable.ic_sysbar_back);
         }
 
         setDisabledFlags(mDisabledFlags, true);
-    }
-
-    @Override
-    public int getNavigationIconHints() {
-        return mNavigationIconHints;
     }
 
     public void setDisabledFlags(int disabledFlags) {
@@ -791,9 +745,6 @@ public class NavigationBarView extends LinearLayout implements NavigationCallbac
         }
 
         setNavigationIconHints(mNavigationIconHints, true);
-        // Reset recents hints after reorienting
-        ((ImageView)getRecentsButton()).setImageDrawable(mVertical
-                ? mRecentLandIcon : mRecentIcon);
     }
 
     @Override

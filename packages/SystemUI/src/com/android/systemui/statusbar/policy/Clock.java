@@ -107,9 +107,9 @@ public class Clock extends TextView implements DemoMode {
     public Clock(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
     }
- 
-    public void startClockReceiver() {
 
+    @Override
+    protected void onAttachedToWindow() {
         super.onAttachedToWindow();
 
         if (!mAttached) {
@@ -133,17 +133,9 @@ public class Clock extends TextView implements DemoMode {
         // The time zone may have changed while the receiver wasn't registered, so update the Time
         mCalendar = Calendar.getInstance(TimeZone.getDefault());
 
-        updateClock();
-
         SettingsObserver settingsObserver = new SettingsObserver(new Handler());
         settingsObserver.observe();
         updateSettings();
-    }
-
-    @Override
-    protected void onAttachedToWindow() {
-        super.onAttachedToWindow();
-        startClockReceiver();
     }
 
     @Override

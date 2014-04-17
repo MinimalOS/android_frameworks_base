@@ -1,6 +1,5 @@
 /*
  * Copyright (C) 2012 The Android Open Source Project
- * This code has been modified. Portions copyright (C) 2013, ParanoidAndroid Project.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +19,6 @@ package com.android.systemui.recent;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.WallpaperManager;
-import android.app.StatusBarManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -33,9 +31,7 @@ import android.view.WindowManager;
 
 import com.android.systemui.R;
 import com.android.systemui.statusbar.StatusBarPanel;
-import com.android.systemui.statusbar.phone.NavigationBarView;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class RecentsActivity extends Activity {
@@ -43,31 +39,28 @@ public class RecentsActivity extends Activity {
     public static final String PRELOAD_INTENT = "com.android.systemui.recent.action.PRELOAD";
     public static final String CANCEL_PRELOAD_INTENT = "com.android.systemui.recent.CANCEL_PRELOAD";
     public static final String CLOSE_RECENTS_INTENT = "com.android.systemui.recent.action.CLOSE";
-    public static final String CLEAR_RECENTS_INTENT = "com.android.systemui.recent.action.CLEAR";
     public static final String WINDOW_ANIMATION_START_INTENT = "com.android.systemui.recent.action.WINDOW_ANIMATION_START";
     public static final String PRELOAD_PERMISSION = "com.android.systemui.recent.permission.PRELOAD";
     public static final String WAITING_FOR_WINDOW_ANIMATION_PARAM = "com.android.systemui.recent.WAITING_FOR_WINDOW_ANIMATION";
     private static final String WAS_SHOWING = "was_showing";
 
-    private static List<NavigationCallback> mNavigationCallbacks;
-    private static RecentsPanelView mRecentsPanel;
-    private static boolean mShowing;
+    private RecentsPanelView mRecentsPanel;
     private IntentFilter mIntentFilter;
+    private boolean mShowing;
     private boolean mForeground;
     protected boolean mBackPressed;
 
     private BroadcastReceiver mIntentReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            String action = intent.getAction();
-            if (CLOSE_RECENTS_INTENT.equals(action)) {
+            if (CLOSE_RECENTS_INTENT.equals(intent.getAction())) {
                 if (mRecentsPanel != null && mRecentsPanel.isShowing()) {
                     if (mShowing && !mForeground) {
                         // Captures the case right before we transition to another activity
                         mRecentsPanel.show(false);
                     }
                 }
-            } else if (WINDOW_ANIMATION_START_INTENT.equals(action)) {
+            } else if (WINDOW_ANIMATION_START_INTENT.equals(intent.getAction())) {
                 if (mRecentsPanel != null) {
                     mRecentsPanel.onWindowAnimationStart();
                 }
@@ -125,18 +118,6 @@ public class RecentsActivity extends Activity {
     public static boolean forceOpaqueBackground(Context context) {
         return WallpaperManager.getInstance(context).getWallpaperInfo() != null
                 && !ActivityManager.isHighEndGfx();
-    }
-
-    public void setRecentHints(boolean show) {
-        if (mNavigationCallbacks == null || mNavigationCallbacks.isEmpty()) return;
-        for(NavigationCallback callback : mNavigationCallbacks) {
-            // Check if we need to enable alternate drawable for recent apps key
-            if(callback == null) return; // Multiuser is not allowed
-            int navigationHints = callback.getNavigationIconHints();
-            callback.setNavigationIconHints(NavigationBarView.NAVBAR_RECENTS_HINT,
-                    show ? (navigationHints | StatusBarManager.NAVIGATION_HINT_RECENT_ALT)
-                         : (navigationHints & ~StatusBarManager.NAVIGATION_HINT_RECENT_ALT), true);
-        }
     }
 
     @Override
@@ -252,8 +233,7 @@ public class RecentsActivity extends Activity {
     private void handleIntent(Intent intent, boolean checkWaitingForAnimationParam) {
         super.onNewIntent(intent);
 
-        String action = intent.getAction();
-        if (TOGGLE_RECENTS_INTENT.equals(action)) {
+        if (TOGGLE_RECENTS_INTENT.equals(intent.getAction())) {
             if (mRecentsPanel != null) {
                 if (mRecentsPanel.isShowing()) {
                     dismissAndGoBack();
@@ -265,12 +245,6 @@ public class RecentsActivity extends Activity {
                             recentTasksLoader.isFirstScreenful(), waitingForWindowAnimation);
                 }
             }
-        } else if (CLEAR_RECENTS_INTENT.equals(action)) {
-            if (mRecentsPanel != null) {
-                if (mRecentsPanel.isShowing()) {
-                    mRecentsPanel.clearRecentViewList();
-                }
-            }
         }
     }
 
@@ -278,17 +252,7 @@ public class RecentsActivity extends Activity {
         return mForeground;
     }
 
-    public static void addNavigationCallback(NavigationCallback callback) {
-        if(mNavigationCallbacks == null)
-                mNavigationCallbacks= new ArrayList<NavigationCallback>();
-        mNavigationCallbacks.add(callback);
-    }
-
-    public static int getTasks() {
-        return mRecentsPanel.getTasks();
-    }
-
-    public static boolean isActivityShowing() {
-        return mShowing;
+    boolean isActivityShowing() {
+         return mShowing;
     }
 }

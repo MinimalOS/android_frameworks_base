@@ -565,16 +565,6 @@
          linebreak to position it correctly.  [CHAR LIMIT=45] -->
     <string name="ssl_ca_cert_warning">Network may\nbe monitored</string>
 
-   <!-- Pie controls -->
-    <string name="pie_date_format">ccc, dd MMM yyyy</string>
-    <string name="pie_hour_format_12">hh:mm</string>
-    <string name="pie_hour_format_24">HH:mm</string>
-    <string name="pie_am_pm">a</string>
-    <string name="enable_pie_control_title">Pie controls</string>
-    <string name="enable_pie_control_message">Would you like to use pie controls while in immersive mode?</string>
-
-    <string name="pie_state">@string/enable_pie_control_title</string>
-
     <!-- Title shown in notification popup for launching notification in floating mode -->
     <string name="status_bar_notification_floating_item_title">Floating mode</string>
     <!-- Title shown in recents popup for showing app in floating mode -->
@@ -597,5 +587,4 @@
 
     <string name="quick_settings_label_enabled">On</string>
     <string name="quick_settings_label_disabled">Off</string>
-
 </resources>

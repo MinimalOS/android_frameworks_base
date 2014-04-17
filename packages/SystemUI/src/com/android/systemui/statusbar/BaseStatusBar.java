@@ -1,6 +1,5 @@
 /*
  * Copyright (C) 2010 The Android Open Source Project
- * This code has been modified. Portions copyright (C) 2013, ParanoidAndroid Project.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -64,8 +63,6 @@ import android.graphics.PorterDuffXfermode;
 import android.graphics.PorterDuff.Mode;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
-import android.hardware.SensorManager; 
-import android.inputmethodservice.InputMethodService;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Handler;
@@ -88,7 +85,6 @@ import android.view.IWindowManager;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.MotionEvent;
-import android.view.OrientationEventListener;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
@@ -110,22 +106,15 @@ import com.android.systemui.chaos.lab.gestureanywhere.GestureAnywhereView;
 import com.android.systemui.R;
 import com.android.systemui.AOKPSearchPanelView;
 import com.android.systemui.aokp.AppWindow;
-import com.android.systemui.recent.RecentsActivity;
 import com.android.systemui.SearchPanelView;
 import com.android.systemui.RecentsComponent;
 import com.android.systemui.SystemUI;
 import com.android.systemui.slimrecent.RecentController;
-import com.android.systemui.statusbar.policy.BatteryController;
-import com.android.systemui.statusbar.policy.Clock;
 import com.android.systemui.statusbar.phone.KeyguardTouchDelegate;
 import com.android.systemui.statusbar.phone.PhoneStatusBar;
-import com.android.systemui.statusbar.pie.PieControlPanel;
-import com.android.systemui.statusbar.pie.PieController;
 import com.android.systemui.statusbar.halo.Halo;
-import com.android.systemui.statusbar.policy.NetworkController;
 import com.android.systemui.statusbar.policy.NotificationRowLayout;
 import com.android.systemui.statusbar.policy.activedisplay.ActiveDisplayView;
-import com.android.systemui.statusbar.SignalClusterView;
 
 import java.util.ArrayList;
 import java.util.Locale;
@@ -138,7 +127,6 @@ public abstract class BaseStatusBar extends SystemUI implements
 
     protected static final int MSG_TOGGLE_RECENTS_PANEL = 1020;
     protected static final int MSG_CLOSE_RECENTS_PANEL = 1021;
-    protected static final int MSG_CLEAR_RECENTS_PANEL = 1028;
     protected static final int MSG_PRELOAD_RECENT_APPS = 1022;
     protected static final int MSG_CANCEL_PRELOAD_RECENT_APPS = 1023;
     protected static final int MSG_OPEN_SEARCH_PANEL = 1024;
@@ -180,23 +168,9 @@ public abstract class BaseStatusBar extends SystemUI implements
 
     protected int mCurrentUserId = 0;
 
-    // Pie controls
-    protected PieController mPieController;
-    public int mOrientation = 0;
-
-    // Pie policy
-    public NetworkController mNetworkController;
-    public BatteryController mBatteryController;
-    public SignalClusterView mSignalCluster;
-    public Clock mClock;
-
     private RecentController cRecents;
 
     private RecentsComponent mRecents;
-
-   public Handler getHandler() {
-        return mHandler;
-    }
 
     protected int mLayoutDirection = -1; // invalid
     private Locale mLocale;
@@ -260,10 +234,6 @@ public abstract class BaseStatusBar extends SystemUI implements
         return mDeviceProvisioned;
     }
 
-   public int getNotificationCount() {
-        return mNotificationData.size();
-    }
-
     private ContentObserver mProvisioningObserver = new ContentObserver(mHandler) {
         @Override
         public void onChange(boolean selfChange) {
@@ -285,12 +255,6 @@ public abstract class BaseStatusBar extends SystemUI implements
             ContentResolver resolver = mContext.getContentResolver();
             resolver.registerContentObserver(Settings.System.getUriFor(
                     Settings.System.IMMERSIVE_MODE), false, this);
-            resolver.registerContentObserver(Settings.System.getUriFor(
-                    Settings.System.PIE_STATE), false, this);
-            resolver.registerContentObserver(Settings.System.getUriFor(
-                    Settings.System.PIE_GRAVITY), false, this);
-            resolver.registerContentObserver(Settings.System.getUriFor(
-                    Settings.System.PIE_MODE), false, this);
             update();
         }
 
@@ -301,12 +265,8 @@ public abstract class BaseStatusBar extends SystemUI implements
 
         private void update() {
             ContentResolver resolver = mContext.getContentResolver();
-            mImmersiveModeStyle = Settings.System.getIntForUser(resolver,
-                    Settings.System.IMMERSIVE_MODE, 0, UserHandle.USER_CURRENT);
-            boolean pieEnabled = Settings.System.getIntForUser(resolver,
-                    Settings.System.PIE_STATE, 0, UserHandle.USER_CURRENT) == 1;
-
-            updatePieControls(!pieEnabled);
+            mImmersiveModeStyle = Settings.System.getIntForUser(mContext.getContentResolver(),
+                        Settings.System.IMMERSIVE_MODE, 0, UserHandle.USER_CURRENT);
           }
       };
 
@@ -458,22 +418,9 @@ public abstract class BaseStatusBar extends SystemUI implements
         filter.addAction(Intent.ACTION_USER_SWITCHED);
         mContext.registerReceiver(mBroadcastReceiver, filter);
 
-
         SettingsObserver settingsObserver = new SettingsObserver(new Handler());
         settingsObserver.observe();
 
-        OrientationEventListener orientationListener
-                = new OrientationEventListener(mContext, SensorManager.SENSOR_DELAY_NORMAL) {
-            @Override
-            public void onOrientationChanged(int orientation) {
-                int rotation = mDisplay.getRotation();
-                if (rotation != mOrientation) {
-                    if (mPieController != null) mPieController.detachPie();
-                    mOrientation = rotation;
-                }
-            }
-        };
-        orientationListener.enable();
         // Listen for HALO enabled switch
         mContext.getContentResolver().registerContentObserver(
                 Settings.System.getUriFor(Settings.System.HALO_ENABLED), false, new ContentObserver(new Handler()) {
@@ -562,24 +509,6 @@ public abstract class BaseStatusBar extends SystemUI implements
         }
     }
 
-    public void updatePieControls(boolean reset) {
-        if(reset) {
-            ContentResolver resolver = mContext.getContentResolver();
-            Settings.System.putIntForUser(resolver,
-                    Settings.System.PIE_GRAVITY, 0, UserHandle.USER_CURRENT);
-            Settings.System.putIntForUser(resolver,
-                    Settings.System.PIE_MODE, 0, UserHandle.USER_CURRENT);
-        }
-        if (mPieController == null) {
-            mPieController = PieController.getInstance();
-            mPieController.init(mContext, mWindowManager, this);
-        }
-        int gravity = Settings.System.getInt(mContext.getContentResolver(),
-                Settings.System.PIE_GRAVITY, 0);
-        mPieController.resetPie(!reset, gravity);
-    }
-
-
     public void userSwitched(int newUserId) {
         // should be overridden
     }
@@ -599,7 +528,7 @@ public abstract class BaseStatusBar extends SystemUI implements
     protected void onConfigurationChanged(Configuration newConfig) {
         final Locale locale = mContext.getResources().getConfiguration().locale;
         final int ld = TextUtils.getLayoutDirectionFromLocale(locale);
-        if (!locale.equals(mLocale) || ld != mLayoutDirection) {
+        if (! locale.equals(mLocale) || ld != mLayoutDirection) {
             if (DEBUG) {
                 Log.v(TAG, String.format(
                         "config changed locale/LD: %s (%d) -> %s (%d)", mLocale, mLayoutDirection,
@@ -796,13 +725,6 @@ public abstract class BaseStatusBar extends SystemUI implements
     }
 
     @Override
-    public void clearRecentApps() {
-        int msg = MSG_CLEAR_RECENTS_PANEL;
-        mHandler.removeMessages(msg);
-        mHandler.sendEmptyMessage(msg);
-    }
-
-    @Override
     public void preloadRecentApps() {
         int msg = MSG_PRELOAD_RECENT_APPS;
         mHandler.removeMessages(msg);
@@ -893,14 +815,6 @@ public abstract class BaseStatusBar extends SystemUI implements
         }
     };
 
-    protected boolean isRecentAppsVisible() {
-        return RecentsActivity.isActivityShowing();
-    }
-
-    protected boolean hasRecentApps() {
-        return RecentsActivity.getTasks() > 0;
-    }
-
     protected void toggleRecentsActivity() {
         if (mRecents != null || cRecents != null) {
         mCustomRecent = Settings.System.getBoolean(mContext.getContentResolver(), 
@@ -964,14 +878,6 @@ public abstract class BaseStatusBar extends SystemUI implements
              case MSG_CLOSE_RECENTS_PANEL:
                  closeRecents();
                  break;
-             case MSG_CLEAR_RECENTS_PANEL:
-                  if (DEBUG) Log.d(TAG, "clearing recents panel");
-                  intent = new Intent(RecentsActivity.CLEAR_RECENTS_INTENT);
-                  intent.setClassName("com.android.systemui",
-                         "com.android.systemui.recent.RecentsActivity");
-                  mContext.startActivityAsUser(intent, new UserHandle(
-                         UserHandle.USER_CURRENT));
-                  break;
              case MSG_PRELOAD_RECENT_APPS:
                   preloadRecentTasksList();
                   break;
