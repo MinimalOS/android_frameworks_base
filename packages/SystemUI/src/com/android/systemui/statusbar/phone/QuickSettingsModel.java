@@ -77,6 +77,10 @@ import com.android.systemui.nameless.onthego.OnTheGoReceiver;
 
 import com.android.internal.util.omni.OmniTorchConstants;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.lang.UnsupportedOperationException;
 import java.util.ArrayList;
 import java.util.List;
@@ -639,6 +643,10 @@ public class QuickSettingsModel implements BluetoothStateChangeCallback,
     private QuickSettingsTileView mBrightnessTile;
     private RefreshCallback mBrightnessCallback;
     private BrightnessState mBrightnessState = new BrightnessState();
+
+    private QuickSettingsTileView mFastChargeTile;
+    private RefreshCallback mFastChargeCallback;
+    private State mFastChargeState = new State();
 
     private QuickSettingsTileView mNetAdbTile;
     private RefreshCallback mNetAdbCallback;
@@ -1801,6 +1809,53 @@ public class QuickSettingsModel implements BluetoothStateChangeCallback,
        if (mBrightnessTile != null) {
            onBrightnessLevelChanged();
        }
+    }
+
+    // FastCharge 
+    void addFastChargeTile(QuickSettingsTileView view, RefreshCallback cb) {
+        mFastChargeTile = view;
+        mFastChargeCallback = cb;
+        updateFastChargeTile();
+
+    }
+
+    public synchronized void updateFastChargeTile() {
+        String label = mContext.getString(R.string.quick_settings_fcharge);
+
+        if(isFastChargeOn()) {
+            mFastChargeState.iconId = R.drawable.ic_qs_fcharge_on;
+            mFastChargeState.label = label + " " + mContext.getString(R.string.quick_settings_label_enabled);
+            mFastChargeState.enabled=true;
+        } else {
+            mFastChargeState.iconId = R.drawable.ic_qs_fcharge_off;
+            mFastChargeState.label = label + " " + mContext.getString(R.string.quick_settings_label_disabled);
+            mFastChargeState.enabled=false;
+        }
+        mFastChargeCallback.refreshView(mFastChargeTile, mFastChargeState);
+    }
+
+    public boolean isFastChargeOn() {
+        try {
+            String fchargePath = mContext.getResources()
+                    .getString(com.android.internal.R.string.config_fastChargePath);
+            if (!fchargePath.isEmpty()) {
+                File fastcharge = new File(fchargePath);
+                if (fastcharge.exists()) {
+                    FileReader reader = new FileReader(fastcharge);
+                    BufferedReader breader = new BufferedReader(reader);
+                    String line = breader.readLine();
+                    breader.close();
+                    Settings.System.putInt(mContext.getContentResolver(),
+                            Settings.System.FCHARGE_ENABLED, line.equals("1") ? 1 : 0);
+                    return (line.equals("1"));
+                }
+            }
+        } catch (IOException e) {
+            Log.e("FChargeToggle", "Couldn't read fast_charge file");
+            Settings.System.putInt(mContext.getContentResolver(),
+                 Settings.System.FCHARGE_ENABLED, 0);
+        }
+        return false;
     }
 
     void addThemeTile(QuickSettingsTileView view, RefreshCallback cb) {

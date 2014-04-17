@@ -126,8 +126,12 @@ import com.android.systemui.statusbar.policy.RotationLockController;
 
 import com.android.internal.util.omni.OmniTorchConstants;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -168,7 +172,8 @@ class QuickSettings {
         NFC,
         QUICKRECORD,
         CAMERA,
-        MUSIC
+        MUSIC,
+        FCHARGE
     }
 
     public static final String NO_TILES = "NO_TILES";
@@ -193,7 +198,8 @@ class QuickSettings {
         + DELIMITER + Tile.NFC
         + DELIMITER + Tile.QUICKRECORD
         + DELIMITER + Tile.CAMERA
-        + DELIMITER + Tile.MUSIC;
+        + DELIMITER + Tile.MUSIC
+        + DELIMITER + Tile.FCHARGE;
 
 
     private Context mContext;
@@ -253,6 +259,8 @@ class QuickSettings {
     private MediaPlayer mPlayer = null;
     private MediaRecorder mRecorder = null;
     private static String mQuickAudio = null;
+
+    protected boolean fcenabled = false;
 
     public static final int THEME_MODE_MANUAL       = 0;
     public static final int THEME_MODE_LIGHT_SENSOR = 1;
@@ -591,6 +599,42 @@ class QuickSettings {
                             new QuickSettingsModel.BasicRefreshCallback(brightnessTile));
                     parent.addView(brightnessTile);
                     if(addMissing) brightnessTile.setVisibility(View.GONE);
+                } else if(Tile.FCHARGE.toString().equals(tile.toString())) { // Brightness tile
+                    final QuickSettingsBasicTile fchargeTile
+                            = new QuickSettingsBasicTile(mContext);
+                    fchargeTile.setTileId(Tile.FCHARGE);
+                    fchargeTile.setImageResource(R.drawable.ic_qs_fcharge_off);
+                    fchargeTile.setTextResource(R.string.quick_settings_fcharge);
+                    fchargeTile.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            try {
+                                fcenabled = !mModel.isFastChargeOn();
+                                String fchargePath = mContext.getResources()
+                                  .getString(com.android.internal.R.string.config_fastChargePath);
+                                if (!fchargePath.isEmpty()) {
+                                    File fastcharge = new File(fchargePath);
+                                    if (fastcharge.exists()) {
+                                        FileWriter fwriter = new FileWriter(fastcharge);
+                                        BufferedWriter bwriter = new BufferedWriter(fwriter);
+                                        bwriter.write(fcenabled ? "1" : "0");
+                                        bwriter.close();
+                                        Settings.System.putInt(mContext.getContentResolver(),
+                                            Settings.System.FCHARGE_ENABLED, fcenabled ? 1 : 0);
+                                    }
+                                }
+                            } catch (IOException e) {
+                                Log.e("FChargeToggle", "Couldn't write fast_charge file");
+                                Settings.System.putInt(mContext.getContentResolver(),
+                                  Settings.System.FCHARGE_ENABLED, 0);
+                            }
+                            mModel.updateFastChargeTile();
+                        }
+                    });
+                    mModel.addFastChargeTile(fchargeTile,
+                            new QuickSettingsModel.BasicRefreshCallback(fchargeTile));
+                    parent.addView(fchargeTile);
+                    if(addMissing) fchargeTile.setVisibility(View.GONE);
                 } else if(Tile.SETTINGS.toString().equals(tile.toString())) { // Settings tile
                     final QuickSettingsBasicTile settingsTile
                             = new QuickSettingsBasicTile(mContext);

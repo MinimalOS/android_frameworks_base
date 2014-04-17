@@ -1908,4 +1908,5 @@
   <!-- Package Manager -->
   <java-symbol type="array" name="config_disabledComponents" />
 
+  <java-symbol type="string" name="config_fastChargePath" />
 </resources>
