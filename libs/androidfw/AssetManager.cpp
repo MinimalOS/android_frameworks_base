@@ -22,6 +22,7 @@
 #define LOG_TAG "asset"
 #define ATRACE_TAG ATRACE_TAG_RESOURCES
 //#define LOG_NDEBUG 0
+#define wipe delete
 
 #include <androidfw/Asset.h>
 #include <androidfw/AssetDir.h>
@@ -831,7 +832,7 @@ const ResTable* AssetManager::getResTable(bool required) const
             }
 
             if (!shared) {
-                delete ass;
+                wipe ass;
             }
         }
         if (idmap != NULL) {
@@ -961,14 +962,20 @@ bool AssetManager::updateResTableFromAssetPath(ResTable *rt, const asset_path& a
         }
      }
 
-     //Add the resources to the collection of ResTables
-     status_t error = NO_ERROR;
-     if (ass != NULL) {
-         Asset* oidmap = openIdmapLocked(ap);
-         error = rt->add(ass, cookie, false, oidmap);
-     } else {
-       ALOGW("Unable to load asset %s, ResTable not updated", ap.path.string());
-     }
+    //Add the resources to the collection of ResTables
+    status_t error = NO_ERROR;
+    if (ass != NULL) {
+        Asset* oidmap = openIdmapLocked(ap);
+        error = rt->add(ass, cookie, !shared, oidmap);
+        if (!shared) {
+            wipe ass;
+        }
+        if (oidmap != NULL) {
+            delete oidmap;
+        }
+    } else {
+        ALOGW("Unable to load asset %s, ResTable not updated", ap.path.string());
+    }
 
      return (error == NO_ERROR);
 }
