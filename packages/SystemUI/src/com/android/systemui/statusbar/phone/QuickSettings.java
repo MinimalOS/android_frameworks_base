@@ -82,6 +82,7 @@ import android.security.KeyChain;
 import android.telephony.TelephonyManager;
 import android.provider.Settings.SettingNotFoundException;
 import android.util.Log;
+import android.util.SettingConfirmationHelper;
 import android.util.Pair;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -438,13 +439,32 @@ class QuickSettings {
         mTilesSetUp = true;
     }
 
-    private void startSettingsActivity(String action) {
-        Intent intent = new Intent(action);
-        startSettingsActivity(intent);
+    private void startSettingsActivity(final String action) {
+        if (immsersiveStyleSelected()) {
+            mHandler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    Intent intent = new Intent(action);
+                    startSettingsActivity(intent);
+                }
+            }, 70);
+        } else {
+           Intent intent = new Intent(action);
+           startSettingsActivity(intent);
+        }
     }
 
-    private void startSettingsActivity(Intent intent) {
-        startSettingsActivity(intent, true);
+    private void startSettingsActivity(final Intent intent) {
+        if (immsersiveStyleSelected()) {
+            mHandler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    startSettingsActivity(intent, true);
+                }
+            }, 70);
+        } else {
+           startSettingsActivity(intent, true);
+        }
     }
 
     private void collapsePanels() {
@@ -472,6 +492,13 @@ class QuickSettings {
         batteryTile.updateBatterySettings();
         mModel.refreshBatteryTile();
     }
+
+    private boolean immersiveStyleSelected() {
+        int selection = Settings.System.getInt(mContext.getContentResolver(),
+                            Settings.System.PIE_STATE, 0);
+        return selection == 1 || selection == 2;
+    }
+
 
     private void addTiles(ViewGroup parent, boolean addMissing) {
         // Load all the customizable tiles. If not yet modified by the user, load default ones.
@@ -1335,8 +1362,12 @@ class QuickSettings {
                     immersiveTile.setFrontOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
-                            mModel.switchImmersiveGlobal();
-                            mModel.refreshImmersiveGlobalTile();
+                            if (!immersiveStyleSelected() && mModel.getImmersiveMode() == 0) {
+                                selectImmersiveStyle();
+                            } else {
+                                mModel.switchImmersiveGlobal();
+                                mModel.refreshImmersiveGlobalTile();
+                            } 
                         }
                     });
                     mModel.addImmersiveGlobalTile(immersiveTile.getFront(), new QuickSettingsModel.RefreshCallback() {
@@ -1727,6 +1758,17 @@ class QuickSettings {
         container.updateSpan();
         container.updateResources();
         mContainerView.requestLayout();
+    }
+
+    private void selectImmersiveStyle() {
+        Resources r = mContext.getResources();
+
+        SettingConfirmationHelper helper = new SettingConfirmationHelper(mContext);
+        helper.showConfirmationDialogForSetting(
+                r.getString(R.string.enable_pie_control_title),
+                r.getString(R.string.enable_pie_control_message),
+                r.getDrawable(R.drawable.want_some_slice),
+                Settings.System.PIE_STATE);
     }
 
     private void showBrightnessDialog() {

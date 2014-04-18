@@ -43,6 +43,7 @@ import android.net.wifi.WifiManager;
 import android.net.wifi.WifiInfo;
 import android.net.NetworkUtils;
 import android.nfc.NfcAdapter;
+import android.net.Uri;
 import android.os.BatteryManager;
 import android.os.Handler;
 import android.os.SystemProperties;
@@ -437,7 +438,12 @@ public class QuickSettingsModel implements BluetoothStateChangeCallback,
         }
 
         @Override
-        public void onChange(boolean selfChange) {
+        public void onChange(boolean selfChange, Uri uri) {
+            if (uri.equals(Settings.System.getUriFor(Settings.System.PIE_STATE))) {
+                boolean enablePie = Settings.System.getInt(mContext.getContentResolver(),
+                        Settings.System.PIE_STATE, 0) != 0;
+                if (enablePie) switchImmersiveGlobal();
+            }
             onImmersiveGlobalChanged();
             onImmersiveModeChanged();
         }
@@ -447,6 +453,8 @@ public class QuickSettingsModel implements BluetoothStateChangeCallback,
             cr.unregisterContentObserver(this);
             cr.registerContentObserver(Settings.System.getUriFor(
                     Settings.System.IMMERSIVE_MODE), false, this);
+            cr.registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.PIE_STATE), false, this);
             cr.registerContentObserver(Settings.System.getUriFor(
                     Settings.System.IMMERSIVE_DEFAULT_APP_MODE), false, this);
         }
@@ -2096,12 +2104,14 @@ public class QuickSettingsModel implements BluetoothStateChangeCallback,
         Resources r = mContext.getResources();
         final int mode = getImmersiveMode();
         final boolean isDefault = isImmersiveDefaultAppMode();
+        final boolean enabled = isPieEnabled();
         if (mode == IMMERSIVE_MODE_OFF) {
-            mImmersiveGlobalState.iconId = R.drawable.ic_qs_immersive_global_off;
-            mImmersiveGlobalState.label = r.getString(isDefault ?
-                    R.string.quick_settings_immersive_mode_app_default : R.string.quick_settings_immersive_global_off_label);
+            mImmersiveGlobalState.iconId = enabled ?
+                  R.drawable.ic_qs_pie_global_off : R.drawable.ic_qs_immersive_global_off;
+            mImmersiveGlobalState.label = r.getString(R.string.quick_settings_immersive_global_off_label);
         } else {
-            mImmersiveGlobalState.iconId = R.drawable.ic_qs_immersive_global_on;
+            mImmersiveGlobalState.iconId = enabled ?
+                  R.drawable.ic_qs_pie_global_on : R.drawable.ic_qs_immersive_global_on;
             mImmersiveGlobalState.label = r.getString(R.string.quick_settings_immersive_global_on_label);
         }
         mImmersiveGlobalCallback.refreshView(mImmersiveGlobalTile, mImmersiveGlobalState);
@@ -2146,6 +2156,11 @@ public class QuickSettingsModel implements BluetoothStateChangeCallback,
     protected int getImmersiveMode() {
         return Settings.System.getInt(mContext.getContentResolver(),
                 Settings.System.IMMERSIVE_MODE, 0);
+    }
+
+    protected boolean isPieEnabled() {
+        return Settings.System.getInt(mContext.getContentResolver(),
+                Settings.System.PIE_STATE, 0) == 1;
     }
 
     protected boolean isImmersiveDefaultAppMode() {
