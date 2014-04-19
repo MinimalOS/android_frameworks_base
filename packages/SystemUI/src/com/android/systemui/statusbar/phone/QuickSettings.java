@@ -440,7 +440,7 @@ class QuickSettings {
     }
 
     private void startSettingsActivity(final String action) {
-        if (immsersiveStyleSelected()) {
+        if (immersiveStyleSelected()) {
             mHandler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
@@ -455,7 +455,7 @@ class QuickSettings {
     }
 
     private void startSettingsActivity(final Intent intent) {
-        if (immsersiveStyleSelected()) {
+        if (immersiveStyleSelected()) {
             mHandler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
