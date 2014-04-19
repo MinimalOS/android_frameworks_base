@@ -3418,6 +3418,9 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
                 }
             }
         } else {
+           if (mSettingsContainer != null) {
+                mSettingsContainer.updateResources();
+            }
             if (mQS != null) {
                 mQS.updateResources();
             }
@@ -3593,13 +3596,17 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
             resolver.registerContentObserver(Settings.System.getUriFor(
                     Settings.System.REMINDER_ALERT_INTERVAL), false, this,
                     UserHandle.USER_ALL);
+            resolver.registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.QUICK_TILES_PER_ROW), false, this);
+            resolver.registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.QUICK_TILES_PER_ROW_DUPLICATE_LANDSCAPE), false, this);
 
             update();
 
         }
 
          @Override
-        public void onChange(boolean selfChange) {
+        public void onChange(boolean selfChange, Uri uri) {
             updateSettings();
             updateBatteryIcons();
             update();
@@ -3628,6 +3635,9 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
                 enableOrDisableReminder();
             }
             updateCustomHeaderStatus();
+                  if (mSettingsContainer != null) {
+                mSettingsContainer.updateResources();
+            }
         }
     }
 
@@ -3752,5 +3762,38 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
             }
         }
         return true;
+    }
+
+    private class TilesChangedObserver extends ContentObserver {
+        public TilesChangedObserver(Handler handler) {
+            super(handler);
+        }
+
+        @Override
+        public void onChange(boolean selfChange) {
+            onChange(selfChange, null);
+        }
+
+        @Override
+        public void onChange(boolean selfChange, Uri uri) {
+            if (mSettingsContainer != null) {
+                // Refresh the container
+                mSettingsContainer.removeAllViews();
+                mQS.setupQuickSettings();
+                mSettingsContainer.updateResources();
+            }
+        }
+
+        public void startObserving() {
+            final ContentResolver cr = mContext.getContentResolver();
+            cr.registerContentObserver(
+                    Settings.System.getUriFor(Settings.System.QUICK_TILES_PER_ROW),
+                    false, this);
+
+            cr.registerContentObserver(
+                    Settings.System.getUriFor(Settings.System.QUICK_TILES_PER_ROW_DUPLICATE_LANDSCAPE),
+                    false, this);
+
+        }
     }
 }

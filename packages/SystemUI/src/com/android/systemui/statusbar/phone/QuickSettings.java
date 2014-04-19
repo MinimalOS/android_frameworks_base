@@ -430,7 +430,7 @@ class QuickSettings {
         mUserInfoTask.execute();
     }
 
-    private void setupQuickSettings() {
+    public void setupQuickSettings() {
         addTiles(mContainerView, false);
         addTemporaryTiles(mContainerView);
 
