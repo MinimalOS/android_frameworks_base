@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+/* apps/common/assets/default/default/skins/StatusBar.xml
+**
+** Copyright 2006, The Android Open Source Project
+**
+** Licensed under the Apache License, Version 2.0 (the "License");
+** you may not use this file except in compliance with the License.
+** You may obtain a copy of the License at
+**
+**     http://www.apache.org/licenses/LICENSE-2.0
+**
+** Unless required by applicable law or agreed to in writing, software
+** distributed under the License is distributed on an "AS IS" BASIS,
+** WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+** See the License for the specific language governing permissions and
+** limitations under the License.
+*/
+-->
+<LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:systemui="http://schemas.android.com/apk/res/com.android.systemui"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="top"
+        android:orientation="vertical">
+                <com.android.systemui.statusbar.policy.BatteryTextMeterView
+                    android:id="@+id/qs_battery_text"
+                    android:textAppearance="@style/BatteryText"
+                    android:layout_height="wrap_content"
+                    android:layout_width="wrap_content"
+                    android:layout_marginStart="4dip"
+                    android:layout_gravity="center_vertical|right"
+                    android:visibility="gone" />
+                <!-- battery must be padded below to match assets -->
+                <com.android.systemui.BatteryMeterView
+                    android:id="@+id/qs_battery"
+                    android:layout_height="16dp"
+                    android:layout_width="10.5dp"
+                    android:layout_marginBottom="0.33dp"
+                    android:layout_marginStart="4dip"
+                    />
+                <com.android.systemui.BatteryCircleMeterView
+                    android:id="@+id/qs_circle_battery"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="@style/TextAppearance.StatusBar.Battery"
+                    android:singleLine="true"
+                    android:gravity="bottom"
+                    android:paddingLeft="4dip"
+                    systemui:batteryView="statusbar"
+                    />
+                <com.android.systemui.BatteryPieMeterView
+                    android:id="@+id/qs_pie_battery"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="@style/TextAppearance.StatusBar.Battery"
+                    android:singleLine="true"
+                    android:gravity="top"
+                    android:paddingLeft="4dip"
+                    systemui:batteryView="statusbar"
+                    />
+                <com.android.systemui.BatteryPercentMeterView
+                    android:id="@+id/qs_percent_battery"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="@style/TextAppearance.StatusBar.Battery"
+                    android:singleLine="true"
+                    android:gravity="bottom"
+                    android:paddingLeft="4dip"
+                    systemui:batteryView="statusbar"
+                    />
+</LinearLayout>
