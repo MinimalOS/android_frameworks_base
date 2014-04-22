@@ -116,6 +116,7 @@ public class QuickSettingsBasicBatteryTile extends QuickSettingsTileView {
             return;
         }
         mCircleBattery.updateSettings();
+        mPieBattery.updateSettings();
         mBattery.updateSettings();
         mPercentBattery.updateSettings();
     }

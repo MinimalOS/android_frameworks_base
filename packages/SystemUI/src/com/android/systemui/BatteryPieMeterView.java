@@ -194,15 +194,7 @@ public class BatteryPieMeterView extends ImageView {
         if (mAttached) {
             mAttached = false;
             getContext().unregisterReceiver(mBatteryReceiver);
-            mRectLeft = null;
-            mPieSize = 0;
         }
-    }
-
-    @Override
-    public void setVisibility(int visibility) {
-        super.setVisibility(visibility);
-        mActivated = visibility == View.VISIBLE;
     }
 
     @Override
@@ -351,7 +343,7 @@ public class BatteryPieMeterView extends ImageView {
         if (mAnimOffset > 360) {
             mAnimOffset = 0;
         } else {
-            mAnimOffset += 3;
+            mAnimOffset += mPieAnimSpeed;
         }
 
         mHandler.removeCallbacks(mInvalidate);
@@ -409,9 +401,9 @@ public class BatteryPieMeterView extends ImageView {
         if (measure == null) {
             return;
         }
-        final int x = measure.getWidth()-2;
+        final int x = measure.getWidth() / 2;
 
-        mPieSize = measure.getHeight()-10;
+        mPieSize = measure.getHeight();
         Log.v("BatteryPie","Pie size is " + mPieSize);
     }
 

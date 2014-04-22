@@ -27,6 +27,10 @@
         android:layout_gravity="top|center_horizontal"
         android:layout_centerHorizontal="true"
         >
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="0.7"/>
         <ImageView
             android:id="@+id/rssi_image"
             android:layout_width="wrap_content"
@@ -56,6 +60,11 @@
             android:layout_toRightOf="@id/rssi_images"
             android:layout_alignBottom="@id/rssi_images"
             />
+    <View
+        android:id="@+id/separator_padding"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="0.3"/>
     <TextView
         style="@style/TextAppearance.QuickSettings.TileView"
         android:id="@+id/rssi_textview"
@@ -68,4 +77,8 @@
         android:layout_below="@id/rssi_images"
         android:textAllCaps="@bool/quick_settings_rssi_tile_capitalization"
         />
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="0.7"/>
 </RelativeLayout>
