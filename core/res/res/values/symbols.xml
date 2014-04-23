@@ -1848,6 +1848,9 @@
   <java-symbol type="anim" name="slide_out_left_no_fade" />
   <java-symbol type="anim" name="slide_in_left_no_fade" />
 
+  <!-- Download Icon -->
+  <java-symbol type="drawable" name="stat_sys_downloadicon" />
+
   <java-symbol type="bool" name="use_motion_accel" />
 
   <!-- Progress Bar -->
