@@ -1375,6 +1375,31 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                     Settings.System.NAVIGATION_BAR_SHOW, showByDefault,
                     UserHandle.USER_CURRENT) == 1;
 
+            mNavigationBarHeight =
+                    Settings.System.getIntForUser(mContext.getContentResolver(),
+                            Settings.System.NAVIGATION_BAR_HEIGHT, -2,
+                            UserHandle.USER_CURRENT);
+            if (mNavigationBarHeight == -2) {
+                mNavigationBarHeight = mContext.getResources().getDimensionPixelSize(
+                        com.android.internal.R.dimen.navigation_bar_height);
+            } else {
+                mNavigationBarHeight =
+                        Converter.dpToPx(mContext, mNavigationBarHeight);
+            }
+
+            mNavigationBarWidth =
+                    Settings.System.getIntForUser(mContext.getContentResolver(),
+                            Settings.System.NAVIGATION_BAR_WIDTH, -2,
+                            UserHandle.USER_CURRENT);
+            if (mNavigationBarWidth == -2) {
+                mNavigationBarWidth = mContext.getResources().getDimensionPixelSize(
+                        com.android.internal.R.dimen.navigation_bar_width);
+            } else {
+                mNavigationBarWidth =
+                        Converter.dpToPx(mContext, mNavigationBarWidth);
+            }
+
+
         // Allow a system property to override this. Used by the emulator.
         // See also hasNavigationBar().
         String navBarOverride = SystemProperties.get("qemu.hw.mainkeys");
@@ -1478,6 +1503,36 @@ public class PhoneWindowManager implements WindowManagerPolicy {
             navTranslucent &= areTranslucentBarsAllowed();
 
             updateImmersiveTileIfOnDefaultAppMode(navTranslucent);
+
+	    // Custom nav bar dimensions
+	    final int showByDefault = mContext.getResources().getBoolean(
+                    com.android.internal.R.bool.config_showNavigationBar) ? 1 : 0;
+            mHasNavigationBar = Settings.System.getIntForUser(resolver,
+                    Settings.System.NAVIGATION_BAR_SHOW, showByDefault,
+                    UserHandle.USER_CURRENT) == 1;
+
+            if (!mHasNavigationBar) {
+                // Set the navigation bar's dimensions to 0
+                mNavigationBarWidthForRotation[mPortraitRotation]
+                        = mNavigationBarWidthForRotation[mUpsideDownRotation]
+                        = mNavigationBarWidthForRotation[mLandscapeRotation]
+                        = mNavigationBarWidthForRotation[mSeascapeRotation]
+                        = mNavigationBarHeightForRotation[mPortraitRotation]
+                        = mNavigationBarHeightForRotation[mUpsideDownRotation]
+                        = mNavigationBarHeightForRotation[mLandscapeRotation]
+                        = mNavigationBarHeightForRotation[mSeascapeRotation] = 0;
+            } else {
+                // Height of the navigation bar when presented horizontally at bottom *******
+                mNavigationBarHeightForRotation[mPortraitRotation] =
+                mNavigationBarHeightForRotation[mUpsideDownRotation] = mNavigationBarHeight;
+                        
+                
+                // Width of the navigation bar when presented vertically along one side
+                mNavigationBarWidthForRotation[mPortraitRotation] =
+                mNavigationBarWidthForRotation[mUpsideDownRotation] =
+                mNavigationBarWidthForRotation[mLandscapeRotation] =
+                mNavigationBarWidthForRotation[mSeascapeRotation] = mNavigationBarWidth;
+            }
 
             if (mSystemReady) {
                 int pointerLocation = Settings.System.getIntForUser(resolver,
