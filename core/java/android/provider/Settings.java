@@ -3727,6 +3727,14 @@ public final class Settings {
         public static final String VOICE_LAUNCH_INTENT = "voice_launch_intent";
 
          /**
+         * Recents longpress switchs apps.
+         * 0 = off
+         * 1 = on
+         * @hide
+         */
+        public static final String RECENTS_SWITCH = "recents_switch";
+
+        /**
          * Pie control panel. Meet him on the spot.
          * 0 = off
          * 1 = on
@@ -3840,7 +3848,8 @@ public final class Settings {
          * @hide
          */
         public static final String[] SETTINGS_TO_RESET = {
-            PIE_STATE
+            PIE_STATE,
+            RECENTS_SWITCH
         };
 
         // Settings moved to Settings.Secure
