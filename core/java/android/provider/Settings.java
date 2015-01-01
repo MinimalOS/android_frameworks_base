@@ -3343,6 +3343,12 @@ public final class Settings {
          */
         public static final String EGG_MODE = "egg_mode";
 
+        /** Whether to collapse panel when quick settings tile is pressed.
+         *
+         * @hide
+         */
+        public static final String QUICK_SETTINGS_COLLAPSE_PANEL = "quick_settings_collapse_panel";
+
         /**
          * Show or hide clock
          * 0 - hide
