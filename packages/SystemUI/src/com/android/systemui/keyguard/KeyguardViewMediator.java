@@ -133,6 +133,9 @@ public class KeyguardViewMediator extends SystemUI {
     private static final String DELAYED_KEYGUARD_ACTION =
         "com.android.internal.policy.impl.PhoneWindowManager.DELAYED_KEYGUARD";
 
+    private static final String DISMISS_KEYGUARD_SECURELY_ACTION =
+        "com.android.keyguard.action.DISMISS_KEYGUARD_SECURELY";
+
     // used for handler messages
     private static final int SHOW = 2;
     private static final int HIDE = 3;
@@ -530,6 +533,8 @@ public class KeyguardViewMediator extends SystemUI {
         mShowKeyguardWakeLock.setReferenceCounted(false);
         mProfileManager = (ProfileManager) mContext.getSystemService(Context.PROFILE_SERVICE);
         mContext.registerReceiver(mBroadcastReceiver, new IntentFilter(DELAYED_KEYGUARD_ACTION));
+        mContext.registerReceiver(mBroadcastReceiver, new IntentFilter(DISMISS_KEYGUARD_SECURELY_ACTION),
+                android.Manifest.permission.CONTROL_KEYGUARD, null);
 
         mKeyguardDisplayManager = new KeyguardDisplayManager(mContext);
 
@@ -1193,6 +1198,10 @@ public class KeyguardViewMediator extends SystemUI {
                         mSuppressNextLockSound = true;
                         doKeyguardLocked(null);
                     }
+                }
+            } else if (DISMISS_KEYGUARD_SECURELY_ACTION.equals(intent.getAction())) {
+                synchronized (KeyguardViewMediator.this) {
+                    dismiss();
                 }
             }
         }
