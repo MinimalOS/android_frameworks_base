@@ -1315,7 +1315,7 @@ public class AppTransition implements Dump {
             resolver.registerContentObserver(
                     Settings.System.getUriFor(Settings.System.ANIMATION_CONTROLS_REVERSE_EXIT), false, this);
             for (int i = 0; i < 11; i++) {
-	            resolver.registerContentObserver(
+                resolver.registerContentObserver(
                     Settings.System.getUriFor(Settings.System.ACTIVITY_ANIMATION_CONTROLS[i]), false, this);
             }
         }
