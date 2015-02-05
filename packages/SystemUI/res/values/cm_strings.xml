@@ -117,6 +117,8 @@
     <string name="navring_action_kill_app">Kill app</string>
     <string name="navring_action_none">None</string>
     <string name="navring_action_take_screenshot">Take screenshot</string>
+    <string name="quick_settings_screenrecord">Screenrecord</string>
+    <string name="quick_settings_screenrecord_on">Recording</string>
     <string name="navring_action_ring_vibrate">Ring/Vibration</string>
     <string name="navring_action_ring_silent">Ring/Silent</string>
     <string name="navring_action_ring_vibrate_silent">Ring/Vibration/Silent</string>
