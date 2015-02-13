@@ -143,8 +143,8 @@ public class NavbarEditor implements View.OnTouchListener {
             0, R.drawable.ic_sysbar_ime_right);
     public static final ButtonInfo NAVBAR_POWER = new ButtonInfo("power",
             R.string.navbar_power_button, R.string.accessibility_power,
-            KeyEvent.KEYCODE_POWER, R.drawable.ic_sysbar_power, R.drawable.ic_sysbar_power,
-            R.drawable.ic_sysbar_power);
+            KeyEvent.KEYCODE_POWER, R.drawable.ic_sysbar_power, R.drawable.ic_sysbar_power_land,
+            R.drawable.ic_sysbar_power_side);
     public static final ButtonInfo NAVBAR_MEDIA_PLAY_PAUSE = new ButtonInfo("media_play_pause",
             R.string.navbar_playpause_button, R.string.accessibility_playpause,
             KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE, R.drawable.ic_sysbar_play,
