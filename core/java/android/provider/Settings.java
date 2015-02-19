@@ -5871,7 +5871,7 @@ public final class Settings {
                 "navigation_ring_targets_2",
         };
 
-        /*
+        /**
          * String to contain power menu actions
          * @deprecated Use {@link android.provider.Settings.Secure#POWER_MENU_ACTIONS} instead
          * @hide
