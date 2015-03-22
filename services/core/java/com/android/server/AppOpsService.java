@@ -1676,7 +1676,7 @@ public class AppOpsService extends IAppOpsService.Stub {
                 }
             }
             // ensure the counter reset persists
-            scheduleWriteNowLocked();
+            scheduleFastWriteLocked();
         }
     }
 }
