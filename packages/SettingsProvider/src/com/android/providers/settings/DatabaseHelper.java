@@ -74,7 +74,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     // database gets upgraded properly. At a minimum, please confirm that 'upgradeVersion'
     // is properly propagated through your change.  Not doing so will result in a loss of user
     // settings.
-    private static final int DATABASE_VERSION = 125;
+    private static final int DATABASE_VERSION = 119;
 
     private static final String HEADSET = "_headset";
     private static final String SPEAKER = "_speaker";
@@ -1875,23 +1875,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
             moveSettingsToNewTable(db, TABLE_SYSTEM, TABLE_SECURE,
                     settingsToMove, true);
-            upgradeVersion = 121;
-        }
-
-        if (upgradeVersion < 122) {
-            db.beginTransaction();
-            SQLiteStatement stmt = null;
-            try {
-                stmt = db.compileStatement("INSERT OR IGNORE INTO secure(name,value)"
-                        + " VALUES(?,?);");
-                loadBooleanSetting(stmt, Secure.ADVANCED_MODE,
-                        com.android.internal.R.bool.config_advancedSettingsMode);
-                db.setTransactionSuccessful();
-            } finally {
-                db.endTransaction();
-                if (stmt != null) stmt.close();
-            }
-            upgradeVersion = 122;
+            upgradeVersion = 118;
         }
 
         if (upgradeVersion < 119) {
@@ -1911,26 +1895,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             moveSettingsToNewTable(db, TABLE_SYSTEM, TABLE_SECURE, systemToSecure, true);
 
             upgradeVersion = 119;
-        }
-
-        if (upgradeVersion < 125) {
-            // Force enable advanced settings if the overlay defaults to true
-            if (mContext.getResources().getBoolean(
-                    com.android.internal.R.bool.config_advancedSettingsMode)) {
-                db.beginTransaction();
-                SQLiteStatement stmt = null;
-                try {
-                    stmt = db.compileStatement("INSERT OR REPLACE INTO secure(name,value)"
-                            + " VALUES(?,?);");
-                    loadBooleanSetting(stmt, Secure.ADVANCED_MODE,
-                            com.android.internal.R.bool.config_advancedSettingsMode);
-                    db.setTransactionSuccessful();
-                } finally {
-                    db.endTransaction();
-                    if (stmt != null) stmt.close();
-                }
-            }
-            upgradeVersion = 125;
         }
 
         // *** Remember to update DATABASE_VERSION above!
@@ -2690,12 +2654,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                     R.integer.def_enable_accessiblity);
             loadStringSetting(stmt, Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES,
                     R.string.def_enable_accessiblity_services);
-
-            loadBooleanSetting(stmt, Settings.Secure.STATS_COLLECTION,
-                    R.bool.def_cm_stats_collection);
-
-            loadBooleanSetting(stmt, Settings.Secure.ADVANCED_MODE,
-                    com.android.internal.R.bool.config_advancedSettingsMode);
 
             loadProtectedSmsSetting(stmt);
         } finally {
