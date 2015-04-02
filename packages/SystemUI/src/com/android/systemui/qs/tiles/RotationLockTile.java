@@ -44,8 +44,6 @@ public class RotationLockTile extends QSTile<QSTile.BooleanState> {
 
     private final RotationLockController mController;
 
-    private final boolean mAdvancedMode;
-
     public RotationLockTile(Host host) {
         super(host);
         mController = host.getRotationLockController();
