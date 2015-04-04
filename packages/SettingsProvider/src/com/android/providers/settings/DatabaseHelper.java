@@ -74,7 +74,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     // database gets upgraded properly. At a minimum, please confirm that 'upgradeVersion'
     // is properly propagated through your change.  Not doing so will result in a loss of user
     // settings.
-    private static final int DATABASE_VERSION = 124;
+    private static final int DATABASE_VERSION = 120;
 
     private static final String HEADSET = "_headset";
     private static final String SPEAKER = "_speaker";
@@ -1897,7 +1897,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             upgradeVersion = 119;
         }
 
-        if (upgradeVersion < 124) {
+        if (upgradeVersion < 120) {
             // Migrate from cm-12.0 if there is no entry from cm-11.0
             db.beginTransaction();
             SQLiteStatement stmt = null;
@@ -1913,7 +1913,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 db.endTransaction();
                 if (stmt != null) stmt.close();
             }
-            upgradeVersion = 124;
+            upgradeVersion = 120;
         }
 
         // *** Remember to update DATABASE_VERSION above!

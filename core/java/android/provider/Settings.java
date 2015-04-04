@@ -5917,11 +5917,9 @@ public final class Settings {
 
         /**
          * String to contain power menu actions
-         * @deprecated Use {@link android.provider.Settings.Secure#POWER_MENU_ACTIONS} instead
          * @hide
          */
-        @Deprecated
-        public static final String POWER_MENU_ACTIONS = Secure.POWER_MENU_ACTIONS;
+        public static final String POWER_MENU_ACTIONS = "power_menu_actions";
 
         /**
          * Developer options - Navigation Bar show switch
@@ -6413,9 +6411,11 @@ public final class Settings {
 
         /**
          * String to contain power menu actions
+         * @deprecated Use {@link android.provider.Settings.Secure#POWER_MENU_ACTIONS} instead
          * @hide
          */
-        public static final String POWER_MENU_ACTIONS = "power_menu_actions";
+        @Deprecated
+        public static final String POWER_MENU_ACTIONS = Secure.POWER_MENU_ACTIONS;
 
         /**
          * Whether Views are allowed to save their attribute data.
