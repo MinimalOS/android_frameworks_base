@@ -14,11 +14,6 @@ using namespace android;
 namespace {
     int get_zip_entry_crc(const char *zip_path, const char *entry_name, uint32_t *crc)
     {
-        if (crc == NULL) {
-            // As this function used to get the crc, but the address is NULL, do nothing.
-            return -1;
-        }
-
         UniquePtr<ZipFileRO> zip(ZipFileRO::open(zip_path));
         if (zip.get() == NULL) {
             return -1;
@@ -27,12 +22,9 @@ namespace {
         if (entry == NULL) {
             return -1;
         }
-        long tmp;
-        if (!zip->getEntryInfo(entry, NULL, NULL, NULL, NULL, NULL, &tmp)) {
+        if (!zip->getEntryInfo(entry, NULL, NULL, NULL, NULL, NULL, (long*)crc)) {
             return -1;
         }
-        // As the crc of the apk only contains 32bits, so the convert action is safe.
-        *crc = (uint32_t) tmp;
         zip->releaseEntry(entry);
         return 0;
     }
