@@ -4606,7 +4606,6 @@ public class AudioService extends IAudioService.Stub {
     private class SettingsObserver extends ContentObserver {
 
         SettingsObserver() {
-            SettingsObserver() {
             super(new Handler());
             mContentResolver.registerContentObserver(Settings.System.getUriFor(
                     Settings.System.MODE_RINGER_STREAMS_AFFECTED), false, this);
