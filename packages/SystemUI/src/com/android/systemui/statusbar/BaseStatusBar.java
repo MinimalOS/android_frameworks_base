@@ -62,6 +62,7 @@ import android.service.notification.NotificationListenerService.RankingMap;
 import android.service.notification.StatusBarNotification;
 import android.text.TextUtils;
 import android.util.Log;
+import android.util.Slog;
 import android.util.SparseArray;
 import android.util.SparseBooleanArray;
 import android.view.Display;
@@ -2209,7 +2210,7 @@ public abstract class BaseStatusBar extends SystemUI implements
             // startKeyguard() hasn't been called yet, so we don't know.
             // Make sure anything that needs to know isKeyguardSecure() checks and re-checks this
             // value onVisibilityChanged().
-            Log.w(TAG, "isKeyguardSecure() called before startKeyguard(), returning false",
+            Slog.w(TAG, "isKeyguardSecure() called before startKeyguard(), returning false",
                     new Throwable());
             return false;
         }
