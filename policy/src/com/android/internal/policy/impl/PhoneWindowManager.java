@@ -3333,7 +3333,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                     Settings.Secure.KILL_APP_LONGPRESS_BACK, 0) == 1) {
                 if (down && repeatCount == 0) {
                     mBackKillTimeout = Settings.Secure.getIntForUser(mContext.getContentResolver(),
-                        Settings.Secure.KILL_APP_LONGPRESS_TIMEOUT, 0, UserHandle.USER_CURRENT);
+                        Settings.Secure.KILL_APP_LONGPRESS_TIMEOUT,2000, UserHandle.USER_CURRENT);
                     mHandler.postDelayed(mBackLongPress, mBackKillTimeout);
                 }
             }
