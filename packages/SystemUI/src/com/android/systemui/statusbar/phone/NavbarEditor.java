@@ -143,12 +143,25 @@ public class NavbarEditor implements View.OnTouchListener {
             0, R.drawable.ic_sysbar_ime_right);
     public static final ButtonInfo NAVBAR_POWER = new ButtonInfo("power",
             R.string.navbar_power_button, R.string.accessibility_power,
-            KeyEvent.KEYCODE_POWER, R.drawable.ic_sysbar_power, R.drawable.ic_sysbar_power_land,
-            R.drawable.ic_sysbar_power_side);
+            KeyEvent.KEYCODE_POWER, R.drawable.ic_sysbar_power, R.drawable.ic_sysbar_power,
+            R.drawable.ic_sysbar_power);
+    public static final ButtonInfo NAVBAR_MEDIA_PLAY_PAUSE = new ButtonInfo("media_play_pause",
+            R.string.navbar_playpause_button, R.string.accessibility_playpause,
+            KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE, R.drawable.ic_sysbar_play,
+            R.drawable.ic_sysbar_play_land, R.drawable.ic_sysbar_play);
+    public static final ButtonInfo NAVBAR_MEDIA_NEXT = new ButtonInfo("media_next",
+            R.string.navbar_next_button, R.string.accessibility_next,
+            KeyEvent.KEYCODE_MEDIA_NEXT, R.drawable.ic_sysbar_next,
+            R.drawable.ic_sysbar_next, R.drawable.ic_sysbar_next);
+    public static final ButtonInfo NAVBAR_MEDIA_PREVIOUS = new ButtonInfo("media_previous",
+            R.string.navbar_previous_button, R.string.accessibility_previous,
+            KeyEvent.KEYCODE_MEDIA_PREVIOUS, R.drawable.ic_sysbar_previous,
+            R.drawable.ic_sysbar_previous, R.drawable.ic_sysbar_previous);
 
     private static final ButtonInfo[] ALL_BUTTONS = new ButtonInfo[] {
         NAVBAR_EMPTY, NAVBAR_HOME, NAVBAR_BACK, NAVBAR_SEARCH,
-        NAVBAR_RECENT, NAVBAR_CONDITIONAL_MENU, NAVBAR_ALWAYS_MENU, NAVBAR_MENU_BIG, NAVBAR_POWER
+        NAVBAR_RECENT, NAVBAR_CONDITIONAL_MENU, NAVBAR_ALWAYS_MENU, NAVBAR_MENU_BIG, NAVBAR_POWER,
+        NAVBAR_MEDIA_PLAY_PAUSE, NAVBAR_MEDIA_NEXT, NAVBAR_MEDIA_PREVIOUS
     };
 
     private static final String DEFAULT_SETTING_STRING = "empty|back|home|recent|empty|menu0";

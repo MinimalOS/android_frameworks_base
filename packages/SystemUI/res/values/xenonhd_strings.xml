@@ -32,4 +32,10 @@
 
     <!-- Power Button for Navbar -->
     <string name="navbar_power_button">Power button</string>
+
+    <!-- Media Buttons for Navbar -->
+    <string name="navbar_playpause_button">Media play/pause button</string>
+    <string name="navbar_next_button">Next track button</string>
+    <string name="navbar_previous_button">Previous track button</string>
+
 </resources>
