@@ -2253,6 +2253,13 @@ public final class Settings {
         public static final String SHOW_PROCESSES = Global.SHOW_PROCESSES;
 
         /**
+        * Defines the status and navigation bar color is battery safe mode is enabled.
+        *
+        * @hide
+        */
+        public static final String BATTERY_SAVER_MODE_COLOR = "battery_save_mode_color";
+
+        /**
          * If 1, the activity manager will aggressively finish activities and
          * processes as soon as they are no longer needed.  If 0, the normal
          * extended lifetime is used.
@@ -3658,6 +3665,12 @@ public final class Settings {
         * @hide
         */
         public static final String NAVIGATION_BAR_WIDTH = "navigation_bar_width";
+
+        /**
+         * Navigation bar button color
+         * @hide
+         */
+        public static final String NAVIGATION_BAR_TINT = "navigation_bar_tint";
 
         /**
          * Whether to prevent loud volume levels when headset is first plugged in.
@@ -6100,6 +6113,12 @@ public final class Settings {
         public static final String PRIVACY_GUARD_DEFAULT = "privacy_guard_default";
 
         /**
+         * Whether privacy guard notification should show.
+         * @hide
+         */
+        public static final String PRIVACY_GUARD_NOTIFICATION = "privacy_guard_notification";
+
+        /**
          * Timeout of long-pressing the Back button
          * @hide
          */
@@ -6178,6 +6197,12 @@ public final class Settings {
                 "navigation_ring_targets_1",
                 "navigation_ring_targets_2",
         };
+
+        /**
+         * Whether search panel is enabled.
+         * @hide
+         */
+        public static final String SEARCH_PANEL_ENABLED = "search_panel_enabled";
 
         /**
          * The global recents long press activity chosen by the user.
@@ -6281,6 +6306,7 @@ public final class Settings {
             UI_NIGHT_MODE,
             SLEEP_TIMEOUT,
             PRIVACY_GUARD_DEFAULT,
+            PRIVACY_GUARD_NOTIFICATION,
             ADVANCED_REBOOT,
             DEVELOPMENT_SHORTCUT
         };
