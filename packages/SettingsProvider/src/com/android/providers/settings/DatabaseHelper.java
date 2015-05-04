@@ -2681,6 +2681,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                     R.string.def_enable_accessiblity_services);
 
             loadProtectedSmsSetting(stmt);
+
+            loadStringSetting(stmt, Settings.Secure.QS_TILES,
+                    com.android.internal.R.string.config_defaultQuickSettingsTiles);
         } finally {
             if (stmt != null) stmt.close();
         }
