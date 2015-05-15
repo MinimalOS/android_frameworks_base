@@ -30,7 +30,6 @@
     android:focusable="true"
     android:descendantFocusability="afterDescendants"
     >
-
     <ImageView
         android:id="@+id/notification_lights_out"
         android:layout_width="@dimen/status_bar_icon_size"
@@ -45,8 +44,8 @@
     <LinearLayout android:id="@+id/status_bar_contents"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:paddingStart="6dip"
-        android:paddingEnd="6dip"
+        android:paddingStart="6dp"
+        android:paddingEnd="8dp"
         android:orientation="horizontal"
         >
 
@@ -64,17 +63,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 >
-
-                <TextView
-                    android:id="@+id/left_clock"
-                    android:textAppearance="@style/TextAppearance.StatusBar.Clock"
-                    android:layout_width="wrap_content"
-                    android:layout_height="fill_parent"
-                    android:singleLine="true"
-                    android:paddingEnd="6dip"
-                    android:gravity="center"
-                    android:visibility="gone"
-                    />
 
                 <com.android.keyguard.AlphaOptimizedLinearLayout
                     android:id="@+id/left_clock_layout"
@@ -97,6 +85,15 @@
 
                 </com.android.keyguard.AlphaOptimizedLinearLayout>
 
+                <com.android.systemui.statusbar.widget.CarrierLabel
+                    android:id="@+id/status_bar_carrier_label"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:textAppearance="@style/TextAppearance.StatusBar.Clock"
+                    android:singleLine="true"
+                    android:ellipsize="end"/>
+
                 <com.android.systemui.statusbar.StatusBarIconView android:id="@+id/moreIcon"
                     android:layout_width="@dimen/status_bar_icon_size"
                     android:layout_height="match_parent"
@@ -118,6 +115,13 @@
             android:orientation="horizontal"
             >
 
+            <com.android.systemui.statusbar.policy.NetworkTraffic
+                android:id="@+id/networkTraffic"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:singleLine="false"
+                android:gravity="right|center_vertical"/>
+
             <include layout="@layout/msim_system_icons" />
 
             <com.android.systemui.BatteryLevelTextView android:id="@+id/battery_level_text"
@@ -128,13 +132,13 @@
                 android:textColor="#ffffff"
                 android:textSize="@dimen/battery_level_text_size" />
 
-            <TextView
+            <com.android.systemui.statusbar.policy.Clock
                 android:id="@+id/clock"
                 android:textAppearance="@style/TextAppearance.StatusBar.Clock"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
                 android:singleLine="true"
-                android:paddingStart="6dip"
+                android:paddingStart="7dp"
                 android:gravity="center_vertical|start"
                 />
         </com.android.keyguard.AlphaOptimizedLinearLayout>
@@ -148,14 +152,14 @@
         android:layout_height="match_parent"
         >
 
-        <TextView
+        <com.android.systemui.statusbar.policy.ClockCenter
             android:id="@+id/center_clock"
             android:textAppearance="@style/TextAppearance.StatusBar.Clock"
+            android:gravity="center"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:singleLine="true"
-            android:gravity="center"
             android:visibility="gone"
+            android:singleLine="true"
             />
     </com.android.keyguard.AlphaOptimizedLinearLayout>
 
