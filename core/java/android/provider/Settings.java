@@ -3604,12 +3604,6 @@ public final class Settings {
         public static final String T9_SEARCH_INPUT_LOCALE = "t9_search_input_locale";
 
         /**
-        * Toast animations
-        * @hide
-        */
-        public static final String TOAST_ANIMATION = "toast_animation";
-
-        /**
         * Navigation bar height when it is on protrait
         * @hide
         */
