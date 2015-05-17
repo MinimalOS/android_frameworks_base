@@ -65,7 +65,7 @@ import static com.android.internal.R.styleable.WindowAnimation_wallpaperIntraOpe
 import static com.android.internal.R.styleable.WindowAnimation_wallpaperIntraCloseEnterAnimation;
 import static com.android.internal.R.styleable.WindowAnimation_wallpaperIntraCloseExitAnimation;
 
-import com.android.internal.util.xenonhd.AwesomeAnimationHelper;
+import com.android.internal.util.crdroid.AwesomeAnimationHelper;
 import android.widget.Toast;
 
 // State management of app transitions.  When we are preparing for a
@@ -183,7 +183,7 @@ public class AppTransition implements Dump {
     private boolean mIsResId = false;
     private boolean mExitOnly;
     private boolean mReverseExit;
-
+    
     private int mCurrentUserId = 0;
 
     AppTransition(Context context, Handler h) {
@@ -1327,7 +1327,7 @@ public class AppTransition implements Dump {
 
     private void updateSettings() {
         ContentResolver resolver = mContext.getContentResolver();
-        for (int i = 0; i < 11; i++) {
+        for (int i = 0; i < 11; i++) {  
             mActivityAnimations[i] = Settings.System.getInt(resolver, Settings.System.ACTIVITY_ANIMATION_CONTROLS[i], 0);
         }
 
