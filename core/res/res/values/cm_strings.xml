@@ -120,7 +120,7 @@
     <string name="reboot_progress">Rebooting\u2026</string>
 
     <!-- Long-press back kill application -->
-    <string name="app_killed_message">Feeling lucky? Punk!</string>
+    <string name="app_killed_message">App killed</string>
 
     <!-- ADB over network notification -->
     <string name="adb_net_active_notification_title">ADB over network enabled</string>
