@@ -400,6 +400,7 @@ public class StatusBarKeyguardViewManager {
         mLastBouncerShowing = bouncerShowing;
         mLastBouncerDismissible = bouncerDismissible;
 
+        mPhoneStatusBar.onKeyguardViewManagerStatesUpdated();
     }
 
     public boolean onMenuPressed() {
