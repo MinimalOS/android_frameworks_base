@@ -31,4 +31,10 @@
     <dimen name="floating_action_button_margin_side">32dp</dimen>
     <dimen name="floating_action_button_margin_bottom">45dp</dimen>
 
-</resources> 
+    <!-- Side padding for the status bar header -->
+    <dimen name="notification_header_side_padding">@dimen/notification_side_padding</dimen>
+
+    <!-- Side padding for the Quick Settings panel -->
+    <dimen name="qs_panel_side_padding">@dimen/notification_side_padding</dimen>
+
+</resources>
