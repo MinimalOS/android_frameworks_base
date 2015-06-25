@@ -1570,7 +1570,6 @@ public class NotificationStackScrollLayout extends ViewGroup
             // drawn when removed
             getOverlay().add(child);
         }
-        mPhoneStatusBar.requestVisualizer(true, 300);
         updateAnimationState(false, child);
 
         // Make sure the clipRect we might have set is removed
