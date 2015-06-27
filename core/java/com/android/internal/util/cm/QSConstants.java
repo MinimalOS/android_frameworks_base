@@ -53,7 +53,6 @@ public class QSConstants {
     public static final String TILE_SCREEN_OFF = "screen_off";
     public static final String TILE_EXPANDED_DESKTOP = "expanded_desktop";
     public static final String TILE_REBOOT = "reboot";
-    public static final String TILE_HEADS_UP = "heads_up";
 
     protected static final ArrayList<String> TILES_AVAILABLE = new ArrayList<String>();
 
@@ -90,6 +89,5 @@ public class QSConstants {
         TILES_AVAILABLE.add(TILE_SCREEN_OFF);
         TILES_AVAILABLE.add(TILE_EXPANDED_DESKTOP);
         TILES_AVAILABLE.add(TILE_REBOOT);
-        TILES_AVAILABLE.add(TILE_HEADS_UP);
     }
 }
