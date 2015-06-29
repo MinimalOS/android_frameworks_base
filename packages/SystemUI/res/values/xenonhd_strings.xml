@@ -57,4 +57,8 @@
     <!-- Heads up snooze toast -->
     <string name="heads_up_snooze_message">Heads up is snoozed for <xliff:g id="number">%d</xliff:g> minute in dismissed package.</string>
 
+    <!-- Battery Saver Dismiss -->
+    <string name="battery_saver_dismiss_title">Dismiss</string>
+    <string name="battery_saver_notification_action_text_short">Turn off</string>
+
 </resources>
