@@ -532,7 +532,7 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
                     resolver, Settings.System.STATUS_BAR_BRIGHTNESS_CONTROL, 0,
                     UserHandle.USER_CURRENT) == 1;
             mHeadsUpSwype = Settings.System.getInt(
-                    resolver, Settings.System.HEADS_UP_DISMISS_ON_REMOVE, 1) == 1;
+                    resolver, Settings.System.HEADS_UP_DISMISS_ON_REMOVE, 0) == 1;
             mVisualizerEnabled = Settings.Secure.getIntForUser(resolver,
                     Settings.Secure.LOCKSCREEN_VISUALIZER_ENABLED, 1,
                     UserHandle.USER_CURRENT) != 0;
