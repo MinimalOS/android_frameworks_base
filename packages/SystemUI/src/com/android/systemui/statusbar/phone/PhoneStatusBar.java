@@ -474,6 +474,8 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
                     Settings.System.HEADS_UP_DISMISS_ON_REMOVE), false, this);
             resolver.registerContentObserver(Settings.System.getUriFor(
                     Settings.System.BATTERY_SAVER_MODE_COLOR), false, this, UserHandle.USER_ALL);
+            resolver.registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.STATUS_BAR_TICKER_ENABLED), false, this, UserHandle.USER_ALL);
             // Heads-up
             resolver.registerContentObserver(Settings.System.getUriFor(
                     Settings.System.HEADS_UP_NOTIFCATION_DECAY), false, this, UserHandle.USER_ALL);
@@ -503,7 +505,15 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
                       mContext.getContentResolver(),
                 Settings.System.BATTERY_SAVER_MODE_COLOR, -2,
                               UserHandle.USER_CURRENT);
-            if (mBatterySaverWarningColor == -2) {
+            } else if (uri.equals(Settings.System.getUriFor(
+                    Settings.System.STATUS_BAR_TICKER_ENABLED))) {
+                    mTickerEnabled = Settings.System.getIntForUser(
+                            mContext.getContentResolver(),
+                            Settings.System.STATUS_BAR_TICKER_ENABLED,
+                            mContext.getResources().getBoolean(R.bool.enable_ticker)
+                            ? 1 : 0, UserHandle.USER_CURRENT) != 0;
+                    initTickerView();
+            } else if (mBatterySaverWarningColor == -2) {
               mBatterySaverWarningColor = mContext.getResources()
               .getColor(com.android.internal.R.color.battery_saver_mode_color);
             } else if (uri.equals(Settings.System.getUriFor(
@@ -516,7 +526,6 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
                             UserHandle.USER_CURRENT);
                     resetHeadsUpDecayTimer();
             }
-          }
           update();
         }
 
@@ -628,7 +637,6 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
                     Settings.Global.HEADS_UP_OFF);
             mHeadsUpTicker = mUseHeadsUp && 0 != Settings.Global.getInt(
                     mContext.getContentResolver(), SETTING_HEADS_UP_TICKER, 0);
-            mTickerEnabled = !mUseHeadsUp;
             Log.d(TAG, "heads up is " + (mUseHeadsUp ? "enabled" : "disabled"));
             mHeadsUpUserEnabled = 0 != Settings.System.getIntForUser(
                     mContext.getContentResolver(), Settings.System.HEADS_UP_USER_ENABLED,
@@ -645,7 +653,6 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
                     addHeadsUpView();
                 }
             }
-            initTickerView();
         }
     };
 
@@ -1075,6 +1082,10 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
                         R.id.keyguard_indication_text));
         mKeyguardBottomArea.setKeyguardIndicationController(mKeyguardIndicationController);
 
+        mTickerEnabled = Settings.System.getIntForUser(mContext.getContentResolver(),
+                    Settings.System.STATUS_BAR_TICKER_ENABLED,
+                    mContext.getResources().getBoolean(R.bool.enable_ticker)
+                            ? 1 : 0, UserHandle.USER_CURRENT) != 0;
         initTickerView();
 
         mEdgeBorder = res.getDimensionPixelSize(R.dimen.status_bar_edge_ignore);
@@ -1815,7 +1826,7 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
 
         if (old != null) {
             // Cancel the ticker if it's still running
-            if (mTickerEnabled && shouldInterrupt(old)) {
+            if (mTickerEnabled) {
                 mTicker.removeEntry(old);
             }
 
@@ -3426,8 +3437,7 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
         // because...  well, what's the point otherwise?  And trying to
         // run a ticker without being attached will crash!
         if (n.getNotification().tickerText != null && mStatusBarWindow != null
-                && mStatusBarWindow.getWindowToken() != null
-                && shouldInterrupt(n)) {
+                && mStatusBarWindow.getWindowToken() != null) {
             if (0 == (mDisabled & (StatusBarManager.DISABLE_NOTIFICATION_ICONS
                     | StatusBarManager.DISABLE_NOTIFICATION_TICKER))) {
                 mTicker.addEntry(n);
