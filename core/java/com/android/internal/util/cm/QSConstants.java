@@ -67,7 +67,6 @@ public class QSConstants {
         TILES_DEFAULT.add(TILE_LOCATION);
         TILES_DEFAULT.add(TILE_CAST);
     }
->>>>>>> 151dbf6... QS: Add heads up tile (1/2)
 
     protected static final ArrayList<String> TILES_AVAILABLE = new ArrayList<String>();
 
