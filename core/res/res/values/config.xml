@@ -2223,6 +2223,7 @@
           when evaluating RSRP for LTE antenna bar display
            0. Strict threshold
            1. Lenient threshold
+           2. Custom threshold
     -->
     <integer name="config_LTE_RSRP_threshold_type">1</integer>
 
@@ -2338,5 +2339,20 @@
     <bool name="config_invert_colors_on_doze">true</bool>
 
     <!-- Default, comma-delimited, quick settings tiles. See QSConstants.java for a list of all available tiles -->
+
     <string name="config_defaultQuickSettingsTiles">wifi,bt,cell,airplane,rotation,flashlight,location,cast</string>
+
+    <string-array name="config_externalCMServices"></string-array>
+
+    <!-- When config_LTE_RSRP_threshold_type is set to "custom" -->
+    <integer-array name="config_LTE_RSRP_custom_levels">
+        <item>-140</item>
+        <item>-128</item>
+        <item>-118</item>
+        <item>-108</item>
+        <item>-98</item>
+        <item>-44</item>
+    </integer-array>
+
+>>>>>>> 7e9570d... SignalStrength: Allow for custom signal buckets in LTE
 </resources>
