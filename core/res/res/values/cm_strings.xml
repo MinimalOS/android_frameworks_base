@@ -273,4 +273,6 @@
     <!-- Storage description for the SD card on the dock -->
     <string name="storage_sd_dock_card">Dock SD card</string>
 
+    <!-- Wifi Hotspot disabled due to subscription change -->
+    <string name="subscription_change_disabled_wifi_ap">Disabled WiFi hotspot due to SIM subscription change</string>
 </resources>
