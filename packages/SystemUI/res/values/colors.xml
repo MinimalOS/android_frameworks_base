@@ -66,7 +66,7 @@
     <!-- The recents task bar dark dismiss icon color to be drawn on top of light backgrounds. -->
     <color name="recents_task_bar_dark_dismiss_color">#99000000</color>
     <!-- The recents task bar highlight color. -->
-    <color name="recents_task_bar_highlight_color">#28ffffff</color>
+    <color name="recents_task_bar_highlight_color">#00ffffff</color>
     <!-- The lock to task button background color. -->
     <color name="recents_task_view_lock_to_app_button_background_color">#ffe6e6e6</color>
     <!-- The lock to task button foreground color. -->
