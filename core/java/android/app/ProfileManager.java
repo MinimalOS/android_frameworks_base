@@ -224,7 +224,7 @@ public class ProfileManager {
     @Deprecated
     public void setActiveProfile(String profileName) {
         if (Settings.System.getInt(mContext.getContentResolver(),
-                SYSTEM_PROFILES_ENABLED, 1) == 1) {
+                SYSTEM_PROFILES_ENABLED, 0) == 1) {
             // Profiles are enabled, return active profile
             try {
                 getService().setActiveProfileByName(profileName);

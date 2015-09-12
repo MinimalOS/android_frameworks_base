@@ -1375,7 +1375,7 @@ class GlobalActions implements DialogInterface.OnDismissListener, DialogInterfac
         mActions = Settings.Secure.getStringForUser(resolver,
                 Settings.Secure.POWER_MENU_ACTIONS, UserHandle.USER_CURRENT);
         mProfilesEnabled = Settings.System.getInt(resolver,
-                Settings.System.SYSTEM_PROFILES_ENABLED, 1) != 0;
+                Settings.System.SYSTEM_PROFILES_ENABLED, 0) != 0;
     }
 
     PhoneStateListener mPhoneStateListener = new PhoneStateListener() {

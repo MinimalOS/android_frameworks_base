@@ -92,7 +92,7 @@ public class ProfilesTile extends QSTile<QSTile.State> implements KeyguardMonito
 
     private boolean profilesEnabled() {
         return Settings.System.getInt(mContext.getContentResolver(),
-                Settings.System.SYSTEM_PROFILES_ENABLED, 1) == 1;
+                Settings.System.SYSTEM_PROFILES_ENABLED, 0) == 1;
     }
 
     @Override
