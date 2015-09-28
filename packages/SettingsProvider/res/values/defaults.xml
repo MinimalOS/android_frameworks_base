@@ -261,4 +261,7 @@
     <!-- Default for Settings.System.SWAP_VOLUME_KEYS_ON_ROTATION -->
     <bool name="def_swap_volume_keys_on_rotation">false</bool>
 
+    <!-- Default for Settings.Global.DEFAULT_INSTALL_LOCATION -->
+    <integer name="def_install_location">0</integer>
+
 </resources>
