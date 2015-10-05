@@ -7,4 +7,6 @@
     <!-- If this is true, key chords can be used to take a screen record on the device. -->
     <bool name="config_enableScreenrecordChord">true</bool>
 
+    <!-- Settings: show Vibrator intensity preference screen -->
+    <bool name="has_vibrator_settings">true</bool>
 </resources>

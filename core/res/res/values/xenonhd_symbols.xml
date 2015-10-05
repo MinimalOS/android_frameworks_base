@@ -24,5 +24,8 @@
 
   <!-- Ambient Display-->
   <java-symbol type="bool" name="config_dozeUseAccelerometer" />
+
+  <!-- Vibrator Intensity -->
+  <java-symbol type="bool" name="has_vibrator_settings" />
 </resources>
 
